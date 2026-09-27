@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+}
+
+body {
+  background: #f7f8f5;
+  color: #19352d;
+}
+
+::selection {
+  background: #c5e6d5;
+}
