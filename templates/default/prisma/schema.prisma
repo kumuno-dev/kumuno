@@ -15,6 +15,7 @@ model Organization {
   updatedAt   DateTime     @updatedAt
   departments Department[]
   users       User[]
+  auditLogs   AuditLog[]
 }
 
 model Department {
@@ -113,4 +114,28 @@ model RateLimit {
   key String @unique
   count Int
   lastRequest BigInt
+}
+
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model AuditLog {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @db.Uuid
+  userId         String       @db.Uuid
+  action         AuditAction
+  resourceType   String
+  resourceId     String       @db.Uuid
+  timestamp      DateTime     @default(now()) @db.Timestamptz(3)
+  metadata       Json
+  before         Json?
+  after          Json?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, timestamp, id])
+  @@index([organizationId, resourceType, resourceId])
 }

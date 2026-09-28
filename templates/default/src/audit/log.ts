@@ -1,0 +1,41 @@
+import { Prisma } from "../generated/prisma/client";
+import type { AuditAction } from "../generated/prisma/enums";
+
+type UserSnapshot = { isActive: boolean; role: string; departmentId: string | null };
+type DepartmentSnapshot = { code: string; name: string; parentId: string | null };
+type Event = { action: AuditAction; resourceId: string } & (
+  { resourceType: "User"; before?: UserSnapshot; after?: UserSnapshot } |
+  { resourceType: "Department"; before?: DepartmentSnapshot; after?: DepartmentSnapshot }
+);
+
+// Explicit projections prevent whole records, credentials and request bodies being logged.
+export function auditSnapshots(event: Event) {
+  if ((event.action === "CREATE" && (event.before || !event.after)) ||
+      (event.action === "UPDATE" && (!event.before || !event.after)) ||
+      (event.action === "DELETE" && (!event.before || event.after))) {
+    throw new Error("監査ログの変更前後が操作と一致しません。");
+  }
+  if (!["CREATE", "UPDATE", "DELETE"].includes(event.action)) throw new Error("監査操作が不正です。");
+  if (event.resourceType === "User") {
+    const pick = (value: UserSnapshot) => ({ isActive: value.isActive, role: value.role, departmentId: value.departmentId });
+    return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
+  }
+  if (event.resourceType === "Department") {
+    const pick = (value: DepartmentSnapshot) => ({ code: value.code, name: value.name, parentId: value.parentId });
+    return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
+  }
+  throw new Error("監査対象が不正です。");
+}
+
+// Internal only: caller authenticates the actor, authorizes the operation and passes its transaction.
+// userId is a historical ID, without cascading deletion when a user is removed.
+export async function appendAuditLog(tx: Prisma.TransactionClient,
+  actor: { id: string; organizationId: string }, event: Event) {
+  const snapshots = auditSnapshots(event);
+  return tx.auditLog.create({ data: {
+    organizationId: actor.organizationId, userId: actor.id,
+    action: event.action, resourceType: event.resourceType, resourceId: event.resourceId,
+    metadata: { version: 1 },
+    before: snapshots.before ?? Prisma.DbNull, after: snapshots.after ?? Prisma.DbNull,
+  } });
+}

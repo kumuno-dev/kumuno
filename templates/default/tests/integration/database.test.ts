@@ -1,3 +1,4 @@
+import { appendAuditLog } from "../../src/audit/log";
 import { can } from "../../src/authorization/policy";
 import { createAuthentication } from "../../src/authentication/factory";
 import { getAuthConfig } from "../../src/authentication/config";
@@ -78,9 +79,9 @@ test("接続失敗時に秘密情報を出さない", async () => {
 });
 test("リポジトリのMigrationを初回適用し、再実行しても履歴が増えない", async () => {
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(4);
+  expect(await historyCount()).toBe(5);
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(4);
+  expect(await historyCount()).toBe(5);
 });
 test("後続Migrationが既存データを保持する", async () => {
   const initial = 'CREATE TABLE probe (id integer PRIMARY KEY); INSERT INTO probe VALUES (1);';
@@ -139,15 +140,15 @@ test("組織をまたぐ親部署・所属とコード重複を拒否する", as
 });
 test("親部署変更は循環を拒否し、ルートへの移動を許可する", async () => {
   await migrateDatabase(url);
-  const { organizationId } = await seedDevelopment(connection.db, seedEnv);
+  const { organizationId, userId } = await seedDevelopment(connection.db, seedEnv);
   const root = await connection.db.department.findFirstOrThrow({ where: { code: "head-office" } });
   const child = await connection.db.department.findFirstOrThrow({ where: { code: "administration" } });
-  await expect(moveDepartment(connection.db, organizationId, root.id, child.id)).rejects.toThrow("循環");
-  await expect(moveDepartment(connection.db, organizationId, child.id, child.id)).rejects.toThrow("循環");
-  expect((await moveDepartment(connection.db, organizationId, child.id, null)).parentId).toBeNull();
+  await expect(moveDepartment(connection.db, userId, organizationId, root.id, child.id)).rejects.toThrow("循環");
+  await expect(moveDepartment(connection.db, userId, organizationId, child.id, child.id)).rejects.toThrow("循環");
+  expect((await moveDepartment(connection.db, userId, organizationId, child.id, null)).parentId).toBeNull();
   const results = await Promise.allSettled([
-    moveDepartment(connection.db, organizationId, child.id, root.id),
-    moveDepartment(connection.db, organizationId, root.id, child.id),
+    moveDepartment(connection.db, userId, organizationId, child.id, root.id),
+    moveDepartment(connection.db, userId, organizationId, root.id, child.id),
   ]);
   expect(results.filter(result => result.status === "rejected")).toHaveLength(1);
 });
@@ -203,7 +204,7 @@ test("誤パスワード・無効ユーザー・未公開endpoint・異なるOri
   expect((await handleAuthentication(authRequest("sign-up/email", credentials), auth, authConfig)).status).toBe(404);
   expect((await handleAuthentication(authRequest("update-user", { name: "changed", isActive: true }), auth, authConfig)).status).toBe(404);
   const user = await connection.db.user.findFirstOrThrow();
-  await disableUser(connection.db, user.id);
+  await disableUser(connection.db, user.id, user.id);
   expect((await handleAuthentication(authRequest("sign-in/email", credentials), auth, authConfig)).ok).toBe(false);
   expect(await connection.db.session.count()).toBe(0);
 });
@@ -219,7 +220,7 @@ test("有効期限切れと無効化後の既存セッションを拒否", async
   expect(await getActiveUser(auth, connection.db, expired)).toBeNull();
   const active = await login();
   const user = await connection.db.user.findFirstOrThrow();
-  await disableUser(connection.db, user.id);
+  await disableUser(connection.db, user.id, user.id);
   expect(await connection.db.session.count()).toBe(0);
   expect(await getActiveUser(auth, connection.db, active)).toBeNull();
   await connection.db.user.update({ where: { id: user.id }, data: { isActive: true } });
@@ -266,4 +267,84 @@ test("ロールはDBの最新値を使い、Seed再実行とクライアント�
   const relogin = await handleAuthentication(authRequest("sign-in/email", { ...credentials, role: "ADMIN" }), auth, authConfig);
   expect(relogin.status).toBe(200);
   expect((await getActiveUser(auth, connection.db, new Headers({ cookie: sessionCookie(relogin) })))?.role).toBe("USER");
+});
+
+
+test("部署移動と無効化の監査を更新と同時に保存し、無変更では重複しない", async () => {
+  const auth = await authFixture();
+  const admin = await connection.db.user.findFirstOrThrow();
+  const target = await connection.db.user.create({ data: { organizationId: admin.organizationId, name: "対象", email: "target@example.com" } });
+  const department = await connection.db.department.findFirstOrThrow({ where: { code: "administration" } });
+  await moveDepartment(connection.db, admin.id, admin.organizationId, department.id, null);
+  await moveDepartment(connection.db, admin.id, admin.organizationId, department.id, null);
+  await disableUser(connection.db, admin.id, target.id);
+  await disableUser(connection.db, admin.id, target.id);
+  const logs = await connection.db.auditLog.findMany({ orderBy: { timestamp: "asc" } });
+  expect(logs).toHaveLength(2);
+  expect(logs[0]).toMatchObject({ organizationId: admin.organizationId, userId: admin.id, action: "UPDATE", resourceType: "Department", resourceId: department.id,
+    before: { parentId: department.parentId }, after: { parentId: null }, metadata: { version: 1 } });
+  expect(logs[1]).toMatchObject({ userId: admin.id, resourceType: "User", resourceId: target.id, before: { isActive: true }, after: { isActive: false } });
+  expect(logs[0].timestamp).toBeInstanceOf(Date);
+  expect(JSON.stringify(logs)).not.toContain(target.email);
+  const login = await handleAuthentication(authRequest("sign-in/email", credentials), auth, authConfig);
+  expect(login.status).toBe(200);
+  await disableUser(connection.db, admin.id, admin.id);
+  expect(await connection.db.session.count()).toBe(0);
+  expect(await connection.db.auditLog.count()).toBe(3);
+});
+
+test("監査対象の更新は最新権限・有効状態・組織境界を検査する", async () => {
+  await migrateDatabase(url);
+  const { organizationId, userId } = await seedDevelopment(connection.db, seedEnv);
+  const department = await connection.db.department.findFirstOrThrow({ where: { code: "administration" } });
+  const other = await connection.db.organization.create({ data: { code: "other", name: "別組織" } });
+  const outsider = await connection.db.user.create({ data: { organizationId: other.id, role: "ADMIN", name: "外部", email: "outsider@example.com" } });
+  await expect(disableUser(connection.db, outsider.id, userId)).rejects.toMatchObject({ status: 403 });
+  await expect(moveDepartment(connection.db, outsider.id, organizationId, department.id, null)).rejects.toMatchObject({ status: 403 });
+  for (const role of ["MANAGER", "USER"] as const) {
+    await connection.db.user.update({ where: { id: userId }, data: { role } });
+    await expect(disableUser(connection.db, userId, userId)).rejects.toMatchObject({ status: 403 });
+    await expect(moveDepartment(connection.db, userId, organizationId, department.id, null)).rejects.toMatchObject({ status: 403 });
+  }
+  await connection.db.user.update({ where: { id: userId }, data: { role: "ADMIN", isActive: false } });
+  await expect(moveDepartment(connection.db, userId, organizationId, department.id, null)).rejects.toMatchObject({ status: 403 });
+  expect(await connection.db.auditLog.count()).toBe(0);
+  expect((await connection.db.department.findUniqueOrThrow({ where: { id: department.id } })).parentId).toBe(department.parentId);
+});
+
+test("監査のINSERT失敗時は業務更新とセッション削除もロールバックする", async () => {
+  const auth = await authFixture();
+  const admin = await connection.db.user.findFirstOrThrow();
+  const department = await connection.db.department.findFirstOrThrow({ where: { code: "administration" } });
+  expect((await handleAuthentication(authRequest("sign-in/email", credentials), auth, authConfig)).status).toBe(200);
+  await connection.pool.query(`CREATE FUNCTION "${schema}".fail_audit_insert() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test failure'; END; $$`);
+  await connection.pool.query(`CREATE TRIGGER fail_audit_insert BEFORE INSERT ON "${schema}"."AuditLog" FOR EACH STATEMENT EXECUTE FUNCTION "${schema}".fail_audit_insert()`);
+  await expect(disableUser(connection.db, admin.id, admin.id)).rejects.toThrow();
+  expect((await connection.db.user.findUniqueOrThrow({ where: { id: admin.id } })).isActive).toBe(true);
+  expect(await connection.db.session.count()).toBe(1);
+  await expect(moveDepartment(connection.db, admin.id, admin.organizationId, department.id, null)).rejects.toThrow();
+  expect((await connection.db.department.findUniqueOrThrow({ where: { id: department.id } })).parentId).toBe(department.parentId);
+  expect(await connection.db.auditLog.count()).toBe(0);
+});
+
+test("CREATE/DELETEを記録し、履歴の更新・削除・TRUNCATEを拒否する", async () => {
+  await migrateDatabase(url);
+  const { userId, organizationId } = await seedDevelopment(connection.db, seedEnv);
+  const actor = { id: userId, organizationId };
+  const resourceId = await connection.db.$transaction(async tx => {
+    const department = await tx.department.create({ data: { organizationId, code: "audit-test", name: "監査対象" } });
+    await appendAuditLog(tx, actor, { action: "CREATE", resourceType: "Department", resourceId: department.id, after: department });
+    await tx.department.delete({ where: { id: department.id } });
+    await appendAuditLog(tx, actor, { action: "DELETE", resourceType: "Department", resourceId: department.id, before: department });
+    return department.id;
+  });
+  const logs = await connection.db.auditLog.findMany({ where: { resourceId } });
+  expect(logs).toHaveLength(2);
+  expect(logs.find(log => log.action === "CREATE")?.before).toBeNull();
+  expect(logs.find(log => log.action === "DELETE")?.after).toBeNull();
+  await expect(connection.db.auditLog.updateMany({ data: { metadata: { tampered: true } } })).rejects.toThrow();
+  await expect(connection.db.auditLog.deleteMany()).rejects.toThrow();
+  await expect(connection.pool.query(`TRUNCATE "${schema}"."AuditLog"`)).rejects.toMatchObject({ code: "42501" });
+  await connection.db.user.delete({ where: { id: userId } });
+  expect(await connection.db.auditLog.count({ where: { userId } })).toBe(2);
 });

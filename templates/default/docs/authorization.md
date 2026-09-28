@@ -21,7 +21,7 @@ const actor = await requirePermission("users:read");
 const users = await db.user.findMany({ where: { organizationId: actor.organizationId } });
 ```
 
-既存リソースの操作には、DBから取得した対象のorganizationIdをassertPermission(actor, permission, scope)へ渡す。リクエスト本文の組織IDやroleを認可情報として信用しない。canは表示制御にも使えるが、書込の直前にサーバー側で再判定する。内部のdisableUser / moveDepartmentはHTTPへ直接公開せず、管理機能の入口で認証・対象組織・権限を検査する。
+既存リソースの操作には、DBから取得した対象のorganizationIdをassertPermission(actor, permission, scope)へ渡す。リクエスト本文の組織IDやroleを認可情報として信用しない。canは表示制御にも使えるが、書込の直前にサーバー側で再判定する。disableUser / moveDepartmentはactorIdを受け取り、トランザクション内で最新権限・対象組織を検査して監査を保存する。HTTPの入口では必ずセッション認証を行い、そのactorIdを渡す。
 
 getActiveUserは毎回DBから最新のroleとisActiveを読み、セッション内の古いroleを使用しない。未認証・無効ユーザー・未知ロール・未知操作は拒否する。認可確認後に別トランザクションで変更された権限まで遡及して取り消すものではない。重要な書込は今後の各業務サービスでトランザクション内の確認を設計する。
 

@@ -20,3 +20,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 認証はsrc/authenticationへ集約する。運用とテストは[authentication.md](authentication.md)を参照。
 
 認可はsrc/authorizationへ集約する。[authorization.md](authorization.md)を参照。
+
+業務更新の監査はsrc/auditへ集約する。[audit-log.md](audit-log.md)を参照。

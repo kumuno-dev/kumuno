@@ -85,7 +85,7 @@ async function main() {
       stage = "successful login";
       await expect(page).toHaveURL(`${baseURL}/dashboard`);
       stage = "disabled session";
-      await disableUser(connection.db, fixture.userId);
+      await disableUser(connection.db, fixture.userId, fixture.userId);
       await page.reload();
       await expect(page).toHaveURL(`${baseURL}/login`);
       await context.close();

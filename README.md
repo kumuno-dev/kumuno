@@ -16,7 +16,7 @@ npx create-kumuno my-business-app
 
 **npm版は未公開です。ローカル試用CLIで現在の基盤を生成できます。** [マスター仕様書 v3.1](docs/master-spec.md)で、CLI・npm公開・生成物の検証をv0.1の必須条件としています。
 
-現在は旧工程のStep 1・2（Next.jsとPrisma / PostgreSQL接続・Migration基盤）と、Milestone 1のリポジトリ構成整理が完了しています。Milestone 2・3の生成物検証、Milestone 4の組織・部署・ユーザー・開発Seedまで実装しました。Milestone 5のログイン・ログアウト・保護ページも実装済みです。Milestone 6の3ロールと共通認可も実装済みです。[認可仕様](docs/authorization.md)を参照してください。監査・業務管理画面・備品管理は未実装です。v3.1の工程と実績の対応は[現在の構成と工程](docs/architecture.md)を参照してください。
+現在は旧工程のStep 1・2（Next.jsとPrisma / PostgreSQL接続・Migration基盤）と、Milestone 1のリポジトリ構成整理が完了しています。Milestone 2・3の生成物検証、Milestone 4の組織・部署・ユーザー・開発Seedまで実装しました。Milestone 5のログイン・ログアウト・保護ページも実装済みです。Milestone 6の3ロールと共通認可も実装済みです。[認可仕様](docs/authorization.md)を参照してください。Milestone 7の[監査ログ](docs/audit-log.md)を実装済みです。業務管理画面・備品管理は未実装です。v3.1の工程と実績の対応は[現在の構成と工程](docs/architecture.md)を参照してください。
 
 ## ローカルCLIを試す
 

@@ -21,7 +21,7 @@ scripts/check-structure.mjs  workspaceと独立性の検証
 docs/                        製品仕様・設計判断
 ```
 
-トップページはServer Component。DB接続基盤、共有マスタ、標準認証テーブルと開発Seedを実装済み。Milestone 5でログインフォーム、認証Route Handler、保護ページを追加した。Milestone 6で3ロールの共通認可を追加した。業務管理画面は未実装。外部フォント・AI API・認証SaaSへの接続は不要。Tailwind CSSはPostCSSでビルドする。
+トップページはServer Component。DB接続基盤、共有マスタ、標準認証テーブルと開発Seedを実装済み。Milestone 5でログインフォーム、認証Route Handler、保護ページを追加した。Milestone 6で3ロールの共通認可、Milestone 7で業務更新と同時に保存する監査ログを追加した。業務管理画面は未実装。外部フォント・AI API・認証SaaSへの接続は不要。Tailwind CSSはPostCSSでビルドする。
 
 Next.jsによるエージェント規約ファイルの自動書き換えは`agentRules: false`で無効化し、プロジェクト規約を手動管理する。フレームワークAPIの確認にはインストール版同梱の`node_modules/next/dist/docs/`を利用する。
 
@@ -46,7 +46,7 @@ ValidationはZodを候補とする（未導入）。VitestはStep 2から設定�
 | 4 | Organization / User | 完了。共有マスタ・階層Department・標準認証モデル・開発Seedを検証 |
 | 5 | Authentication | 完了。Better Auth・DBセッション・保護ページ・無効ユーザー拒否をCLI生成物でも検証 |
 | 6 | Authorization / RBAC | 完了。3ロール・共通認可・組織境界・最新ロール取得を検証 |
-| 7 | Audit Log | 未実装 |
+| 7 | Audit Log | 完了。部署移動・ユーザー無効化の同時保存、失敗時の全体取消、追記専用履歴を検証 |
 | 8 | Business UI | Header / Sidebar、ユーザー・部署管理を含め未実装 |
 | 9 | Equipment Reference Application | CRUD・検索・ページ・並び替え・認可・監査を含め未実装 |
 | 10 | AI Documentation | 入口・基盤・Domain境界・連携規約を作成済み。生成物への同梱は未実施 |
@@ -118,3 +118,12 @@ v3.1更新の検証：2026-09-28、Node.js 24.21.0 / macOSでnpm ci、npm exec -
 既存ユーザーのMigration既定値はUSER。開発Seedで新規作成する管理者だけADMIN。ロール変更画面、細分化データスコープ、本番初期管理者プロビジョニングは未実装。永続DBは変更していない。実TLS・本番プロキシ・他OS・公開tgzは未検証。
 
 [認可仕様](authorization.md)と[設計判断0012](decisions/0012-authorization.md)を追加した。次はMilestone 7のAudit Log。
+
+
+## Milestone 7の検証結果
+
+2026-09-29、Node.js 24.21.0 / macOS / PostgreSQL 18.4でnpm run check（CLI3件・単体16件・ブラウザー4件・lint・型検査・本番ビルド）、test:template、test:template:dbが成功。生成物でMigration・Seed再実行、実DB19件、PC・スマートフォンの認証操作が成功した。監査保存の強制失敗による業務更新・セッション削除のロールバック、権限・組織境界、無変更時の非重複、CREATE/DELETEの記録、履歴のUPDATE/DELETE/TRUNCATE拒否と操作者削除後の保持を検証した。
+
+監査は既存の部署移動・ユーザー無効化へ組み込んだ。ログ閲覧画面・公開API・保存期限による削除は未実装。永続DBへのMigration適用は行っていない。実TLS・本番プロキシ・他OS・公開tgzは未検証。一時DBは検証後に終了する。
+
+[監査仕様](audit-log.md)と[設計判断0013](decisions/0013-audit-log.md)を追加。次はMilestone 8のBusiness UI（Header / Sidebar、ユーザー・部署管理）。

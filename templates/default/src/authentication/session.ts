@@ -1,3 +1,5 @@
+import { appendAuditLog } from "../audit/log";
+import { requireTransactionActor } from "../authorization/transaction-actor";
 import type { PrismaClient } from "../generated/prisma/client";
 import type { Authentication } from "./factory";
 
@@ -14,10 +16,15 @@ export async function getActiveUser(auth: Authentication, db: PrismaClient, head
   return user;
 }
 
-// Internal service only; future management entry points must enforce RBAC first.
-export async function disableUser(db: PrismaClient, userId: string) {
-  await db.$transaction([
-    db.user.update({ where: { id: userId }, data: { isActive: false } }),
-    db.session.deleteMany({ where: { userId } }),
-  ]);
+// actorId must be taken from the authenticated server session by the caller.
+export async function disableUser(db: PrismaClient, actorId: string, userId: string) {
+  await db.$transaction(async (tx) => {
+    const before = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+    const actor = await requireTransactionActor(tx, actorId, "users:manage", before.organizationId);
+    const after = await tx.user.update({ where: { id: userId }, data: { isActive: false } });
+    await tx.session.deleteMany({ where: { userId } });
+    if (before.isActive) {
+      await appendAuditLog(tx, actor, { action: "UPDATE", resourceType: "User", resourceId: userId, before, after });
+    }
+  }, { isolationLevel: "Serializable" });
 }
