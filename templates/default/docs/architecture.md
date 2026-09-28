@@ -1,6 +1,6 @@
 # アプリの構成
 
-Next.js・Prisma・PostgreSQL基盤、共有マスタ（Organization・Department・User）、開発Seedを実装済み。Better Authによるログイン・ログアウト・保護ページを実装済み。権限・業務管理画面は未実装です。
+Next.js・Prisma・PostgreSQL基盤、共有マスタ（Organization・Department・User）、開発Seedを実装済み。Better Authによるログイン・ログアウト・保護ページを実装済み。3ロールの共通認可を実装済み。業務管理画面は未実装です。
 
 - src/app: App Router、画面とレイアウト
 - src/database: 接続設定、サーバー専用入口、Migration CLI補助
@@ -18,3 +18,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 共有マスタの制約と部署移動は[organization.md](organization.md)を参照。
 
 認証はsrc/authenticationへ集約する。運用とテストは[authentication.md](authentication.md)を参照。
+
+認可はsrc/authorizationへ集約する。[authorization.md](authorization.md)を参照。

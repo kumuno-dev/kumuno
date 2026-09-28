@@ -21,7 +21,7 @@ scripts/check-structure.mjs  workspaceと独立性の検証
 docs/                        製品仕様・設計判断
 ```
 
-トップページはServer Component。DB接続基盤、共有マスタ、標準認証テーブルと開発Seedを実装済み。Milestone 5でログインフォーム、認証Route Handler、保護ページを追加した。業務管理画面・権限は未実装。外部フォント・AI API・認証SaaSへの接続は不要。Tailwind CSSはPostCSSでビルドする。
+トップページはServer Component。DB接続基盤、共有マスタ、標準認証テーブルと開発Seedを実装済み。Milestone 5でログインフォーム、認証Route Handler、保護ページを追加した。Milestone 6で3ロールの共通認可を追加した。業務管理画面は未実装。外部フォント・AI API・認証SaaSへの接続は不要。Tailwind CSSはPostCSSでビルドする。
 
 Next.jsによるエージェント規約ファイルの自動書き換えは`agentRules: false`で無効化し、プロジェクト規約を手動管理する。フレームワークAPIの確認にはインストール版同梱の`node_modules/next/dist/docs/`を利用する。
 
@@ -35,7 +35,7 @@ ValidationはZodを候補とする（未導入）。VitestはStep 2から設定�
 
 ## 第3版の工程と現在地
 
-旧Step番号と第3版のMilestone番号を混同しない。現在のNext.js基盤はテンプレートとして配置済み。CLI生成物の自動検証を追加した。認証の生成物検証まで完了。権限・業務機能とnpm配布物の検証は未完了。
+旧Step番号と第3版のMilestone番号を混同しない。現在のNext.js基盤はテンプレートとして配置済み。CLI生成物の自動検証を追加した。認証の生成物検証まで完了。共通認可まで完了。業務機能とnpm配布物の検証は未完了。
 
 | Milestone | 内容 | 現在地 |
 | --- | --- | --- |
@@ -45,7 +45,7 @@ ValidationはZodを候補とする（未導入）。VitestはStep 2から設定�
 | 3 | PostgreSQL / Migration | 完了。CLI生成物の環境ファイル読込・接続・Migration初回/再実行・実DB6件を検証 |
 | 4 | Organization / User | 完了。共有マスタ・階層Department・標準認証モデル・開発Seedを検証 |
 | 5 | Authentication | 完了。Better Auth・DBセッション・保護ページ・無効ユーザー拒否をCLI生成物でも検証 |
-| 6 | Authorization / RBAC | 未実装 |
+| 6 | Authorization / RBAC | 完了。3ロール・共通認可・組織境界・最新ロール取得を検証 |
 | 7 | Audit Log | 未実装 |
 | 8 | Business UI | Header / Sidebar、ユーザー・部署管理を含め未実装 |
 | 9 | Equipment Reference Application | CRUD・検索・ページ・並び替え・認可・監査を含め未実装 |
@@ -109,3 +109,12 @@ v3.1更新の検証：2026-09-28、Node.js 24.21.0 / macOSでnpm ci、npm exec -
 ログイン・ログアウト、未認証アクセスのリダイレクト、セッション期限、無効ユーザーの拒否とセッション削除、Origin制限、DB共有の試行回数制限を確認。Cookie属性は結合テストで確認した。実TLS接続・本番リバースプロキシ・他OS・公開tgzは未検証。永続DBへの適用は行っていない。
 
 実装判断は[0011](decisions/0011-authentication-implementation.md)、セットアップと制約は[authentication.md](../templates/default/docs/authentication.md)。次はMilestone 6のAuthorization / RBAC。
+
+
+## Milestone 6の検証結果
+
+2026-09-29、Node.js 24.21.0 / macOS / PostgreSQL 18.4でnpm run check（CLI3件・単体14件・ブラウザー4件・lint・型検査・本番ビルド）、test:template、test:template:dbが成功した。生成物の実DB15件とPC・スマートフォンの認証操作も成功。新規Userの既定ロール、Seedの降格保持、同一セッションへの最新ロール反映、クライアント入力による昇格拒否、許可表・組織境界を検証した。
+
+既存ユーザーのMigration既定値はUSER。開発Seedで新規作成する管理者だけADMIN。ロール変更画面、細分化データスコープ、本番初期管理者プロビジョニングは未実装。永続DBは変更していない。実TLS・本番プロキシ・他OS・公開tgzは未検証。
+
+[認可仕様](authorization.md)と[設計判断0012](decisions/0012-authorization.md)を追加した。次はMilestone 7のAudit Log。

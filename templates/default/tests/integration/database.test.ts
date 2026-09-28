@@ -1,3 +1,4 @@
+import { can } from "../../src/authorization/policy";
 import { createAuthentication } from "../../src/authentication/factory";
 import { getAuthConfig } from "../../src/authentication/config";
 import { handleAuthentication } from "../../src/authentication/handler";
@@ -77,9 +78,9 @@ test("接続失敗時に秘密情報を出さない", async () => {
 });
 test("リポジトリのMigrationを初回適用し、再実行しても履歴が増えない", async () => {
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(3);
+  expect(await historyCount()).toBe(4);
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(3);
+  expect(await historyCount()).toBe(4);
 });
 test("後続Migrationが既存データを保持する", async () => {
   const initial = 'CREATE TABLE probe (id integer PRIMARY KEY); INSERT INTO probe VALUES (1);';
@@ -240,4 +241,29 @@ test("ログイン試行制限をDBで共有し、偽装ヘッダーでも回避
   expect(denied.status).toBe(429);
   expect(denied.headers.get("retry-after")).toBeTruthy();
   expect(await connection.db.session.count()).toBe(0);
+});
+
+test("ロールはDBの最新値を使い、Seed再実行とクライアント入力で昇格しない", async () => {
+  const auth = await authFixture();
+  const response = await handleAuthentication(authRequest("sign-in/email", { ...credentials, role: "ADMIN" }), auth, authConfig);
+  expect(response.status).toBe(200);
+  const headers = new Headers({ cookie: sessionCookie(response) });
+  const admin = (await getActiveUser(auth, connection.db, headers))!;
+  expect(admin.role).toBe("ADMIN");
+  expect(can(admin, "roles:assign", admin)).toBe(true);
+  const created = await connection.db.user.create({ data: { organizationId: admin.organizationId, name: "一般", email: "user@example.com" } });
+  expect(created.role).toBe("USER");
+  await connection.db.user.update({ where: { id: admin.id }, data: { role: "MANAGER" } });
+  const manager = (await getActiveUser(auth, connection.db, headers))!;
+  expect(can(manager, "users:read", manager)).toBe(true);
+  expect(can(manager, "roles:assign", manager)).toBe(false);
+  await connection.db.user.update({ where: { id: admin.id }, data: { role: "USER" } });
+  await seedDevelopment(connection.db, seedEnv);
+  const regular = (await getActiveUser(auth, connection.db, headers))!;
+  expect(regular.role).toBe("USER");
+  expect(can(regular, "users:read", regular)).toBe(false);
+  expect((await handleAuthentication(authRequest("update-user", { role: "ADMIN" }, sessionCookie(response)), auth, authConfig)).status).toBe(404);
+  const relogin = await handleAuthentication(authRequest("sign-in/email", { ...credentials, role: "ADMIN" }), auth, authConfig);
+  expect(relogin.status).toBe(200);
+  expect((await getActiveUser(auth, connection.db, new Headers({ cookie: sessionCookie(relogin) })))?.role).toBe("USER");
 });

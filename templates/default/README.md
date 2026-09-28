@@ -1,6 +1,6 @@
 # KUMUNO application template
 
-現在はNext.js・Prisma・PostgreSQLの基盤です。メール・パスワード認証を実装済みです。業務機能は未実装です。このディレクトリ単独でセットアップできます。
+現在はNext.js・Prisma・PostgreSQLの基盤です。メール・パスワード認証と[3ロールの共通認可](docs/authorization.md)を実装済みです。業務機能は未実装です。このディレクトリ単独でセットアップできます。
 
 ## セットアップ
 

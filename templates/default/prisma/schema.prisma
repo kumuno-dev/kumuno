@@ -35,10 +35,17 @@ model Department {
   @@index([parentId, organizationId])
 }
 
+enum Role {
+  ADMIN
+  MANAGER
+  USER
+}
+
 model User {
   id             String       @id @default(uuid()) @db.Uuid
   organizationId String       @db.Uuid
   departmentId   String?      @db.Uuid
+  role           Role         @default(USER)
   employeeCode   String?
   name           String
   email          String       @unique

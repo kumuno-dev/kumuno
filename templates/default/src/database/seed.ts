@@ -30,7 +30,7 @@ export async function seedDevelopment(db: PrismaClient, env: Record<string, stri
     }
     const user = await tx.user.create({ data: {
       organizationId: organization.id, departmentId: department.id,
-      employeeCode: "DEMO-001", name: "開発用管理者", email,
+      role: "ADMIN", employeeCode: "DEMO-001", name: "開発用管理者", email,
     } });
     await tx.account.create({ data: { userId: user.id, accountId: user.id, providerId: "credential", password: hash } });
     return { organizationId: organization.id, userId: user.id, created: true };

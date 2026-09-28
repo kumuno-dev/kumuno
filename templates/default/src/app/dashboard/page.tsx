@@ -1,7 +1,7 @@
-import { requireUser } from "@/authentication/require-user";
+import { requirePermission } from "@/authorization/require-permission";
 import { LogoutButton } from "./logout-button";
 export default async function DashboardPage() {
-  const user = await requireUser();
+  const user = await requirePermission("dashboard:read");
   return <main className="mx-auto max-w-3xl px-6 py-16">
     <p className="mb-8 text-xl font-bold">KUMUNO</p>
     <h1 className="text-3xl font-bold">ようこそ、{user.name}さん</h1>

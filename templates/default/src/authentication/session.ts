@@ -6,7 +6,7 @@ export async function getActiveUser(auth: Authentication, db: PrismaClient, head
   const result = await auth.api.getSession({ headers, query: { disableCookieCache: true, disableRefresh: true } });
   if (!result) return null;
   const user = await db.user.findUnique({ where: { id: result.user.id },
-    select: { id: true, name: true, email: true, organizationId: true, departmentId: true, isActive: true } });
+    select: { id: true, name: true, email: true, organizationId: true, departmentId: true, role: true, isActive: true } });
   if (!user?.isActive) {
     await db.session.deleteMany({ where: { userId: result.user.id } });
     return null;
