@@ -1,296 +1,774 @@
-# Oshigoto Kit v0.1
+# KUMUNO v0.1
+## Codex Master Specification v3.1
 
-## Codex Master Specification
-
-### 1. プロジェクト概要
-
-プロジェクト名は **Oshigoto Kit** とする。
-
-Oshigoto Kitは、日本の業務システムをAIコーディングエージェントと共同開発するための、オープンソースの開発基盤である。
-
-特定のAIサービスには依存しない。
-
-想定するAIコーディングエージェントは以下。
-
-* OpenAI Codex
-* Claude Code
-* Cursor
-* その他、将来登場するコーディングエージェント
-
-Oshigoto Kitの目的は「ノーコードツールを作ること」ではない。
-
-**業務を理解している人が、AIと一緒に、安全で一貫性のある業務システムを開発できる土台を提供すること**を目的とする。
+**Status:** Master Specification\
+**Target:** v0.1\
+**Project:** KUMUNO\
+**Primary Interface:** `npx create-kumuno`\
+**Last Updated:** 2026-09-28\
+**Supersedes:** Codex Master Specification v3
 
 ---
 
-# 2. プロダクトビジョン
+# 1. プロジェクト概要
 
-コンセプト：
+KUMUNOは、
 
-> **社内システムを、AIと作る。**
+> **AIコーディングエージェントと一緒に業務システムを作るためのOSS開発基盤**
+
+である。
+
+ユーザーは以下のコマンドから開発を開始する。
+
+```bash
+npx create-kumuno my-business-app
+```
+
+生成されたプロジェクトには、一般的な業務システムで繰り返し必要になる、
+
+- Authentication
+- User Management
+- Organization
+- Department
+- RBAC
+- Audit Log
+- Validation
+- Database
+- Business UI
+- AI向け開発規約
+
+などが最初から用意される。
+
+その後ユーザーは、
+
+- OpenAI Codex
+- Claude Code
+- Cursor
+- その他のAIコーディングエージェント
+
+を使って、自分固有の業務機能を追加する。
+
+---
+
+# 2. 最重要コンセプト
+
+日本語：
+
+> **AIで小さく作る。でも、将来つながる。**
 
 英語：
 
 > **Build business software with your AI coding agent.**
 
-対象ユーザーは、必ずしも専業エンジニアではない。
+技術的には、
 
-主な対象：
+> **AI時代の業務システム向け `create-next-app`**
 
-* 一人情シス
-* 社内SE
-* DX担当者
-* 小規模SIer
-* 個人開発者
-* プログラミング経験のある現場職
-* AIコーディングエージェントを使って業務改善したい人
+という位置付けを目指す。
+
+---
+
+## 2.1 「組む」という思想
+
+KUMUNOのブランドは「組む」を中心に据える。
+
+- 人とAIで組む：業務を知る人が目的を示し、AI coding agentとコードを作り、理解・検証・所有する。
+- 必要な機能を組む：認証・組織・権限などの共通基盤に、必要な業務だけを小さく追加する。
+- 将来つながる：共有IDとDomain境界を保ち、別の部署・業務との連携を後から追加できる。
+
+「つながる」は自動連携や分散システムの提供を意味しない。v0.1ではShared Coreを共有する普通のNext.jsアプリを作る。巨大な独自DSL、汎用Pluginランタイム、業務マスタの複製は導入しない。利用者は生成コードを所有し、KUMUNOから独立して運用・変更できる。
+
+## 2.2 正式名称と公開表現
+
+| 対象 | 名称 |
+| --- | --- |
+| ブランド | KUMUNO |
+| 公式サイト | https://kumuno.jp |
+| 本体 | kumuno-dev/kumuno |
+| LP | kumuno-dev/kumuno-site |
+| CLI package / bin | create-kumuno |
+| 開始コマンド | npx create-kumuno my-app |
+
+説明文は「AI coding agentsのための、オープンソース業務システム開発基盤。」とする。アクセントカラーはオレンジ。マスコットはオレンジと生成りの雲形の仮案を使用し、名称・最終デザインは未確定とする。マスコットやLPの公開を製品の完成・npm公開とは扱わない。
+
+この文書のCLI実行例・完成機能はv0.1の目標仕様であり、現在の利用可能範囲はarchitecture.mdとREADMEに記載する。npm公開前はLP・READMEで公開準備中と明示する。LPはCloudflare Pagesへ配置するが、生成アプリのホスティング先をCloudflareに限定しない。
+
+# 3. KUMUNOが解決する問題
+
+AIコーディングエージェントを使えば、CRUDアプリそのものは簡単に作れるようになった。
+
+しかし業務システムでは、毎回AIに、
+
+- 認証
+- 認可
+- Role
+- 組織
+- 部署
+- Validation
+- Audit Log
+- Database設計
+- Security
+- Error Handling
+- UI規約
+
+をゼロから設計させるべきではない。
+
+プロジェクトごとに設計がバラバラになる危険もある。
+
+KUMUNOは、
+
+> **業務システムの共通部分を、AIに毎回再発明させない**
+
+ための基盤である。
+
+---
+
+# 4. 対象ユーザー
+
+v0.1の主要ユーザーは、
+
+- 一人情シス
+- 社内SE
+- DX担当者
+- 小規模SIer
+- 個人開発者
+- AIコーディングを利用する現場担当者
+- プログラミング経験のある非専業エンジニア
+
+とする。
 
 完全な非エンジニアはv0.1の主要ターゲットにはしない。
 
 ---
 
-# 3. 長期ビジョン
+# 5. 長期ビジョン
 
-最終目標として **Oshigoto Kit Cloud** を想定する。
+最終目標として、
 
-Cloud版ではユーザーが、
+# KUMUNO Cloud
 
-「社員の資格管理システムを作りたい」
+を想定する。
 
-などと自然言語で入力すると、
+Cloud版では最終的に、
 
-1. 要件整理
-2. データモデル作成
-3. UI作成
-4. 権限設定
-5. DB構築
-6. デプロイ
-7. SSL
-8. バックアップ
-9. アップデート
-10. 運用
+```text
+何を作りたいですか？
 
-まで可能な限り自動化する。
+> 社員の資格管理システムを作りたい
+```
 
-ただし、**v0.1ではCloud機能を実装しない。**
+のような自然言語入力から、
 
-OSS版を意図的に機能制限したCloud版の無料版にしてはならない。
+```text
+要件整理
+↓
+データモデル
+↓
+UI
+↓
+権限
+↓
+アプリ生成
+↓
+DB
+↓
+デプロイ
+↓
+SSL
+↓
+Backup
+↓
+Update
+↓
+運用
+```
 
-Oshigoto Kit OSS単体で実用的な業務システムを構築できることを基本思想とする。
+まで支援する。
 
----
+ただし、
 
-# 4. v0.1の目的
+**KUMUNO Cloudはv0.1では実装しない。**
 
-v0.1では巨大なローコードプラットフォームを作らない。
+OSS版はCloud版の機能制限版にしてはならない。
 
-最初のゴールは、
-
-> **AIコーディングエージェントがOshigoto Kitの規約に従って、一般的なCRUD業務システムを短時間で実装できること**
-
-とする。
-
-v0.1の成功条件は、サンプルとして「備品管理システム」をAIに指示し、Oshigoto Kit上で実装できること。
-
----
-
-# 5. 技術スタック
-
-原則として以下を採用する。
-
-## Frontend / Backend
-
-* Next.js
-* App Router
-* TypeScript
-* React
-* Server Componentsを基本とする
-* Server ActionsまたはRoute Handlerを用途に応じて使用
-
-## Database
-
-標準DB：
-
-**PostgreSQL**
-
-SQLite対応は将来検討する。
-
-v0.1ではPostgreSQLのみでよい。
-
-## ORM / DBアクセス
-
-ORMを導入する場合でも、Oshigoto KitがORMへ強くロックインされない設計にする。
-
-DBスキーマとSQLの可視性を重視する。
-
-複雑な処理で生SQLが必要な場合は許可する。
-
-採用するDBライブラリについては、実装開始時に候補を比較し、理由を文書化してから決定すること。
-
-## Styling
-
-* Tailwind CSS
-
-UIコンポーネントについては、アクセシビリティと保守性を優先する。
-
-## Runtime
-
-* Node.js
+OSS単体でも実用的な業務システムを構築できることを原則とする。
 
 ---
 
-# 6. ライセンス
+# 6. v0.1の中心体験
 
-Oshigoto Kit本体は、企業・個人が安心して、
+v0.1における最重要UXは以下。
 
-* 商用利用
-* 改変
-* 再配布
-* 自社製品への組み込み
+```bash
+npx create-kumuno my-company-app
+```
 
-を行えるライセンスを採用する。
+CLIがプロジェクトを生成する。
 
-第一候補：
+```text
+Creating my-company-app...
 
-**MIT License**
+✓ Next.js
+✓ TypeScript
+✓ PostgreSQL
+✓ Authentication
+✓ User Management
+✓ Organization
+✓ Department
+✓ RBAC
+✓ Audit Log
+✓ Validation
+✓ Business UI
+✓ AI Agent Instructions
 
-Apache License 2.0も候補とする。
+KUMUNO is ready.
+```
 
-v0.1公開前に最終決定する。
+ユーザーは、
 
-依存ライブラリについてもライセンスを確認し、OSSとして再配布するうえで問題のある依存関係を避けること。
+```bash
+cd my-company-app
+npm run dev
+```
+
+を実行する。
+
+ブラウザからログインできる。
+
+その後、CodexまたはClaude Codeに例えば、
+
+```text
+社員資格管理機能を追加してください。
+
+社員ごとに、
+
+・資格名
+・取得日
+・有効期限
+・証明書
+・備考
+
+を管理したいです。
+```
+
+と指示する。
+
+AIはKUMUNOの既存コード・Reference Application・ドキュメントを理解し、
+
+**KUMUNOの規約に従って新しい業務機能を実装する。**
+
+これがv0.1の中心体験である。
 
 ---
 
-# 7. 基本設計思想
+# 7. 最重要設計原則
 
-## 7.1 普通のNext.jsコードであること
+## 7.1 Code Ownership
 
-Oshigoto Kit独自のDSLや特殊なランタイムへの依存を可能な限り避ける。
+生成後のコードはユーザーのものである。
 
-生成・実装されたアプリケーションは、
+KUMUNO独自ランタイムへの強い依存を避ける。
+
+生成されたアプリケーションは、
 
 > **普通のNext.js + TypeScript + PostgreSQLアプリケーション**
 
-として理解・変更できること。
+として理解・変更・運用できること。
 
-Oshigoto Kitを使わなくなった場合でも、コードを継続して保守できること。
-
----
-
-# 7.2 AI First
-
-コードだけでなく、
-
-**AIがプロジェクト構造を理解しやすいこと**
-
-を第一級の設計要件とする。
-
-AIが推測しなければならない設計を減らす。
-
-以下を明文化する。
-
-* ディレクトリ構成
-* 命名規則
-* DB規約
-* 権限規約
-* UI規約
-* エラー処理
-* 監査ログ
-* テスト方針
-* 新規機能追加手順
+ユーザーが将来KUMUNOを使用しなくなっても、アプリケーションを維持できること。
 
 ---
 
-# 7.3 特定AIに依存しない
+# 7.2 AI Agnostic
 
-Oshigoto Kitのコード本体にCodex APIやClaude APIを組み込まない。
+特定AIベンダーに依存しない。
 
-AIとの連携は基本的にドキュメントとプロジェクト規約によって実現する。
+以下すべてを想定する。
+
+```text
+Codex
+Claude Code
+Cursor
+Future AI Coding Agents
+```
+
+KUMUNO本体にOpenAI APIやAnthropic APIを必須依存として組み込まない。
 
 ---
 
-# 7.4 Self-hosted First
+# 7.3 AI-readable
 
-Oshigoto Kitで作ったシステムは、自社環境で運用可能であること。
+AIがコードベースを理解しやすいことを第一級要件とする。
 
-将来的には、
+人間だけでなくAIにとっても、
 
-* Linux
-* Windows Server
-* Docker
-* クラウド
+```text
+どこに何があるか
+どう実装するか
+何をしてはいけないか
+```
+
+が明確であること。
+
+---
+
+# 7.4 No Lock-in
+
+独自DSLを可能な限り作らない。
+
+例えば、
+
+```text
+kumuno.defineBusinessApp(...)
+```
+
+のような巨大な独自抽象化ですべてを隠蔽しない。
+
+TypeScript / React / SQLなど一般的な技術知識で理解できること。
+
+---
+
+# 7.5 Self-hosted First
+
+生成されたシステムは自社環境で運用可能であること。
+
+長期的には、
+
+- Linux
+- Windows Server
+- Docker
+- Cloud
+- LAN-only environment
 
 を対象とする。
 
-インターネットへ接続できない閉域環境も長期的な重要ユースケースとする。
+インターネット接続なしでも本番アプリが動作できる構成を長期的に重視する。
 
 ---
 
-# 7.5 日本の業務システムをFirst-class citizenとする
+# 7.6 Integration-ready by Default
 
-海外製フレームワークへ日本対応を後付けするのではなく、
+KUMUNOで作られる業務システムは、最初は単一部署・単一業務で利用されても、将来ほかの部署・業務システムと連携できる構造を持つこと。
 
-* 組織
-* 部署
-* 社員番号
-* 承認
-* 監査
-* Excel
-* CSV
-* A4
-* PDF
-* 印刷
-* 年度
-* 日本語
+ただし、v0.1から分散システム、マイクロサービス、メッセージブローカー等を導入してはならない。
 
-などを主要ユースケースとして設計する。
+目的は、
 
-ただしコードそのものを日本専用にはしない。
+> **今は小さく作り、後から安全につなげられること**
 
-将来的な国際利用を妨げない設計にする。
+である。
 
----
+各Feature / Domainは責務を明確にし、他Featureの内部実装へ無制限に依存しない。
 
-# 8. v0.1 必須機能
+将来、例えば以下の連携が自然に追加できることを想定する。
 
-## 8.1 Authentication
+```text
+人事 / 職員マスタ
+      ↓
+資格管理
+      ↓
+研修管理
+      ↓
+勤務・申請
+      ↓
+備品管理
+```
 
-最低限以下を実装する。
-
-* ログイン
-* ログアウト
-* セッション管理
-* パスワードハッシュ
-* 未ログインユーザーの保護
-* 無効ユーザーのログイン拒否
-
-認証処理を各画面へ散在させない。
+同じ人物・部署・組織を各業務機能が独自定義しない。
 
 ---
 
-# 8.2 User
+# 7.7 Shared Core and Business Domains
 
-ユーザーは最低限以下を持つ。
+アプリケーションを概念的に、
+
+```text
+Shared Core
+├── Identity / Authentication
+├── User
+├── Organization
+├── Department
+├── Authorization
+└── Audit
+
+Business Domains
+├── Equipment
+├── Training
+├── Qualification
+├── Purchase Request
+└── Future Features
+```
+
+へ分ける。
+
+Business Domainは、User / Organization / Department等の共通概念を再実装しない。
+
+一方、Shared Coreへ個別業務固有のルールを混入させない。
+
+---
+
+# 7.8 Stable Identity
+
+将来の部署間連携を可能にするため、主要Entityは表示名や社員番号だけを結合キーとして使用しない。
+
+内部では安定したIDを使用する。
+
+例：
+
+```text
+User.id
+Organization.id
+Department.id
+Equipment.id
+```
+
+`employeeCode`、部署コード等は業務上重要であっても変更される可能性があるため、原則として内部Primary Keyとは分離する。
+
+ID方式（UUID / ULID / database-generated ID等）はMilestone 0で比較し、Codexが推奨を提示する。
+
+---
+
+# 7.9 Integration Contract
+
+Feature間の連携では、他FeatureのDBテーブル構造を前提にした無制限な直接参照を避ける。
+
+同一アプリ内の単純なForeign Keyは許可する。
+
+ただし、将来外部システムとの連携境界になり得る処理については、
+
+- Service function
+- Repository / data-access boundary
+- Route Handler / API
+- Event
+
+など、責務が分かる境界を設けられる構造にする。
+
+v0.1で汎用Integration Frameworkを作ってはならない。
+
+---
+
+# 7.10 API-ready, not API-first Everywhere
+
+将来、他部署システム・外部サービス・KUMUNO Cloudから利用できるAPIを追加可能にする。
+
+ただしv0.1ですべてのCRUDを公開API化しない。
+
+APIを追加する場合は、
+
+- Authentication
+- Authorization
+- Validation
+- Versioning strategy
+- Error format
+- Audit
+
+を考慮する。
+
+UI専用処理と将来再利用可能なBusiness Logicを不必要に密結合させない。
+
+---
+
+# 7.11 Import / Export Portability
+
+データをKUMUNO内へ閉じ込めない。
+
+将来的にCSV / Excel / JSON / API等でImport / Exportできる設計を妨げないこと。
+
+CSV / Excel機能自体はv0.1では実装しない。
+
+---
+
+# 7.12 Department Collaboration Principle
+
+部署ごとに別々の業務機能が追加されても、
+
+```text
+総務だけのユーザーマスタ
+放射線科だけのユーザーマスタ
+経理だけのユーザーマスタ
+```
+
+のように共通概念を複製しない。
+
+原則としてOrganization / Department / Userを共有Coreとして利用する。
+
+ただし各部署固有の追加属性をShared Coreへ無制限に追加しない。
+
+部署固有情報は、そのBusiness Domain側で拡張する。
+
+---
+
+# 8. 技術スタック
+
+v0.1では以下を基本とする。
+
+## Application
+
+- Next.js
+- App Router
+- React
+- TypeScript
+- Node.js
+
+## UI
+
+- Tailwind CSS
+
+UIライブラリを追加する場合、
+
+- accessibility
+- maintenance
+- license
+- AIによる変更容易性
+
+を確認する。
+
+## Database
+
+**PostgreSQL**
+
+を標準DBとする。
+
+SQLiteはv0.1対象外。
+
+---
+
+# 9. Database Access
+
+DBアクセス技術については、実装開始前に比較する。
+
+候補例：
+
+- Drizzle ORM
+- Prisma
+- Kysely
+- node-postgres
+- その他
+
+判断基準：
+
+1. PostgreSQLとの相性
+2. Migration
+3. TypeScript
+4. 生SQL利用可能性
+5. View対応
+6. AIが理解しやすいか
+7. Lock-inの強さ
+8. Maintenance
+9. License
+
+Codexは勝手に決定せず、比較結果を提示すること。
+
+---
+
+# 10. CLI Architecture
+
+v0.1から、
+
+# create-kumuno
+
+を正式なプロダクト構成要素とする。
+
+npm Registryへ公開可能な独立CLIパッケージとして設計する。
+
+想定：
+
+```bash
+npx create-kumuno
+```
+
+または、
+
+```bash
+npx create-kumuno my-app
+```
+
+---
+
+# 11. CLIの責務
+
+CLIは最低限、
+
+1. プロジェクト名取得
+2. 出力先確認
+3. KUMUNOテンプレート生成
+4. 必要ファイル生成
+5. `.env.example`生成
+6. AI instruction files生成
+7. セットアップ方法表示
+
+を行う。
+
+---
+
+# 12. v0.1 CLI UX
+
+例：
+
+```text
+$ npx create-kumuno
+
+Welcome to KUMUNO
+
+? Project name:
+> my-business-app
+
+? Install dependencies?
+> Yes
+
+Creating KUMUNO app...
+
+✓ Project files
+✓ Authentication
+✓ PostgreSQL configuration
+✓ Organization
+✓ RBAC
+✓ Audit Log
+✓ AI instructions
+
+Done!
+
+Next steps:
+
+cd my-business-app
+
+cp .env.example .env
+
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
+
+CLIの質問項目を増やしすぎない。
+
+v0.1では、
+
+```text
+Database選択
+Authentication選択
+UI framework選択
+```
+
+など大量の選択肢を提供しない。
+
+**Opinionated defaultsを優先する。**
+
+---
+
+# 13. npm公開
+
+CLIは将来的ではなく、
+
+**v0.1公開条件の一つ**
+
+とする。
+
+目標：
+
+```bash
+npx create-kumuno
+```
+
+がnpm Registryから実行できること。
+
+npm公開前にパッケージ名の利用可能性を確認する。
+
+---
+
+# 14. Repository Strategy
+
+初期段階ではmonorepoを候補とする。
+
+例：
+
+```text
+kumuno/
+│
+├─ packages/
+│   └─ create-kumuno/
+│
+├─ templates/
+│   └─ default/
+│
+├─ docs/
+│
+├─ examples/
+│
+└─ README.md
+```
+
+ただし、monorepoがv0.1に不要な複雑性を持ち込む場合は採用しない。
+
+Codexは実装前に、
+
+- monorepo
+- separate repositories
+- simple single repository
+
+を比較して提案すること。
+
+---
+
+# 15. Template Application
+
+`create-kumuno` が生成するテンプレートには以下を含める。
+
+## Core
+
+- Next.js
+- TypeScript
+- PostgreSQL
+- Authentication
+- User
+- Organization
+- Department
+- RBAC
+- Audit Log
+- Validation
+- Error Handling
+
+---
+
+# 16. Authentication
+
+最低限：
+
+- Login
+- Logout
+- Session
+- Password Hashing
+- Protected Routes
+- Disabled User Protection
+
+パスワード平文保存は禁止。
+
+認証ロジックを各ページに散在させない。
+
+認証にはBetter Authの標準構成とPrisma adapterを採用する（ユーザー承認済み）。パスワードハッシュはAccountのpasswordフィールドに保存し、Userには重複保存しない。Session等の認証用モデルは採用版の標準スキーマに従う。詳細は[認証設計](authentication.md)と[選定記録](decisions/0003-authentication.md)を参照する。
+
+---
+
+# 17. User
+
+最低限：
 
 ```text
 id
 employeeCode
 name
 email
-passwordHash
 isActive
 createdAt
 updatedAt
 ```
 
-employeeCodeは任意設定可能とする。
+Userは業務上の人物情報を扱い、認証資格情報は関連するAccountで管理する。旧仕様のUser.passwordHash必須条件は、上記のAccountへのハッシュ保存に置き換える。Better Authの標準Userフィールドは必要に応じて追加する。
 
 ---
 
-# 8.3 Organization
+# 18. Organization
 
-v0.1では最低限、
+最低限：
 
 ```text
 Organization
@@ -298,40 +776,36 @@ Department
 User
 ```
 
-を扱う。
-
-Departmentは階層構造を表現できる設計にする。
+Departmentは階層構造を扱える設計にする。
 
 例：
 
 ```text
-株式会社ABC
+Company
 │
-├─ 営業部
-│   ├─ 東京営業課
-│   └─ 大阪営業課
+├── Sales
+│   ├── Tokyo
+│   └── Osaka
 │
-├─ 総務部
+├── Administration
 │
-└─ 開発部
+└── Development
 ```
 
 将来的に、
 
-* 役職
-* 兼務
-* 異動履歴
-* 複数事業所
+- Position
+- Multiple Offices
+- Concurrent Assignment
+- Transfer History
 
-を追加できる設計にする。
-
-v0.1で全て実装する必要はない。
+を追加可能な設計とする。
 
 ---
 
-# 8.4 Authorization / RBAC
+# 19. Authorization / RBAC
 
-最低限、
+v0.1：
 
 ```text
 Admin
@@ -339,38 +813,37 @@ Manager
 User
 ```
 
-のRoleを実装する。
+最低限この3 Roleを提供する。
 
-ただしコード中で、
+以下のような実装を大量に作ってはならない。
 
-```text
-if (role === "admin")
+```typescript
+if (user.role === "admin") {
 ```
-
-を大量に書く設計は禁止する。
 
 権限判定を共通化する。
 
 将来的に、
 
 ```text
-自分のみ
-自部署
-配下部署
-全社
+OWN
+DEPARTMENT
+SUBTREE
+ORGANIZATION
 ```
 
-というデータスコープを導入できる設計を考慮する。
+というデータスコープを追加できる設計にする。
 
 ---
 
-# 8.5 Audit Log
+# 20. Audit Log
 
-v0.1から実装する。
+v0.1から必須。
 
-最低限、
+最低限：
 
 ```text
+id
 userId
 action
 resourceType
@@ -379,57 +852,111 @@ timestamp
 metadata
 ```
 
-を記録できること。
+action：
 
-対象：
+```text
+CREATE
+UPDATE
+DELETE
+```
 
-* CREATE
-* UPDATE
-* DELETE
-
-可能であれば、
+可能なら、
 
 ```text
 before
 after
 ```
 
-も保存できる設計とする。
+を保存可能な設計にする。
 
-監査ログは通常ユーザーが改変できないこと。
-
----
-
-# 8.6 CRUD Foundation
-
-業務機能を追加するときに毎回、
-
-* 一覧
-* 詳細
-* 新規
-* 編集
-* 削除
-* Validation
-* 権限確認
-* 監査ログ
-
-をゼロから実装しなくてよい構造を作る。
-
-ただし巨大な独自CRUD DSLは作らない。
-
-普通のTypeScriptとして読めることを優先する。
+Audit Logは通常ユーザーから変更できない。
 
 ---
 
-# 9. サンプル業務アプリ
+# 21. Validation
 
-v0.1のReference Applicationとして、
+サーバー側Validation必須。
 
-**備品管理**
+クライアント側Validationだけに依存しない。
 
-を実装する。
+Schemaは可能な限り再利用する。
 
-モデル例：
+Validation libraryは技術選定時に比較する。
+
+---
+
+# 22. Security
+
+最低限：
+
+- Password Hash
+- SQL Injection対策
+- XSS対策
+- CSRF考慮
+- Server-side Authorization
+- Secure Session
+- Secret management
+- `.env`
+- `.env.example`
+- Sensitive informationをGitへcommitしない
+
+クライアントから渡された、
+
+```text
+userId
+role
+departmentId
+```
+
+などを無条件に信用しない。
+
+---
+
+# 23. Business UI
+
+業務システムなので、
+
+- 視認性
+- 一貫性
+- 操作速度
+- Keyboard操作
+- Accessibility
+- PC
+- Tablet
+
+を優先する。
+
+装飾を目的に複雑なUIを作らない。
+
+基本：
+
+```text
+┌───────────────────────────┐
+│ Header                    │
+├──────────┬────────────────┤
+│ Sidebar  │ Main Content   │
+│          │                │
+│          │                │
+└──────────┴────────────────┘
+```
+
+---
+
+# 24. Reference Application
+
+テンプレートには、
+
+# Equipment Management
+
+をReference Applicationとして含める。
+
+目的はデモではない。
+
+> **AIが「KUMUNOでは業務機能をこう作る」と理解するための正解例**
+
+とする。
+
+モデル：
 
 ```text
 Equipment
@@ -456,73 +983,126 @@ REPAIR
 DISPOSED
 ```
 
-必要画面：
+---
 
-```text
-備品一覧
-備品詳細
-備品登録
-備品編集
-備品削除
-```
+# 25. Reference Application必須機能
 
-一覧では最低限、
+- List
+- Detail
+- Create
+- Edit
+- Delete
+- Search
+- Pagination
+- Sort
+- Validation
+- Authorization
+- Audit Log
 
-* 検索
-* ページネーション
-* 並び替え
-
-を実装する。
-
-このReference Applicationは単なるデモではなく、
-
-**「Oshigoto Kitで新しい業務機能を作る正しい実装例」**
-
-として扱う。
-
-AIは新規機能実装時に、この実装をReferenceとして参照できること。
+この実装を、新規業務機能のReferenceとする。
 
 ---
 
-# 10. UI方針
+# 26. AI Instructions
 
-業務システムなので、装飾より、
-
-* 視認性
-* 操作速度
-* 一貫性
-* アクセシビリティ
-* PC操作
-* タブレット操作
-
-を優先する。
-
-基本レイアウト：
+生成された各プロジェクトに最低限、
 
 ```text
-┌──────────────────────────┐
-│ Header                   │
-├─────────┬────────────────┤
-│         │                │
-│ Sidebar │ Main Content   │
-│         │                │
-│         │                │
-└─────────┴────────────────┘
+AGENTS.md
+CLAUDE.md
 ```
 
-スマートフォンでも最低限利用可能にする。
+を配置する。
 
-ただしv0.1はPCを主要ターゲットとする。
+ただし仕様のSingle Source of Truthにはしない。
+
+詳細は、
+
+```text
+docs/
+```
+
+に置く。
+
+AI固有ファイルは、
+
+> 「まずdocsを読め」
+
+という入口として機能させる。
 
 ---
 
-# 11. エラー処理
+# 27. Generated Project Documentation
 
-ユーザー向けエラーと内部エラーを分離する。
+生成されたプロジェクトに以下を含める。
 
-DBエラーをそのまま画面に表示しない。
+```text
+README.md
+
+docs/
+├── architecture.md
+├── database.md
+├── authentication.md
+├── authorization.md
+├── organization.md
+├── integration.md
+├── domain-boundaries.md
+├── audit-log.md
+├── adding-a-feature.md
+├── coding-conventions.md
+└── deployment.md
+```
+
+---
+
+# 28. adding-a-feature.md
+
+非常に重要。
+
+AIに新規業務機能を追加させる標準手順を記載する。
 
 例：
+
+```text
+1. Domain model
+2. Migration
+3. Validation
+4. Authorization
+5. Data access
+6. Business logic
+7. UI
+8. Audit
+9. Tests
+10. Documentation
+```
+
+AIは原則この順序に従う。
+
+---
+
+# 29. Coding Conventions
+
+以下を禁止する。
+
+- 巨大な`utils.ts`
+- 巨大な`helpers.ts`
+- 巨大な`actions.ts`
+- React Component内への複雑な業務ロジック
+- Role判定の散在
+- DBアクセスの散在
+- Validationの重複
+- Security logicの重複
+- Feature間の循環依存
+- 他Domainの内部DB構造への無制限な依存
+- User / Department / Organization等の共通概念の重複定義
+
+FeatureまたはDomain単位でコードの所在を理解できること。
+
+---
+
+# 30. Error Handling
+
+内部エラーとユーザー向けエラーを分離する。
 
 悪い例：
 
@@ -536,43 +1116,17 @@ duplicate key value violates unique constraint...
 この社員番号はすでに登録されています。
 ```
 
-サーバー側にはデバッグ可能な情報を残す。
+ログでは原因調査できること。
 
 ---
 
-# 12. Validation
+# 31. Database Migration
 
-クライアント側だけに依存しない。
+Migration必須。
 
-サーバー側で必ずValidationを実施する。
+本番DBを手作業で変更することを前提にしない。
 
-Validation Schemaを可能な限り共通化する。
-
----
-
-# 13. Security
-
-最低限以下を遵守する。
-
-* パスワードを平文保存しない
-* SQL Injection対策
-* XSS対策
-* CSRFを考慮
-* 認証・認可をサーバー側で実施
-* クライアントから渡されたuserIdやroleを信用しない
-* 秘密情報をGitへcommitしない
-* `.env.example`を提供する
-* セキュリティ関連処理を共通化する
-
----
-
-# 14. Database
-
-Migrationを必須とする。
-
-本番DBを手動変更することを前提にしない。
-
-最低限、
+最低限：
 
 ```text
 organizations
@@ -584,452 +1138,755 @@ audit_logs
 equipment
 ```
 
-相当の構造を持つ。
+相当のSchemaを持つ。
 
-外部キーを適切に設定する。
+Foreign Keyを適切に設定する。
 
-削除時の挙動を明示する。
+削除時挙動を明示する。
 
 ---
 
-# 15. Seed
+# 32. Seed
 
-開発環境用Seedを用意する。
+開発環境用Seedを提供する。
 
 例：
 
 ```text
 Organization:
-Oshigoto Demo Company
+KUMUNO Demo Company
+
+Departments:
+Administration
+Sales
+Development
 
 Admin:
 admin@example.com
-
-Departments:
-総務部
-営業部
-開発部
 ```
 
-初期パスワードの扱いについては安全な方法を採用し、READMEへ記載する。
+初期パスワードを安全に扱う。
+
+READMEへ説明する。
 
 ---
 
-# 16. Testing
+# 33. Testing
 
-v0.1から最低限の自動テストを導入する。
+v0.1から自動テストを導入する。
 
-特に、
-
-* Authentication
-* Authorization
-* Validation
-* Audit Log
-
-は優先してテストする。
-
-UIの細かな見た目より、業務ロジックのテストを優先する。
-
----
-
-# 17. Documentation
-
-以下を作成する。
+特に優先：
 
 ```text
-README.md
-AGENTS.md
-CLAUDE.md
-
-docs/
-├── architecture.md
-├── getting-started.md
-├── database.md
-├── authentication.md
-├── authorization.md
-├── organization.md
-├── audit-log.md
-├── adding-a-feature.md
-├── coding-conventions.md
-└── deployment.md
+Authentication
+Authorization
+Validation
+Audit Log
+CLI generation
 ```
 
-AGENTS.mdはCodex専用命令にしすぎず、他のAIエージェントでも理解できる一般的なプロジェクト規約を中心にする。
+そして非常に重要なのが、
 
-CLAUDE.mdもAGENTS.mdと矛盾させない。
+> **生成されたプロジェクトが正常にbuildできること**
 
-**Single Source of Truthはdocs側とする。**
-
-AI固有ファイルに重要な仕様を重複して大量記載しない。
+を自動テストする。
 
 ---
 
-# 18. README
+# 34. CLI Integration Test
 
-READMEの冒頭で、
+可能であればCI上で、
 
-「何の技術を使っているか」
+```bash
+create-kumuno test-app
+cd test-app
+npm install
+npm run typecheck
+npm run test
+npm run build
+```
 
-より先に、
+相当を実行する。
 
-**何が解決できるのか**
+これによって、
 
-を書く。
+> npmパッケージは公開できたが生成物が壊れている
 
-例：
+という状態を防ぐ。
 
-# Oshigoto Kit
+---
 
-> 社内システムを、AIと作る。
+# 35. CI
 
-Oshigoto Kit is an open-source foundation for building business applications with AI coding agents.
+GitHub Actions等を利用し、
+
+最低限：
+
+```text
+lint
+typecheck
+test
+build
+CLI generation test
+```
+
+を実行する。
+
+---
+
+# 36. License
+
+KUMUNO本体は寛容なOSSライセンスを採用する。
+
+第一候補：
+
+**MIT**
+
+第二候補：
+
+**Apache-2.0**
+
+v0.1公開前に決定する。
+
+依存ライブラリのLicenseも確認する。
+
+---
+
+# 37. README戦略
+
+READMEの冒頭では、
+
+```text
+Next.js
+PostgreSQL
+TypeScript
+```
+
+を主役にしない。
+
+最初に、
+
+# AIで小さく作る。でも、将来つながる。
+
+と説明する。
 
 その後、
 
 ```text
-✓ Authentication
-✓ Organization
-✓ RBAC
-✓ Audit logs
-✓ PostgreSQL
-✓ Business UI
-✓ Self-hosted
-✓ AI-agent friendly
+$ npx create-kumuno my-app
 ```
 
-などを示す。
+を大きく見せる。
 
 ---
 
-# 19. ディレクトリ構成
+# 38. README Quick Start
 
-実装開始時にCodexが提案する。
+READMEを開いたユーザーが30秒以内に、
 
-ただし、
-
-* domain
-* database
-* authentication
-* authorization
-* audit
-* UI
-* business features
-
-の責務を分離すること。
-
-巨大な、
-
-```text
-utils.ts
-helpers.ts
-actions.ts
+```bash
+npx create-kumuno my-app
 ```
 
-に何でも入れる設計は禁止。
+を理解できること。
 
-Feature単位でコードの所在が理解できること。
-
----
-
-# 20. v0.1で実装しないもの
-
-以下は重要。
-
-Codexは先回りして実装してはならない。
-
-* Oshigoto Kit Cloud
-* AI API統合
-* ノーコードビルダー
-* ドラッグ&ドロップ画面作成
-* 汎用フォームビルダー
-* 汎用ワークフローエンジン
-* 電子印鑑
-* PDF帳票エンジン
-* Excelテンプレート
-* メール通知
-* Slack通知
-* Teams通知
-* LDAP
-* Active Directory
-* SSO
-* 多言語UI
-* SQLite
-* マルチテナントSaaS
-* 課金
-* モバイルアプリ
-
-これらは将来ロードマップとして扱う。
+長い設計思想をQuick Startより先に置かない。
 
 ---
 
-# 21. 将来予定
+# 39. v0.1で実装しないもの
 
-## v0.2候補
+Codexは以下を勝手に実装しない。
 
-* CSV import/export
-* Excel export
-* ファイル添付
-* Audit Log Viewer
-* 高度な検索
+- KUMUNO Cloud
+- AI API
+- Chat UI
+- No-code builder
+- Drag & Drop builder
+- Generic Form Builder
+- Generic Workflow Engine
+- Approval Workflow
+- Excel
+- PDF
+- A4 Report Engine
+- Email
+- Slack
+- Teams
+- LDAP
+- Active Directory
+- SSO
+- SQLite
+- SaaS multi-tenancy
+- Billing
+- Mobile App
+- Microservices
+- Message Broker
+- Generic Integration Platform
+- Event Bus infrastructure
 
-## v0.3候補
+---
 
-Approval Workflow
+# 40. Future CLI
 
-```text
-申請
-↓
-承認
-↓
-差戻し
-↓
-却下
-↓
-取下げ
+将来的に、
+
+```bash
+npx kumuno add approval
+npx kumuno add excel
+npx kumuno add print
+npx kumuno add file-upload
 ```
 
-多段階承認。
+などを検討する。
 
-## v0.4候補
-
-* A4帳票
-* PDF
-* 印刷
-* ヘッダー/フッター
-* 改ページ
-
-## v0.5候補
-
-* Docker
-* Backup / Restore
-* Windows Server運用
-* 閉域環境
-
-## v1.0
-
-安定API。
-
-実運用可能なOSS業務システム基盤。
+ただしv0.1では実装しない。
 
 ---
 
-# 22. Codexの開発ルール
+# 41. 将来の重要思想：Copy over Dependency
 
-Codexは以下を必ず守ること。
+将来的な`kumuno add`では、
 
-### Rule 1
+> KUMUNOランタイムへ依存させる
 
-一度に大量実装しない。
+より、
 
-小さな単位で、
+> 必要なコードをユーザーのプロジェクトへ追加し、ユーザーが所有する
 
-```text
-設計
-↓
-実装
-↓
-テスト
-↓
-確認
-↓
-commit可能な状態
-```
+方式を優先的に検討する。
 
-まで完成させる。
+目的：
 
-### Rule 2
-
-仕様に不明点がある場合、勝手に大きな設計判断をしない。
-
-選択肢とトレードオフを提示する。
-
-### Rule 3
-
-新しい依存パッケージを追加するときは、
-
-* なぜ必要か
-* 標準機能では不十分か
-* メンテナンス状況
-* ライセンス
-* 代替案
-
-を確認する。
-
-### Rule 4
-
-不要な抽象化をしない。
-
-「将来使うかもしれない」だけの抽象レイヤーを作らない。
-
-### Rule 5
-
-セキュリティに関係するコードでは、簡潔さより安全性を優先する。
-
-### Rule 6
-
-業務ロジックをReact Componentへ直接埋め込まない。
-
-### Rule 7
-
-実装変更に伴って仕様が変わった場合、関連するdocsも更新する。
-
-### Rule 8
-
-lint / typecheck / testを通してから完了とする。
+- Lock-in回避
+- AIによる編集容易性
+- 長期保守性
+- Transparency
 
 ---
 
-# 23. 最初の実装順序
+# 42. v0.1開発順序
 
-Codexは以下の順序で進める。
+## Milestone 0
 
-## Step 1
+技術設計。
 
-リポジトリ初期化。
+Repository / DB / Authentication / Validation / Testingに加え、Shared Core、Business Domain境界、Stable ID、将来の部署間連携方針を決定する。
 
-Next.js + TypeScript。
+まだコード変更禁止。
 
-最低限のREADME作成。
+## Milestone 1
 
-まだ業務機能は作らない。
+Repository構成。
 
-## Step 2
+## Milestone 2
 
-PostgreSQL接続。
+Template Next.js Application。
 
-Migration環境構築。
+## Milestone 3
 
-## Step 3
+PostgreSQL / Migration。
 
-User / Organization / Department。
+## Milestone 4
 
-## Step 4
+Organization / User。
+
+## Milestone 5
 
 Authentication。
 
-## Step 5
+## Milestone 6
 
 Authorization / RBAC。
 
-## Step 6
-
-基本レイアウト。
-
-Header / Sidebar。
-
-## Step 7
+## Milestone 7
 
 Audit Log。
 
-## Step 8
+## Milestone 8
 
-Reference ApplicationとしてEquipment Managementを実装。
+Business UI。
 
-## Step 9
+## Milestone 9
 
-Testing。
+Equipment Reference Application。
 
-## Step 10
+## Milestone 10
 
-AI向けドキュメントを完成。
+AI Documentation。
 
-その後v0.1として評価する。
+## Milestone 11
+
+create-kumuno CLI。
+
+## Milestone 12
+
+CLI Integration Test。
+
+## Milestone 13
+
+README / OSS Documentation。
+
+## Milestone 14
+
+npm package preparation。
+
+## Milestone 15
+
+v0.1 Release Candidate。
 
 ---
 
-# 24. v0.1 Acceptance Criteria
+# 43. v0.1 Acceptance Test A
 
-以下を満たしたらv0.1候補とする。
+新しいPCまたはクリーン環境で、
 
-新規環境でREADMEだけを読んでセットアップできる。
-
-ログインできる。
-
-ユーザーを管理できる。
-
-部署を管理できる。
-
-Roleによってアクセス制御される。
-
-備品を、
-
-```text
-登録
-閲覧
-編集
-削除
-検索
+```bash
+npx create-kumuno my-company-app
 ```
 
-できる。
+を実行。
 
-変更操作がAudit Logへ残る。
-
-PostgreSQL Migrationで環境を再構築できる。
-
-主要業務ロジックにテストがある。
-
-CodexまたはClaude Codeに、
-
-> 「社員研修管理機能を追加してください」
-
-と依頼した際、
-
-**既存Reference Applicationとdocsを参照して、Oshigoto Kitの設計規約に沿った機能を追加できる。**
-
-これをv0.1における最重要Acceptance Testとする。
+READMEの指示だけで起動できる。
 
 ---
 
-# 25. 最重要原則
+# 44. v0.1 Acceptance Test B
 
-Oshigoto Kitは、
+生成されたアプリで、
 
-**「機能が多いOSS」**
+- Login
+- Logout
+- User
+- Department
+- RBAC
+- Equipment CRUD
+- Audit Log
 
-を目指さない。
-
-目指すものは、
-
-> **業務を知っている人とAIが、一緒に良い業務システムを作るための土台**
-
-である。
-
-AIがコードを書く時代だからこそ、
-
-* Authentication
-* Authorization
-* Organization
-* Audit
-* Database
-* Validation
-* Security
-* Business conventions
-
-という「毎回AIにゼロから考えさせるべきではない部分」をOshigoto Kitが担う。
-
-ユーザー固有の業務ロジックは、人間とAIが自由に実装する。
+が動作する。
 
 ---
 
-# 26. Codexへの最初の指示
+# 45. v0.1 Acceptance Test C
 
-この仕様書をプロジェクトの最上位仕様として扱ってください。
+生成されたプロジェクトで、
 
-ただし、直ちに全機能を実装してはいけません。
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
 
-最初に以下だけを実施してください。
+が成功する。
 
-1. この仕様を読み、目的と制約を理解する。
-2. v0.1に必要な技術選定を整理する。
-3. 特にDBアクセス層、Authentication、Validation、Testingについて候補を提示する。
-4. 推奨ディレクトリ構成を提示する。
-5. 想定される技術的リスクを提示する。
-6. v0.1を小さな実装マイルストーンに分解する。
-7. この時点ではコードを変更しない。
+---
 
-回答を私に提示し、承認を得てからStep 1の実装を開始してください。
+# 46. v0.1 Acceptance Test D — 最重要
 
-勝手にスコープを拡大しないでください。
+生成したアプリをCodexまたはClaude Codeで開く。
 
-**Oshigoto Kit v0.1では、「小さく、理解可能で、安全な土台を完成させること」を最優先してください。**
+以下のような指示を出す。
+
+```text
+社員研修管理機能を追加してください。
+
+社員ごとに、
+
+・研修名
+・受講日
+・有効期限
+・修了状況
+・備考
+
+を管理したいです。
+
+KUMUNOの既存設計と規約に従って実装してください。
+```
+
+AIが、
+
+- docsを読む
+- EquipmentをReferenceにする
+- DB Migrationを作る
+- Validationを作る
+- Authorizationを適用する
+- Audit Logを残す
+- UIを追加する
+- Testsを追加する
+
+こと。
+
+このテストが成功することを、
+
+**KUMUNO v0.1の最重要成功条件**
+
+とする。
+
+---
+
+# 47. v0.1 Acceptance Test E
+
+同じ生成プロジェクトをClaude CodeとCodexの双方が理解できること。
+
+完全に同じコードを生成する必要はない。
+
+しかし、
+
+**KUMUNOのArchitectureとCoding Conventionを双方が正しく理解できること**
+
+を確認する。
+
+---
+
+# 48. v0.1 Acceptance Test F — Integration Readiness
+
+Equipment Reference Application完成後、仮想的に別部署が利用する `Training Management` を追加する設計レビューを行う。
+
+この時点ではTraining Managementをv0.1必須実装にしない。
+
+レビューでは以下を確認する。
+
+- Userを再定義せず既存Userを利用できる
+- Departmentを再定義せず既存Departmentを利用できる
+- Equipment Domainへ不要な依存を作らない
+- Training固有データをShared Coreへ混入させない
+- 将来API連携へ切り出せるBusiness Logic境界がある
+- 既存機能を壊さず新Domainを追加できる
+
+このレビューに失敗する場合、Architectureをv0.1公開前に見直す。
+
+---
+
+# 49. v0.1 Acceptance Test G — Department Collaboration Scenario
+
+以下の将来シナリオを設計上説明できること。
+
+```text
+人事部がUser / Departmentを管理
+        ↓
+総務部がEquipment Managementを利用
+        ↓
+教育担当がTraining Managementを追加
+        ↓
+各システムが同じUser / Departmentを参照
+```
+
+このためにv0.1でマイクロサービスを導入する必要はない。
+
+重要なのは、将来の連携を阻害する重複データモデルや密結合を作らないことである。
+
+---
+
+# 50. Codex開発ルール
+
+Codexは以下を遵守する。
+
+## Rule 1
+
+勝手に全機能を実装しない。
+
+## Rule 2
+
+各Milestoneを小さく完了する。
+
+```text
+Design
+↓
+Implementation
+↓
+Test
+↓
+Documentation
+↓
+Reviewable state
+```
+
+までを1単位とする。
+
+## Rule 3
+
+重要な技術選定を勝手に決めない。
+
+候補・利点・欠点・推奨を提示する。
+
+## Rule 4
+
+新規dependency追加時には、
+
+- Purpose
+- Maintenance
+- License
+- Alternatives
+- Necessity
+
+を確認する。
+
+## Rule 5
+
+不要な抽象化を禁止する。
+
+## Rule 6
+
+将来機能を先回りして実装しない。
+
+## Rule 7
+
+Securityに関するShortcutを禁止する。
+
+## Rule 8
+
+仕様変更時にはdocsも更新する。
+
+## Rule 9
+
+lint / typecheck / test / buildを確認する。
+
+## Rule 10
+
+既存コードを変更するときは、なぜ変更するか説明可能な状態にする。
+
+---
+
+# 51. 非目標
+
+KUMUNOは、
+
+**kintoneクローンではない。**
+
+**Pleasanterクローンではない。**
+
+**NocoBaseクローンではない。**
+
+ノーコードプラットフォームを作ることが目的ではない。
+
+---
+
+# 52. KUMUNOのポジション
+
+```text
+No-code / Low-code
+
+kintone
+Pleasanter
+NocoBase
+Baserow
+
+────────────────────
+
+AI + Code
+
+KUMUNO
+      ↓
+Next.js
+TypeScript
+PostgreSQL
+      ↓
+User owns the code
+```
+
+---
+
+# 53. プロジェクト哲学
+
+従来：
+
+> プログラミングできないからノーコードを使う。
+
+KUMUNO：
+
+> **AIがコードを書けるなら、ユーザーがコードを所有できる形で業務システムを作ろう。**
+
+KUMUNOはそのための安全な土台を提供する。
+
+---
+
+# 54. 成功指標
+
+v0.1の成功はGitHub Star数では判断しない。
+
+第一成功指標：
+
+> **開発者本人以外の人が `npx create-kumuno` を実行し、AIと一緒に実際の業務機能を作れること。**
+
+その後、
+
+```text
+1 user
+↓
+10 users
+↓
+100 users
+↓
+contributors
+```
+
+を目指す。
+
+---
+
+# 55. 最終ビジョン
+
+OSS：
+
+```bash
+npx create-kumuno
+```
+
+↓
+
+AI：
+
+```text
+何を作りたいですか？
+```
+
+↓
+
+ユーザー：
+
+```text
+会社の備品購入申請を作りたい。
+```
+
+↓
+
+AI + KUMUNO：
+
+```text
+Requirements
+Database
+Authentication
+Authorization
+Audit
+Business Logic
+UI
+Tests
+```
+
+↓
+
+業務システム完成。
+
+そして長期的には、
+
+# KUMUNO Cloud
+
+によって、
+
+**サーバー・DB・バックアップ・更新すら意識せず、業務を知っている人自身がシステムを作れる世界**
+
+を目指す。
+
+---
+
+# 56. Codexへの初回指示（初期設計時の記録）
+
+v3.1更新時点で初期設計の確認は完了済み。以下は初回比較の記録であり、継続開発を毎回停止する指示ではない。現在はarchitecture.mdの完了工程とユーザーが承認した次工程に従う。Prisma・Better Authの採用決定を維持する。
+
+この文書をKUMUNO v0.1の最上位仕様として扱ってください。
+
+ただし、
+
+**まだコードを書かないでください。**
+
+最初の回答では以下のみ実施してください。
+
+### 1. 仕様理解
+
+KUMUNOが何を作ろうとしているプロジェクトなのか、自分の言葉で整理してください。
+
+### 2. Repository Architecture
+
+以下を比較してください。
+
+```text
+Monorepo
+Single Repository
+Multiple Repositories
+```
+
+`create-kumuno` とTemplate Applicationの管理方法を含めて提案してください。
+
+### 3. Integration-ready Architecture
+
+以下を提案してください。
+
+- Shared CoreとBusiness Domainの境界
+- User / Organization / Departmentの共有方法
+- Stable ID方針
+- Feature間依存ルール
+- 将来API連携を追加しやすいBusiness Logic境界
+- v0.1で過剰設計を避けるため「今は実装しないもの」
+
+特に、将来複数部署が別々の業務機能を追加してもデータモデルが分断されないことを重視してください。
+
+### 4. Database Technology
+
+以下を含めて比較してください。
+
+```text
+Drizzle
+Prisma
+Kysely
+node-postgres
+その他適切な候補
+```
+
+### 5. Authentication
+
+KUMUNOに適したAuthentication方式を提案してください。
+
+特定SaaSへの必須依存は避けてください。
+
+### 6. Validation
+
+Validation libraryを比較・提案してください。
+
+### 7. Testing
+
+Unit / Integration / CLI generation testの構成を提案してください。
+
+### 8. CLI Architecture
+
+`create-kumuno` の実装方式を提案してください。
+
+特に、
+
+```text
+Template Copy
+Code Generation
+Git Template
+Package-based
+```
+
+などを比較してください。
+
+### 9. npm Release
+
+`npx create-kumuno` として公開するためのパッケージ構成を提案してください。
+
+### 10. Security Risks
+
+v0.1で注意すべきSecurity Riskを列挙してください。
+
+### 11. Milestones
+
+このMaster Specificationを実装可能な小さなMilestoneへ分割してください。
+
+---
+
+以上を提示した後、
+
+**実装を開始せず、私の承認を待ってください。**
+
+勝手にScopeを追加しないでください。
+
+最優先事項は、
+
+> **小さく、理解可能で、安全で、AIが扱いやすい業務システム基盤を完成させること。**
+
+そしてv0.1では、
+
+> **`npx create-kumuno` → AIに業務を説明 → KUMUNOの規約に沿った機能が完成する**
+
+という一連の体験を完成させることを最優先してください。

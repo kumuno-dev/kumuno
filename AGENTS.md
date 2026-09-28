@@ -7,6 +7,6 @@
 - 設計判断・依存追加の理由は`docs/decisions/`に記録し、実装変更時に関連文書を更新する。
 - 変更後はREADMEに記載した検証を実行し、実行結果と未確認事項を報告する。
 
-コマンドと前提環境は[README](README.md)を参照してください。認証方式とパスワードハッシュの保存先は未確定です。
+コマンドと前提環境は[README](README.md)を参照してください。認証方式と資格情報の保存規約は[認証設計](docs/authentication.md)を参照してください。
 
-Next.jsのAPIを変更する際は、インストール版に対応する`node_modules/next/dist/docs/`の該当文書も確認してください。
+Next.jsのAPIを変更する際は、インストール版に対応する`templates/default/node_modules/next/dist/docs/`の該当文書も確認してください。
