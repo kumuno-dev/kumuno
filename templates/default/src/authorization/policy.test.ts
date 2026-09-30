@@ -21,3 +21,11 @@ test("未認証・無効・未知ロール・未知操作は拒否する", () =>
   expect(() => assertPermission(user, "roles:assign", scope)).toThrow(ForbiddenError);
   expect(() => assertPermission(user, "dashboard:read", scope)).not.toThrow();
 });
+
+test("備品は全ロールが参照しAdminとManagerだけが更新できる", () => {
+ for(const role of ["ADMIN","MANAGER","USER"] as const) {
+  expect(can({...user,role},"equipment:read",scope)).toBe(true);
+  expect(can({...user,role},"equipment:manage",scope)).toBe(role!=="USER");
+  expect(can({...user,role},"equipment:manage",{organizationId:"other"})).toBe(false);
+ }
+});

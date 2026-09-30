@@ -3,9 +3,11 @@ import type { AuditAction } from "../generated/prisma/enums";
 
 type UserSnapshot = { isActive: boolean; role: string; departmentId: string | null };
 type DepartmentSnapshot = { code: string; name: string; parentId: string | null };
+type EquipmentSnapshot = { name: string; category: string; purchaseDate: Date | null; purchasePrice: { toString(): string } | null; departmentId: string | null; assignedUserId: string | null; status: string };
 type Event = { action: AuditAction; resourceId: string } & (
   { resourceType: "User"; before?: UserSnapshot; after?: UserSnapshot } |
-  { resourceType: "Department"; before?: DepartmentSnapshot; after?: DepartmentSnapshot }
+  { resourceType: "Department"; before?: DepartmentSnapshot; after?: DepartmentSnapshot } |
+  { resourceType: "Equipment"; before?: EquipmentSnapshot; after?: EquipmentSnapshot }
 );
 
 // Explicit projections prevent whole records, credentials and request bodies being logged.
@@ -22,6 +24,10 @@ export function auditSnapshots(event: Event) {
   }
   if (event.resourceType === "Department") {
     const pick = (value: DepartmentSnapshot) => ({ code: value.code, name: value.name, parentId: value.parentId });
+    return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
+  }
+  if (event.resourceType === "Equipment") {
+    const pick = (v: EquipmentSnapshot) => ({ name: v.name, category: v.category, purchaseDate: v.purchaseDate?.toISOString().slice(0,10) ?? null, purchasePrice: v.purchasePrice?.toString() ?? null, departmentId: v.departmentId, assignedUserId: v.assignedUserId, status: v.status });
     return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
   }
   throw new Error("監査対象が不正です。");

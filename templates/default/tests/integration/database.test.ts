@@ -1,3 +1,6 @@
+import { saveEquipment, deleteEquipment } from "../../src/equipment/service";
+import { equipmentList, equipmentDetail } from "../../src/equipment/repository";
+import { listQuery } from "../../src/equipment/validation";
 import { saveUser, saveDepartment, deleteDepartment } from "../../src/management/service";
 import { appendAuditLog } from "../../src/audit/log";
 import { can } from "../../src/authorization/policy";
@@ -80,9 +83,9 @@ test("接続失敗時に秘密情報を出さない", async () => {
 });
 test("リポジトリのMigrationを初回適用し、再実行しても履歴が増えない", async () => {
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(5);
+  expect(await historyCount()).toBe(6);
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(5);
+  expect(await historyCount()).toBe(6);
 });
 test("後続Migrationが既存データを保持する", async () => {
   const initial = 'CREATE TABLE probe (id integer PRIMARY KEY); INSERT INTO probe VALUES (1);';
@@ -412,4 +415,69 @@ test("管理者同士の同時降格でも有効な管理者を残す", async ()
   ]);
   expect(result.filter(r => r.status === "rejected")).toHaveLength(1);
   expect(await connection.db.user.count({ where: { organizationId, role: "ADMIN", isActive: true } })).toBe(1);
+});
+
+const equipmentFields = { id: "", name: "ノートPC", category: "端末", purchaseDate: "2026-10-01", purchasePrice: "123456.78", departmentId: "", assignedUserId: "", status: "STORAGE", notes: "自由入力の備考" };
+test("備品CRUDは共有マスタとDecimal・日付・監査を維持する", async () => {
+ await migrateDatabase(url);
+ const { userId, organizationId } = await seedDevelopment(connection.db, seedEnv);
+ const department = await connection.db.department.findFirstOrThrow();
+ const id = await saveEquipment(connection.db,userId,organizationId,managementForm({ ...equipmentFields, departmentId: department.id, assignedUserId: userId }));
+ const before = await equipmentDetail(connection.db,organizationId,id);
+ expect(before?.purchasePrice?.toString()).toBe("123456.78");
+ expect(before?.purchaseDate?.toISOString().slice(0,10)).toBe("2026-10-01");
+ expect(before?.assignedUser?.name).toBe("開発用管理者");
+ await saveEquipment(connection.db,userId,organizationId,managementForm({ ...equipmentFields,id,status: "IN_USE" }));
+ await deleteEquipment(connection.db,userId,organizationId,id);
+ expect(await equipmentDetail(connection.db,organizationId,id)).toBeNull();
+ const logs = await connection.db.auditLog.findMany({ where: { resourceId: id } });
+ expect(logs.map(l=>l.action).sort()).toEqual(["CREATE","DELETE","UPDATE"]);
+ expect(JSON.stringify(logs)).not.toContain(equipmentFields.notes);
+ expect(logs.find(l=>l.action==="CREATE")?.after).toMatchObject({ purchasePrice: "123456.78" });
+});
+test("備品の越境・User書込・無効担当者を拒否し、Managerを許可する", async () => {
+ await migrateDatabase(url);
+ const { userId,organizationId } = await seedDevelopment(connection.db,seedEnv);
+ const other = await connection.db.organization.create({ data: { code:"other", name:"外部" } });
+ const department = await connection.db.department.create({ data: { organizationId:other.id,code:"external",name:"外部部署" } });
+ const outsider = await connection.db.user.create({ data: { organizationId:other.id,name:"外部",email:"outside@example.com" } });
+ await expect(saveEquipment(connection.db,userId,organizationId,managementForm({ ...equipmentFields,departmentId:department.id }))).rejects.toThrow();
+ await expect(saveEquipment(connection.db,userId,organizationId,managementForm({ ...equipmentFields,assignedUserId:outsider.id }))).rejects.toThrow();
+ await expect(connection.db.equipment.create({ data: { organizationId,name:"不可",category:"端末",departmentId:department.id } })).rejects.toMatchObject({ code:"P2003" });
+ await expect(connection.db.equipment.create({ data: { organizationId,name:"不可",category:"端末",assignedUserId:outsider.id } })).rejects.toMatchObject({ code:"P2003" });
+ const id = await saveEquipment(connection.db,userId,organizationId,managementForm(equipmentFields));
+ expect(await equipmentDetail(connection.db,other.id,id)).toBeNull();
+ await expect(deleteEquipment(connection.db,outsider.id,other.id,id)).rejects.toThrow();
+ await connection.db.user.update({ where:{id:userId},data:{role:"USER"} });
+ await expect(saveEquipment(connection.db,userId,organizationId,managementForm(equipmentFields))).rejects.toMatchObject({status:403});
+ await expect(deleteEquipment(connection.db,userId,organizationId,id)).rejects.toMatchObject({status:403});
+ await connection.db.user.update({ where:{id:userId},data:{role:"MANAGER"} });
+ await saveEquipment(connection.db,userId,organizationId,managementForm({ ...equipmentFields,id,status:"REPAIR" }));
+ await connection.db.user.update({ where:{id:outsider.id},data:{isActive:false} });
+ await expect(saveEquipment(connection.db,userId,organizationId,managementForm({ ...equipmentFields,assignedUserId:outsider.id }))).rejects.toThrow();
+});
+test("備品一覧は検索・安定したページ切替・並び順と組織境界を守る", async () => {
+ await migrateDatabase(url);
+ const { organizationId } = await seedDevelopment(connection.db,seedEnv);
+ await connection.db.equipment.createMany({ data:Array.from({length:12},(_,i)=>({organizationId,name:`PC-${String(i).padStart(2,"0")}`,category:"端末",purchasePrice:String(i)})) });
+ const first = await equipmentList(connection.db,organizationId,listQuery({q:"pc",sort:"name"}));
+ const second = await equipmentList(connection.db,organizationId,listQuery({q:"pc",sort:"name",page:"2"}));
+ expect(first.rows).toHaveLength(10); expect(second.rows).toHaveLength(2);
+ expect(new Set([...first.rows,...second.rows].map(e=>e.id)).size).toBe(12);
+ expect((await equipmentList(connection.db,organizationId,listQuery({sort:"price"}))).rows[0].purchasePrice?.toString()).toBe("11");
+ expect((await equipmentList(connection.db,organizationId,listQuery({q:"PC-03"}))).total).toBe(1);
+ expect((await equipmentList(connection.db,organizationId,listQuery({page:"9999"}))).page).toBe(2);
+ expect((await equipmentList(connection.db,randomUUID(),listQuery({}))).total).toBe(0);
+});
+test("備品の監査INSERTが失敗したら登録・更新・削除を全て戻す", async () => {
+ await migrateDatabase(url);
+ const {userId,organizationId} = await seedDevelopment(connection.db,seedEnv);
+ const id = await saveEquipment(connection.db,userId,organizationId,managementForm(equipmentFields));
+ await connection.pool.query(`CREATE FUNCTION "${schema}".fail_equipment_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test failure'; END; $$`);
+ await connection.pool.query(`CREATE TRIGGER fail_equipment_audit BEFORE INSERT ON "${schema}"."AuditLog" FOR EACH STATEMENT EXECUTE FUNCTION "${schema}".fail_equipment_audit()`);
+ await expect(saveEquipment(connection.db,userId,organizationId,managementForm(equipmentFields))).rejects.toThrow();
+ await expect(saveEquipment(connection.db,userId,organizationId,managementForm({...equipmentFields,id,status:"DISPOSED"}))).rejects.toThrow();
+ await expect(deleteEquipment(connection.db,userId,organizationId,id)).rejects.toThrow();
+ expect(await connection.db.equipment.count()).toBe(1);
+ expect((await equipmentDetail(connection.db,organizationId,id))?.status).toBe("STORAGE");
 });

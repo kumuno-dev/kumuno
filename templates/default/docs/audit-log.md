@@ -14,7 +14,7 @@ await disableUser(db, actor.id, targetUserId);
 // または await moveDepartment(db, actor.id, actor.organizationId, departmentId, parentId);
 ```
 
-新しい業務更新では同一トランザクション内でappendAuditLog(tx, actor, event)を呼ぶ。これは内部ヘルパーで、認証・認可の代わりではない。CREATEはafter、UPDATEはbeforeとafter、DELETEはbeforeを必須にする。現在はUserとDepartmentをサポートし、備品は後続工程で明示的に追加する。
+新しい業務更新では同一トランザクション内でappendAuditLog(tx, actor, event)を呼ぶ。これは内部ヘルパーで、認証・認可の代わりではない。CREATEはafter、UPDATEはbeforeとafter、DELETEはbeforeを必須にする。User・Department・Equipmentをサポートする。備品の自由記述の備考は記録しない。
 
 ## 記録対象と秘匿
 

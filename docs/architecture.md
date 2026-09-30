@@ -35,7 +35,7 @@ ValidationはZodを候補とする（未導入）。VitestはStep 2から設定�
 
 ## 第3版の工程と現在地
 
-旧Step番号と第3版のMilestone番号を混同しない。現在のNext.js基盤はテンプレートとして配置済み。CLI生成物の自動検証を追加した。認証の生成物検証まで完了。共通認可まで完了。業務機能とnpm配布物の検証は未完了。
+旧Step番号と第3版のMilestone番号を混同しない。現在のNext.js基盤はテンプレートとして配置済み。CLI生成物の自動検証を追加した。認証の生成物検証まで完了。共通認可・管理画面・備品管理を実装済み。npm配布物の検証は未完了。
 
 | Milestone | 内容 | 現在地 |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ ValidationはZodを候補とする（未導入）。VitestはStep 2から設定�
 | 6 | Authorization / RBAC | 完了。3ロール・共通認可・組織境界・最新ロール取得を検証 |
 | 7 | Audit Log | 完了。部署移動・ユーザー無効化の同時保存、失敗時の全体取消、追記専用履歴を検証 |
 | 8 | Business UI | 完了。共通Header / Sidebarとユーザー・部署管理を3画面幅で検証 |
-| 9 | Equipment Reference Application | CRUD・検索・ページ・並び替え・認可・監査を含め未実装 |
+| 9 | Equipment Reference Application | 完了。CRUD・検索・ページ・並び替え・認可・監査を生成物でも検証 |
 | 10 | AI Documentation | 入口・基盤・Domain境界・連携規約を作成済み。生成物への同梱は未実施 |
 | 11 | create-kumuno CLI | 試用依頼により最小ローカル生成を先行実装。同梱配布・依存インストール対話は未実装 |
 | 12 | CLI Integration Test | ローカル生成物のcheckを先行自動化。配布tgz・CIは未実装 |
@@ -138,3 +138,14 @@ v3.1更新の検証：2026-09-28、Node.js 24.21.0 / macOSでnpm ci、npm exec -
 新規依存・DB Migrationは追加していない。永続DBは変更していない。パスワードリセット／変更強制・通知、大規模一覧の検索／ページング、実TLS・本番プロキシ・他OS・配布tgzは未検証または未実装。認可不足ページはデータを出さず案内を表示するがHTTP 403応答ではない。
 
 [管理画面仕様](management.md)と[設計判断0014](decisions/0014-business-ui.md)を追加。次はMilestone 9のEquipment Reference Application。
+
+
+## Milestone 9の検証結果
+
+2026-10-01、Node.js 24.21.0 / macOS / PostgreSQL 18.4で構成検証・CLI3件、生成物のlint・型検査・単体21件・基本ブラウザー4件・本番ビルドが成功。test:template:dbでMigration初回／再実行とSeed再実行、実DB27件が成功した。生成物のPC1280px・タブレット768px・スマートフォン390pxで備品CRUD・削除後404・検索・ページ切替・価格順・Userの更新操作非表示／登録URL拒否が成功した。既存のユーザー・部署管理と認証も回帰検証した。PCとスマートフォンの画面画像を確認した。
+
+購入日・価格の検証、正確なDecimal、部署・担当者の組織境界、Manager更新、検索・安定した並び順、監査保存失敗時のCRUD取消を実DBで確認した。購入価格は円として扱う。担当者の所属部署と備品の所属部署は独立して指定できる。
+
+新規依存はない。Equipmentと複合外部キーのMigrationを追加したが永続DBへの適用は行っていない。大量データ性能、実TLS、本番プロキシ、他OS、配布tgzは未検証。
+
+[備品管理仕様](equipment.md)と[設計判断0015](decisions/0015-equipment-reference.md)を追加。次はMilestone 10のAI Documentation。

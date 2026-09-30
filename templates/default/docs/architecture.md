@@ -24,3 +24,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 業務更新の監査はsrc/auditへ集約する。[audit-log.md](audit-log.md)を参照。
 
 管理画面はsrc/app/dashboard、更新と入力検証はsrc/management。[management.md](management.md)を参照。
+
+備品管理はsrc/equipmentに入力・読み出し・更新・HTTP入口を分離する。[equipment.md](equipment.md)を参照。

@@ -34,3 +34,5 @@ v0.1のスコープはORGANIZATION。対象コンテキストをロールと分�
 以前のSeedユーザーを使う場合もUSERのままログイン・ダッシュボードを利用できる。既存ユーザーへの管理者付与は、運用者が対象のID・所属を確認してDB管理手順で明示的に行う。自己昇格APIや公開サインアップは提供しない。本番の初期管理者プロビジョニングは未実装。
 
 npm run test:unitで許可表と拒否条件、npm run test:dbで既定値・降格の即時反映・Seed再実行・クライアント入力による昇格拒否を検証する。
+
+備品は全ロールにequipment:read、AdminとManagerにequipment:manageを付与する。[備品仕様](equipment.md)を参照。
