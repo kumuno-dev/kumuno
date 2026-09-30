@@ -4,7 +4,7 @@ AuditLogは操作の成功履歴。id / organizationId / userId / action / resou
 
 ## 更新処理への組み込み
 
-部署移動moveDepartmentとユーザー無効化disableUserは、認証済みセッション由来のactorIdを必須とする。呼出元でrequireUser等により認証し、本文のuserIdを操作者として渡さない。サービス内で最新の操作者をDBから取得し、有効状態・権限・対象組織を確認する。
+部署移動moveDepartment、ユーザー無効化disableUser、管理画面の登録・編集・部署削除は、認証済みセッション由来のactorIdを必須とする。呼出元でrequireUser等により認証し、本文のuserIdを操作者として渡さない。サービス内で最新の操作者をDBから取得し、有効状態・権限・対象組織を確認する。
 
 同一のSerializable transactionで業務更新・必要なセッション削除・appendAuditLogを実行する。監査保存が失敗すれば全体がロールバックする。権限不足・循環エラーなど失敗操作は成功履歴に残さない。同じ親部署への移動・既に無効なユーザーの再無効化はログを追加しない。競合時のP2034は呼出側で操作全体を再試行するか、再操作を案内する。
 

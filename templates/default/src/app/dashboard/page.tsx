@@ -1,11 +1,7 @@
+import Link from "next/link";
 import { requirePermission } from "@/authorization/require-permission";
-import { LogoutButton } from "./logout-button";
+import { can } from "@/authorization/policy";
 export default async function DashboardPage() {
-  const user = await requirePermission("dashboard:read");
-  return <main className="mx-auto max-w-3xl px-6 py-16">
-    <p className="mb-8 text-xl font-bold">KUMUNO</p>
-    <h1 className="text-3xl font-bold">ようこそ、{user.name}さん</h1>
-    <p className="mt-5 mb-8 leading-7 text-slate-600">ログインできました。業務機能は今後追加されます。</p>
-    <LogoutButton />
-  </main>;
+  const actor = await requirePermission("dashboard:read");
+  return <><p className="eyebrow">WORKSPACE</p><h1>ようこそ、{actor.name}さん</h1><p className="page-description">組織の情報を整えて、毎日の業務を始めましょう。</p><div className="overview-grid">{can(actor, "users:read", actor) && <Link className="overview-card" href="/dashboard/users"><h2>ユーザー</h2><p>メンバーの所属・ロール・利用状態を確認します。</p><span>ユーザー一覧へ →</span></Link>}{can(actor, "departments:read", actor) && <Link className="overview-card" href="/dashboard/departments"><h2>部署</h2><p>組織の部署と、親子関係を管理します。</p><span>部署一覧へ →</span></Link>}</div><section className="panel mt-8"><h2>業務の基盤が整いました</h2><p className="mt-3 text-slate-600">備品管理などの業務機能は今後追加されます。</p></section></>;
 }

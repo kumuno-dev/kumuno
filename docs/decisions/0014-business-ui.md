@@ -1,0 +1,11 @@
+# 0014: 共通画面と管理フォーム
+
+日付: 2026-10-01
+
+Milestone 8としてHeader / Sidebarとユーザー・部署管理を実装。Next.js Server Componentsで組織内データを読む。Server ActionsとReact useActionStateを使用し、状態管理・フォームUIライブラリを増やさない。採用版Next.jsに同梱されたforms / server-actions / revalidatePath文書を確認した。
+
+Validationは設計段階のZod推奨と、依存のない明示的検証を比較した。Zodは多数のSchema・型共有に有利だが、この工程は少数のFormData検証なので通常のTypeScript関数で集約した。クライアント側だけには依存せず、UUIDと組織所属の検査を分離する。複雑な業務入力の追加時にSchema libraryを再評価する。追加dependencyはない。
+
+Adminだけが更新できる。Managerは参照、Userはダッシュボード。ユーザー削除は無効化で代替し、再有効化時も既存Sessionを削除する。初期パスワードはBetter Auth標準hashPasswordで保存する。自己降格・自己無効化と管理者不在を防ぐ。部署の親変更ではSerializable transactionによる循環防止を維持する。
+
+監査は登録・編集・削除すべてを同じtransactionに含める。Userの個人情報は監査の許可リストを広げず、イベントと既存の安全な属性のみ残す。後続の備品管理、監査閲覧、パスワード再設定は先行実装しない。

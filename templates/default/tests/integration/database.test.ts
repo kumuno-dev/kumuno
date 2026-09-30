@@ -1,3 +1,4 @@
+import { saveUser, saveDepartment, deleteDepartment } from "../../src/management/service";
 import { appendAuditLog } from "../../src/audit/log";
 import { can } from "../../src/authorization/policy";
 import { createAuthentication } from "../../src/authentication/factory";
@@ -347,4 +348,68 @@ test("CREATE/DELETEを記録し、履歴の更新・削除・TRUNCATEを拒否�
   await expect(connection.pool.query(`TRUNCATE "${schema}"."AuditLog"`)).rejects.toMatchObject({ code: "42501" });
   await connection.db.user.delete({ where: { id: userId } });
   expect(await connection.db.auditLog.count({ where: { userId } })).toBe(2);
+});
+
+function managementForm(data: Record<string, string>) {
+  const form = new FormData(); for (const [key, value] of Object.entries(data)) form.set(key, value); return form;
+}
+const newUserFields = { id: "", name: "登録メンバー", email: "member@example.com", employeeCode: "M-001", departmentId: "", role: "USER", isActive: "true", password: "new-password-123" };
+test("管理画面の登録・編集は標準Account、監査、セッション失効へつながる", async () => {
+  await migrateDatabase(url);
+  const { userId, organizationId } = await seedDevelopment(connection.db, seedEnv);
+  const departmentId = await saveDepartment(connection.db, userId, organizationId, managementForm({ id: "", code: "new", name: "新部署", parentId: "" }));
+  const id = await saveUser(connection.db, userId, organizationId, managementForm({ ...newUserFields, departmentId }));
+  const account = await connection.db.account.findFirstOrThrow({ where: { userId: id } });
+  expect(account.providerId).toBe("credential");
+  expect(await verifyPassword({ hash: account.password!, password: newUserFields.password })).toBe(true);
+  const auth = createAuthentication(connection.db, authConfig);
+  const login = await handleAuthentication(authRequest("sign-in/email", { email: newUserFields.email, password: newUserFields.password }), auth, authConfig);
+  expect(login.status).toBe(200);
+  await connection.db.session.create({ data: { userId: id, token: randomUUID(), expiresAt: new Date(Date.now() + 60000) } });
+  await saveUser(connection.db, userId, organizationId, managementForm({ ...newUserFields, id, departmentId, role: "MANAGER", isActive: "false" }));
+  expect(await connection.db.session.count({ where: { userId: id } })).toBe(0);
+  await saveUser(connection.db, userId, organizationId, managementForm({ ...newUserFields, id, role: "MANAGER" }));
+  expect((await connection.db.user.findUniqueOrThrow({ where: { id } })).isActive).toBe(true);
+  await deleteDepartment(connection.db, userId, organizationId, departmentId);
+  expect(await connection.db.auditLog.count()).toBe(5);
+  expect(JSON.stringify(await connection.db.auditLog.findMany())).not.toContain(newUserFields.password);
+});
+test("管理サービスで越境・自己降格・参照ロールの書込・循環・関連部署削除を拒否する", async () => {
+  await migrateDatabase(url);
+  const { userId, organizationId } = await seedDevelopment(connection.db, seedEnv);
+  const other = await connection.db.organization.create({ data: { code: "other", name: "別組織" } });
+  const otherDepartment = await connection.db.department.create({ data: { organizationId: other.id, code: "other", name: "別部署" } });
+  await expect(saveUser(connection.db, userId, organizationId, managementForm({ ...newUserFields, departmentId: otherDepartment.id }))).rejects.toThrow();
+  await expect(saveDepartment(connection.db, userId, organizationId, managementForm({ id: otherDepartment.id, code: "hijack", name: "不可", parentId: "" }))).rejects.toThrow();
+  await expect(saveUser(connection.db, userId, organizationId, managementForm({ ...newUserFields, id: userId }))).rejects.toThrow("自分自身");
+  const root = await connection.db.department.findFirstOrThrow({ where: { code: "head-office" } });
+  const child = await connection.db.department.findFirstOrThrow({ where: { code: "administration" } });
+  await expect(saveDepartment(connection.db, userId, organizationId, managementForm({ id: root.id, code: root.code, name: root.name, parentId: child.id }))).rejects.toThrow("循環");
+  await expect(deleteDepartment(connection.db, userId, organizationId, root.id)).rejects.toThrow("子部署");
+  await expect(deleteDepartment(connection.db, userId, organizationId, child.id)).rejects.toThrow("所属ユーザー");
+  await connection.db.user.update({ where: { id: userId }, data: { role: "MANAGER" } });
+  await expect(saveUser(connection.db, userId, organizationId, managementForm(newUserFields))).rejects.toMatchObject({ status: 403 });
+  await expect(deleteDepartment(connection.db, userId, organizationId, root.id)).rejects.toMatchObject({ status: 403 });
+  expect(await connection.db.auditLog.count()).toBe(0);
+});
+test("監査失敗時は管理画面のユーザー作成とAccountも残らない", async () => {
+  await migrateDatabase(url);
+  const { userId, organizationId } = await seedDevelopment(connection.db, seedEnv);
+  await connection.pool.query(`CREATE FUNCTION "${schema}".fail_management_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test failure'; END; $$`);
+  await connection.pool.query(`CREATE TRIGGER fail_management_audit BEFORE INSERT ON "${schema}"."AuditLog" FOR EACH STATEMENT EXECUTE FUNCTION "${schema}".fail_management_audit()`);
+  await expect(saveUser(connection.db, userId, organizationId, managementForm(newUserFields))).rejects.toThrow();
+  expect(await connection.db.user.count()).toBe(1);
+  expect(await connection.db.account.count()).toBe(1);
+});
+
+test("管理者同士の同時降格でも有効な管理者を残す", async () => {
+  await migrateDatabase(url);
+  const { userId, organizationId } = await seedDevelopment(connection.db, seedEnv);
+  const other = await saveUser(connection.db, userId, organizationId, managementForm({ ...newUserFields, role: "ADMIN" }));
+  const result = await Promise.allSettled([
+    saveUser(connection.db, userId, organizationId, managementForm({ ...newUserFields, id: other, role: "USER" })),
+    saveUser(connection.db, other, organizationId, managementForm({ ...newUserFields, id: userId, email: "admin@example.com", employeeCode: "DEMO-001", role: "USER" })),
+  ]);
+  expect(result.filter(r => r.status === "rejected")).toHaveLength(1);
+  expect(await connection.db.user.count({ where: { organizationId, role: "ADMIN", isActive: true } })).toBe(1);
 });

@@ -21,7 +21,7 @@ scripts/check-structure.mjs  workspaceと独立性の検証
 docs/                        製品仕様・設計判断
 ```
 
-トップページはServer Component。DB接続基盤、共有マスタ、標準認証テーブルと開発Seedを実装済み。Milestone 5でログインフォーム、認証Route Handler、保護ページを追加した。Milestone 6で3ロールの共通認可、Milestone 7で業務更新と同時に保存する監査ログを追加した。業務管理画面は未実装。外部フォント・AI API・認証SaaSへの接続は不要。Tailwind CSSはPostCSSでビルドする。
+トップページはServer Component。DB接続基盤、共有マスタ、標準認証テーブルと開発Seedを実装済み。Milestone 5でログインフォーム、認証Route Handler、保護ページを追加した。Milestone 6で3ロールの共通認可、Milestone 7で業務更新と同時に保存する監査ログを追加した。Milestone 8で共通画面とユーザー・部署管理を追加した。外部フォント・AI API・認証SaaSへの接続は不要。Tailwind CSSはPostCSSでビルドする。
 
 Next.jsによるエージェント規約ファイルの自動書き換えは`agentRules: false`で無効化し、プロジェクト規約を手動管理する。フレームワークAPIの確認にはインストール版同梱の`node_modules/next/dist/docs/`を利用する。
 
@@ -47,7 +47,7 @@ ValidationはZodを候補とする（未導入）。VitestはStep 2から設定�
 | 5 | Authentication | 完了。Better Auth・DBセッション・保護ページ・無効ユーザー拒否をCLI生成物でも検証 |
 | 6 | Authorization / RBAC | 完了。3ロール・共通認可・組織境界・最新ロール取得を検証 |
 | 7 | Audit Log | 完了。部署移動・ユーザー無効化の同時保存、失敗時の全体取消、追記専用履歴を検証 |
-| 8 | Business UI | Header / Sidebar、ユーザー・部署管理を含め未実装 |
+| 8 | Business UI | 完了。共通Header / Sidebarとユーザー・部署管理を3画面幅で検証 |
 | 9 | Equipment Reference Application | CRUD・検索・ページ・並び替え・認可・監査を含め未実装 |
 | 10 | AI Documentation | 入口・基盤・Domain境界・連携規約を作成済み。生成物への同梱は未実施 |
 | 11 | create-kumuno CLI | 試用依頼により最小ローカル生成を先行実装。同梱配布・依存インストール対話は未実装 |
@@ -127,3 +127,14 @@ v3.1更新の検証：2026-09-28、Node.js 24.21.0 / macOSでnpm ci、npm exec -
 監査は既存の部署移動・ユーザー無効化へ組み込んだ。ログ閲覧画面・公開API・保存期限による削除は未実装。永続DBへのMigration適用は行っていない。実TLS・本番プロキシ・他OS・公開tgzは未検証。一時DBは検証後に終了する。
 
 [監査仕様](audit-log.md)と[設計判断0013](decisions/0013-audit-log.md)を追加。次はMilestone 8のBusiness UI（Header / Sidebar、ユーザー・部署管理）。
+
+
+## Milestone 8の検証結果
+
+2026-10-01、Node.js 24.21.0 / macOS / PostgreSQL 18.4でnpm run check、test:template、test:template:dbが成功。CLI3件、単体18件、基本ブラウザー4件、生成物の実DB23件が成功した。lint・型検査・本番ビルドに加え、PC1280px・タブレット768px・スマートフォン390pxでユーザー／部署登録・編集・無効化／再有効化・部署削除・参照ロール制限・古い管理フォームからの書込拒否を検証した。画像でPC・スマートフォンのレイアウトを確認した。
+
+新規ユーザーのBetter Authログイン、Account／監査保存の原子性、越境拒否、親部署循環・関連部署削除拒否、管理者同士の同時降格でも管理者を残すことを実DBで確認した。フォームのラベルと補足説明は分離した。
+
+新規依存・DB Migrationは追加していない。永続DBは変更していない。パスワードリセット／変更強制・通知、大規模一覧の検索／ページング、実TLS・本番プロキシ・他OS・配布tgzは未検証または未実装。認可不足ページはデータを出さず案内を表示するがHTTP 403応答ではない。
+
+[管理画面仕様](management.md)と[設計判断0014](decisions/0014-business-ui.md)を追加。次はMilestone 9のEquipment Reference Application。

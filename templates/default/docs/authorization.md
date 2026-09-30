@@ -9,7 +9,7 @@ User.roleにADMIN / MANAGER / USERを保存する。認証はBetter Authの標�
 | users:manage / departments:manage | 許可 | 拒否 | 拒否 |
 | roles:assign | 許可 | 拒否 | 拒否 |
 
-この表はv0.1の基盤方針。管理画面・ロール変更APIは後続工程で実装する。Managerは共有マスタの参照のみとし、更新・昇格を認めない。Adminも別組織への権限を持たない。
+この表はv0.1の基盤方針。管理画面のServer ActionでAdminがロール変更できる。自分自身の変更は拒否する。Managerは共有マスタの参照のみとし、更新・昇格を認めない。Adminも別組織への権限を持たない。
 
 ## サーバーでの使用
 
