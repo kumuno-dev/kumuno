@@ -80,3 +80,5 @@ KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。C
 共通機能をnpmパッケージとして組み合わせる構成へ移行しています。最初の[@kumuno/auth](packages/auth/README.md)は未公開のRC候補です。既存アプリへの導入は実tgzで検証し、CLIへも同梱します。[構成と追加順](docs/package-architecture.md)を参照してください。
 
 第2段階として[@kumuno/rbac](packages/rbac/README.md)も抽出しました。3ロール・組織境界の共通判定に、アプリ側で業務権限を追加できます。未公開の実tgzを生成テンプレートへ同梱します。
+
+第3段階として[@kumuno/audit-log](packages/audit-log/README.md)も抽出しました。業務更新と同じtransactionへ保存関数を結びつけ、監査に残す属性はアプリ側で明示します。現在は未公開のtgzをCLIに同梱します。

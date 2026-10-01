@@ -1,0 +1,12 @@
+export type AuditAction = "CREATE" | "UPDATE" | "DELETE";
+export type JsonValue = null | boolean | number | string | JsonValue[] | JsonObject;
+export type JsonObject = { [key: string]: JsonValue };
+export type AuditActor = { id: string; organizationId: string };
+export type AuditChange = { action: AuditAction; before?: unknown; after?: unknown };
+export type AuditEvent = { action: AuditAction; resourceType: string; resourceId: string;
+  before?: JsonObject; after?: JsonObject };
+export type AuditEntry = { organizationId: string; userId: string; action: AuditAction;
+  resourceType: string; resourceId: string; metadata: { version: 1 };
+  before: JsonObject | undefined; after: JsonObject | undefined };
+export function validateAuditEvent(event: AuditChange): void;
+export function appendAuditLog<T>(write: (entry: AuditEntry) => Promise<T>, actor: AuditActor, event: AuditEvent): Promise<T>;

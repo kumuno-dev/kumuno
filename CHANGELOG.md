@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- 第3段階として@kumuno/audit-logを抽出。操作と変更前後の整合、JSONスナップショット、共通記録とwriterの失敗伝播を再利用し、安全な属性投影と同一Prisma transactionはアプリに維持。未公開tgzをCLIへ同梱。
+
 - 第2段階として@kumuno/rbacを抽出。基本6権限と組織境界の判定を独立し、備品・医療機器の操作はアプリ側の明示的な権限追加で維持。最新操作者のDB照合とtransactionはアプリが所有し、未公開tgzをCLIへ同梱。
 
 - 共通機能のパッケージ化の第1段階として@kumuno/authを抽出。Better Authの標準設定とHTTP入口の保護を再利用し、DB adapter・業務照合・RBAC・監査・UIは利用アプリへ保持。未公開の配布tgzをCLIへ同梱。

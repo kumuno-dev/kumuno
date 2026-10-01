@@ -1,0 +1,13 @@
+# 0031: 監査記録の共通処理を独立パッケージにする
+
+日付: 2026-10-02。採用。
+
+組合せ型構成の第3段階として@kumuno/audit-logを抽出する。新しい外部依存は加えず、既存のaction、操作者/組織/対象、metadata version:1、変更前後の形式を維持する。
+
+パッケージは変更前後の整合確認と明示的な監査記録の保存呼出しを所有する。CREATEはafter、UPDATEはbeforeとafter、DELETEはbeforeを必要とし、JSONでない値や空の識別子を保存前に拒否する。スナップショットをコピーし、元オブジェクトの変更による履歴の変化を避ける。未知の付加属性やmetadataをコピーしない。
+
+医療機器などの業務固有スナップショットを共通パッケージへ移すとDomainへの依存が生じるため、現在の属性投影はsrc/audit/log.tsに残す。秘密を自動除去する仕組みとは扱わない。Date/Decimalの変換も利用側が明示する。
+
+Prismaへの依存は持たず、利用側が同じtransactionのtx.auditLog.createに結びついたwriterを渡す。欠けたスナップショットのPrisma.DbNull変換、DB時刻・UUID、追記専用トリガー、最新操作者と対象組織の照合はアプリが所有する。パッケージは別transactionを作らず、writerの失敗を握りつぶさない。呼出元は必ずawaitする。
+
+未公開RCの実tgzをvendorへ同梱し、公開ファイル・SHA-512・lockを検査する。独立アプリのimport/Node.js 24 requireとTypeScript、操作形状・JSON・失敗伝播を確認し、生成アプリで業務更新と監査の同時保存・監査INSERT失敗のロールバック・追記専用制約を実DBで回帰検証する。新しい閲覧UI、任意のログAPI、DBの自動追跡、npm公開は今回の対象に含めない。

@@ -14,7 +14,7 @@ await disableUser(db, actor.id, targetUserId);
 // または await moveDepartment(db, actor.id, actor.organizationId, departmentId, parentId);
 ```
 
-新しい業務更新では同一トランザクション内でappendAuditLog(tx, actor, event)を呼ぶ。これは内部ヘルパーで、認証・認可の代わりではない。CREATEはafter、UPDATEはbeforeとafter、DELETEはbeforeを必須にする。User・Department・Equipmentをサポートする。備品の自由記述の備考は記録しない。
+新しい業務更新では同一トランザクション内でappendAuditLog(tx, actor, event)を呼ぶ。これは内部ヘルパーで、認証・認可の代わりではない。CREATEはafter、UPDATEはbeforeとafter、DELETEはbeforeを必須にする。User・Department・Equipmentと後述の医療機器関連モデルをサポートする。備品の自由記述の備考は記録しない。
 
 ## 記録対象と秘匿
 
@@ -41,3 +41,9 @@ MedicalInspectionのCREATEとMedicalDeviceのUPDATEも点検・再貸出許可�
 MedicalRepairのCREATE/UPDATEも業務操作と同時に保存する。修理依頼時はMedicalDeviceの停止もUPDATE監査を保存する。機器・依頼者・状態・日時のみを投影し、不具合・修理内容を監査へ保存しない。
 
 テスト機器の準備も明示的な操作としてCREATE/UPDATE監査を同時保存する。MedicalDeviceの投影にisSampleを含め、テスト機器の識別を保持する。表示切り替えは業務データを変更しないため業務監査を追加しない。
+
+## 共通パッケージとアプリの責任
+
+@kumuno/audit-logはCREATE/UPDATE/DELETEの変更前後を確認し、操作者・対象・metadata version:1とJSONスナップショットの共通形式を保存関数へ渡す。非JSON値や空の識別子は保存前に拒否する。スナップショットは保存前にコピーし、writerの失敗を伝播する。
+
+src/audit/log.tsは従来のリソース別許可リストを保持し、同じtx.auditLog.createへ接続する。Date/Decimalの明示的な変換と、欠けたbefore/afterをPrisma.DbNullにする処理もアプリ側。パッケージは認証・認可やtransactionを作らず、秘密属性を名前から自動除去しない。既存の同時保存とDBの追記専用トリガーを維持する。未公開の実tgzをvendorとlockfileへ同梱し、親リポジトリなしで導入できる。
