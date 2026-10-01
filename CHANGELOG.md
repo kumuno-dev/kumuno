@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-正式版v0.1のAcceptance Test確認は未完了です。次の公開に向けた変更はここへ追記します。
+正式版v0.1のAcceptance Test確認は未完了です。Claude Codeによる確認はユーザー指定により後日行います。
+
+- 公開RCの生成アプリに、Codexが社員研修管理を追加する受入検証を実施。
+- Training差分とRegistryから再現する検証コマンド、A〜Gの結果・Domain境界レビューを保存。
+- latestは正式版、nextは候補版として運用する方針を記録。標準テンプレートとnpmタグの変更はなし。
 
 ## create-kumuno 0.1.0-rc.0 — 2026-10-01
 

@@ -176,3 +176,8 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 失敗した生成物には.env以外の機密データも混入し得るため、Issueへ添付する前に内容を確認してください。DB検証用の接続設定ファイルは検証処理が除去します。[貢献方法](../CONTRIBUTING.md)と[セキュリティ方針](../SECURITY.md)も参照してください。
 
 公開準備は[releasing.md](releasing.md)を参照してください。npm run checkは依存ライセンス一覧と公開メタデータも検査します。
+
+
+## 公開候補版への機能追加を再現する
+
+[研修追加の受入差分](../examples/training-acceptance/README.md)は公開RC専用。`npm run test:acceptance`でCLIのRegistry取得・生成・差分適用・check、`npm run test:acceptance:db`でMigration / Seedの再実行・実DB・研修と既存機能の3画面幅検証まで再現する。後者には専用TEST_DATABASE_URLが必要。CIの通常checkとは別に実行する。Claude Codeによる理解の確認は[受入記録](acceptance/v0.1.md)の別工程。

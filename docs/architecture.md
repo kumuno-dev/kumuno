@@ -15,7 +15,7 @@ Step 1は実装・検証済み（2026-09-27、macOS arm64、Node.js 24.21.0、np
 Step 2はユーザー決定によりPrismaへ変更し、実装・検証済み（2026-09-27、Node.js 24.21.0、PostgreSQL 18.4）。単体10件・実DB結合6件・ブラウザー4件、lint・型チェック・本番ビルドが成功した。非管理者ロールでのDBテスト、CLIの接続失敗時の終了コードと秘密情報非出力、SQL生成も確認した。一時PostgreSQLで検証し、本番DBや開発用の永続DBは作成していない。TLS接続と他OSの実行は未検証。
 
 ```text
-packages/create-kumuno/ CLI bundled template（private）
+packages/create-kumuno/ CLI + bundled template（公開候補版）
 templates/default/           Next.jsアプリ、専用依存・lockfile・docs
 scripts/check-structure.mjs  workspaceと独立性の検証
 docs/                        製品仕様・設計判断
@@ -54,7 +54,7 @@ Validationは当初Zodを候補としたが、Milestone 8では少数のFormData
 | 12 | CLI Integration Test | 完了。配布tgzのDB/認証結合検証とUbuntu上のGitHub Actionsが成功 |
 | 13 | README / OSS Documentation | 完了。導入・開発・貢献・セキュリティ・変更履歴とIssue/PR文書を整備 |
 | 14 | npm package preparation | 完了。MIT・公開候補版のnpm公開・Registryからの生成とDB/認証検証が成功 |
-| 15 | v0.1 Release Candidate | 未達。第43〜49章のAcceptance Test A〜Gを確認する |
+| 15 | v0.1 Release Candidate | 進行中。A〜D / F / Gを検証し、EのClaude Code確認は後日 |
 
 テストと文書更新は各工程で行い、Milestone 10・12まで後回しにしない。第35章のCIにはlint・typecheck・test・build・CLI生成テストを含める。ユーザー・部署管理は第44章の必須条件。
 
@@ -210,3 +210,12 @@ npm名照会はE404で、利用可能性は公開時に再確認する。Macのn
 ユーザーの2FA設定後、公開操作の本人確認を経てcreate-kumuno@0.1.0-rc.0をnextタグでnpmへ公開した。Registryのdist.integrityは検証済みの固定tgzと一致した。新しいnpmキャッシュを使い、リポジトリ外でnpx create-kumuno@nextから生成・依存導入し、文書・lint・型・単体21件・本番ビルド・ブラウザー4件を確認した。一時PostgreSQL 18.4の非管理者ロールでMigration/Seed再実行・実DB27件・3画面幅の認証/認可/管理/備品操作も成功した。
 
 初回公開でlatestも候補版を指し、タグ削除はnpm側が400で拒否した。現在のnext / latestはともに0.1.0-rc.0で、試用には@nextを明示する。安定版の公開完了とは扱わない。GitHubはpublic、非公開脆弱性報告も有効。次はMilestone 15としてAcceptance Test A〜Gとv0.1 Release Candidateを確認する。
+
+
+## Milestone 15の受入検証（2026-10-01）
+
+公開RCから生成したアプリで、Codexが独立Training Featureを追加した。既存User / Departmentを再利用し、Prisma Migration・Validation・Permission・安全な監査snapshot・CRUD画面・テスト・生成物のdocsを実装した。標準テンプレートにはTrainingを追加していない。[受入記録](acceptance/v0.1.md)と[差分・再現手順](../examples/training-acceptance/README.md)を参照。
+
+生成物の単体24件・実DB32件・スモーク4件、lint・型検査・本番ビルドと3画面幅の研修／既存機能のブラウザー検証が成功した。既存データの保持、監査INSERT失敗時のCRUD取消、越境拒否、権限降格後の古いフォーム拒否を確認した。
+
+ユーザーがClaude Codeの確認を後日へ指定したため、EはCodex側のみ確認済み。Milestone 15 / A〜G全体の完了と正式版公開は保留する。0.1.0-rc.0と現在のnpmタグは変更していない。正式版は受入完了後に0.1.0をlatestで公開・Registry検証する方針。

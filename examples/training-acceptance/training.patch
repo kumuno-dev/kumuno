@@ -1,0 +1,735 @@
+diff --git a/README.md b/README.md
+index 2f5f833..274e6c7 100644
+--- a/README.md
++++ b/README.md
+@@ -130,3 +130,6 @@ KUMUNOが作成したコードは[MIT License](LICENSE)です。[依存ライブ
+ ## AIと新機能を開発する
+ 
+ [文書一覧](docs/README.md)から[機能追加手順](docs/adding-a-feature.md)と[規約](docs/coding-conventions.md)へ進み、備品管理を参照してください。AGENTS.mdとCLAUDE.mdは同じdocsへの入口です。運用の前提は[deployment.md](docs/deployment.md)を参照してください。
++
++
++社員研修を追加済み。モデル・権限・監査・境界・検証は[研修仕様](docs/training.md)を参照。
+diff --git a/docs/README.md b/docs/README.md
+index c985f93..57bbf61 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -12,9 +12,13 @@
+ | データの所有・将来の連携 | [domain-boundaries.md](domain-boundaries.md)、[integration.md](integration.md) |
+ | モデル・Migration | [database.md](database.md)、[organization.md](organization.md) |
+ | 認証・権限・監査 | [authentication.md](authentication.md)、[authorization.md](authorization.md)、[audit-log.md](audit-log.md) |
++| 社員研修 | [training.md](training.md)、src/training |
+ | CRUDの具体例 | [equipment.md](equipment.md)、src/equipment |
+ | 共通画面・管理フォーム | [management.md](management.md) |
+ | ライセンス | [LICENSE](../LICENSE)、[依存ライブラリの一覧](dependency-licenses.md) |
+ | 本番へ動かす準備 | [deployment.md](deployment.md) |
+ 
+ 実装済み機能と未実装の機能は各文書で区別する。設計を変える場合は関連文書も更新し、実行した検証と残る課題を報告する。
++
++
++社員研修を追加済み。モデル・権限・監査・境界・検証は[研修仕様](training.md)を参照。
+diff --git a/docs/architecture.md b/docs/architecture.md
+index 815f907..dffaac6 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -37,3 +37,6 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
+ データの流れは認証済みHTTP入口→入力検証→serviceの最新認可→DB更新と監査の一括確定→画面再検証。読み出しは認可済みページ→組織を指定したrepository→表示用データ。備品のserviceでは更新Prisma操作をtransaction内に置き、repositoryは読出しに責任を持つ。
+ 
+ 現在の共通FormData補助はsrc/management/validation.ts、共通フォームはsrc/management/form.tsx。大きな汎用層にする前に、再利用する責務だけを選ぶ。[デプロイ](deployment.md)には運用前提と未確認の範囲を記録する。
++
++
++社員研修を追加済み。モデル・権限・監査・境界・検証は[研修仕様](training.md)を参照。
+diff --git a/docs/audit-log.md b/docs/audit-log.md
+index 9a235e0..0874cbc 100644
+--- a/docs/audit-log.md
++++ b/docs/audit-log.md
+@@ -14,7 +14,7 @@ await disableUser(db, actor.id, targetUserId);
+ // または await moveDepartment(db, actor.id, actor.organizationId, departmentId, parentId);
+ ```
+ 
+-新しい業務更新では同一トランザクション内でappendAuditLog(tx, actor, event)を呼ぶ。これは内部ヘルパーで、認証・認可の代わりではない。CREATEはafter、UPDATEはbeforeとafter、DELETEはbeforeを必須にする。User・Department・Equipmentをサポートする。備品の自由記述の備考は記録しない。
++新しい業務更新では同一トランザクション内でappendAuditLog(tx, actor, event)を呼ぶ。これは内部ヘルパーで、認証・認可の代わりではない。CREATEはafter、UPDATEはbeforeとafter、DELETEはbeforeを必須にする。User・Department・Equipment・Trainingをサポートする。備品・研修の自由記述の備考は記録しない。
+ 
+ ## 記録対象と秘匿
+ 
+@@ -31,3 +31,6 @@ Userの変更前後はisActive / role / departmentIdだけ。Departmentはcode /
+ ## 検証
+ 
+ npm run test:unitで秘匿属性の除外と変更前後の整合性、npm run test:dbで更新との同時保存・認可境界・監査INSERT失敗時の全体ロールバック・履歴の改変拒否・操作者削除後の保持を確認する。test:template:dbではCLI生成物でも確認する。
++
++
++社員研修を追加済み。モデル・権限・監査・境界・検証は[研修仕様](training.md)を参照。
+diff --git a/docs/authorization.md b/docs/authorization.md
+index 2dfc639..f94794d 100644
+--- a/docs/authorization.md
++++ b/docs/authorization.md
+@@ -8,6 +8,8 @@ User.roleにADMIN / MANAGER / USERを保存する。認証はBetter Authの標
+ | users:read / departments:read | 許可 | 許可 | 拒否 |
+ | users:manage / departments:manage | 許可 | 拒否 | 拒否 |
+ | roles:assign | 許可 | 拒否 | 拒否 |
++| equipment:read / training:read | 許可 | 許可 | 許可 |
++| equipment:manage / training:manage | 許可 | 許可 | 拒否 |
+ 
+ この表はv0.1の基盤方針。管理画面のServer ActionでAdminがロール変更できる。自分自身の変更は拒否する。Managerは共有マスタの参照のみとし、更新・昇格を認めない。Adminも別組織への権限を持たない。
+ 
+@@ -36,3 +38,6 @@ v0.1のスコープはORGANIZATION。対象コンテキストをロールと分
+ npm run test:unitで許可表と拒否条件、npm run test:dbで既定値・降格の即時反映・Seed再実行・クライアント入力による昇格拒否を検証する。
+ 
+ 備品は全ロールにequipment:read、AdminとManagerにequipment:manageを付与する。[備品仕様](equipment.md)を参照。
++
++
++社員研修を追加済み。モデル・権限・監査・境界・検証は[研修仕様](training.md)を参照。
+diff --git a/docs/database.md b/docs/database.md
+index 69ce1c2..1f1be8a 100644
+--- a/docs/database.md
++++ b/docs/database.md
+@@ -63,3 +63,6 @@ Milestone 4の`20260928000000_shared_core`は共有マスタ・認証テーブ
+ Milestone 5の`20260928010000_auth_rate_limit`はBetter Auth標準DB試行制限のRateLimitを追加する。認証導入時はMigrationを適用してからログインを試す。
+ 
+ その後のMigrationはUser.role、追記専用AuditLog、Equipmentと組織境界の複合外部キーを追加する。モデルと運用は[認可](authorization.md)、[監査](audit-log.md)、[備品](equipment.md)を参照。
++
++
++社員研修を追加済み。モデル・権限・監査・境界・検証は[研修仕様](training.md)を参照。
+diff --git a/docs/domain-boundaries.md b/docs/domain-boundaries.md
+index 789e59f..bed8b17 100644
+--- a/docs/domain-boundaries.md
++++ b/docs/domain-boundaries.md
+@@ -27,3 +27,6 @@ Equipmentから参照された部署・Userの物理削除はRestrictで拒否
+ ## 新Domainのレビュー
+ 
+ 追加予定の研修管理がUser / Departmentを再定義していないか、Equipmentの内部へ依存していないか、研修属性がCoreへ混入していないかを確認する。UI以外のHTTP入口からも認証・認可・監査を通せることを確認する。[連携方針](integration.md)を参照。
++
++
++社員研修を追加済み。モデル・権限・監査・境界・検証は[研修仕様](training.md)を参照。
+diff --git a/docs/integration.md b/docs/integration.md
+index ff3cd91..89ef6c0 100644
+--- a/docs/integration.md
++++ b/docs/integration.md
+@@ -21,3 +21,6 @@ CSV / Excel / JSON / APIを将来追加する際にも、内部IDとコード・
+ 社員研修を追加するときは、研修DomainがOrganizationとUserを参照し、受講日・期限・状態を自分のモデルで管理する。Equipment repositoryを呼んだり、備品のテーブルへ研修属性を足したりする必要はない。
+ 
+ 共有マスタの一貫性・Permission・監査・UIから分離したserviceを保ったまま新Domainを追加できるかをレビューする。この文書は連携の設計方針で、研修機能を自動実装する指示ではない。AIによる実際の新機能追加は、別途用意する生成プロジェクトで検証する。
++
++
++社員研修を追加済み。モデル・権限・監査・境界・検証は[研修仕様](training.md)を参照。
+diff --git a/docs/training.md b/docs/training.md
+new file mode 100644
+index 0000000..21a95dd
+--- /dev/null
++++ b/docs/training.md
+@@ -0,0 +1,33 @@
++# 社員研修管理
++
++この生成アプリへ追加したTraining Domain。KUMUNO標準テンプレートには含まれない。src/trainingに入力・読み出し・業務更新・HTTP入口・フォームを置く。
++
++## モデルと規約
++
++TrainingはUUID、organizationId、既存UserへのuserId、研修名（必須120文字）、受講日（必須DATE）、有効期限（任意DATE）、修了状況（受講中 / 修了）、備考（任意2000文字）、作成・更新日時を持つ。同じ人の同名研修の再受講は別レコードとして登録できる。有効期限は受講日以降。未来の受講日も許可する。資格認定・失効処理・ファイル添付は対象外。
++
++User / Departmentを複製しない。所属部署はUserの現在の所属から表示し、受講時点の所属を保存する要件は今回含まれない。userId / organizationIdの複合外部キーで越境を拒否、参照Userの削除・組織移動はRestrict。新しい受講者は有効な同組織Userのみ。無効化済みUserの過去研修はそのUserのまま編集でき、履歴を失わない。
++
++## 権限と更新
++
++| ロール | 同組織の閲覧 | 登録・編集・削除 |
++| --- | --- | --- |
++| Admin | 可 | 可 |
++| Manager | 可 | 可 |
++| User | 可 | 不可 |
++
++部署限定や本人のみの閲覧ではなく組織単位。部署ごとの業務担当Permissionは未実装。フォームのorganizationIdを信頼せずセッション由来の値を使用する。更新では最新の操作者をSerializable transaction内で再認可する。失敗した操作は履歴を追加しない。
++
++TrainingのCREATE / UPDATE / DELETE監査は同じtransactionで保存。安全なsnapshotはuserId / name / attendedOn / expiresOn / statusだけ。備考・受講者氏名・メール・資格情報を保存しない。DELETE後もAuditLogは保持する。画面はOrigin検査・共通フォーム・成功後再検証を使用する。
++
++## 境界と将来の連携
++
++TrainingはShared Coreを利用するがEquipmentをimportせず、そのテーブルやサービスへ依存しない。Training業務属性はUser等へ追加しない。将来のAPIは認証済みactorId / organizationIdを確定してsaveTraining / deleteTrainingを呼べる。serviceはNext.jsの画面やHTTPに依存しない。
++
++人事がUser / Department、総務がEquipment、教育がTrainingを担当しても同じUser.idとDepartment.idを使う。教育が独自Employeeを持つ必要はない。単一アプリ内のDomain分離で開始し、別サービス化・同期・イベント配信は要件が出てから設計する。
++
++## 検証と制限
++
++READMEのcheck / test:db / test:authを実行する。研修の不正日付・期限・状態、越境参照、降格・無効化した操作者、DB外部キー、CRUDと監査、監査INSERT失敗時の全体取消、共有Userの所属変更、既存備品との共存、3画面幅のCRUD・閲覧権限・古いフォーム拒否を追加検証する。
++
++一覧は受講日降順・ID順。大量データ向けのページング・検索・期限通知・インポートは未実装。導入前に必要な閲覧範囲と保存期間を確認する。
+diff --git a/prisma/migrations/20261001023238_add_training/migration.sql b/prisma/migrations/20261001023238_add_training/migration.sql
+new file mode 100644
+index 0000000..0225f40
+--- /dev/null
++++ b/prisma/migrations/20261001023238_add_training/migration.sql
+@@ -0,0 +1,36 @@
++BEGIN;
++
++-- CreateEnum
++CREATE TYPE "TrainingStatus" AS ENUM ('IN_PROGRESS', 'COMPLETED');
++
++-- CreateTable
++CREATE TABLE "Training" (
++    "id" UUID NOT NULL,
++    "organizationId" UUID NOT NULL,
++    "userId" UUID NOT NULL,
++    "name" TEXT NOT NULL,
++    "attendedOn" DATE NOT NULL,
++    "expiresOn" DATE,
++    "status" "TrainingStatus" NOT NULL DEFAULT 'IN_PROGRESS',
++    "notes" TEXT,
++    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updatedAt" TIMESTAMP(3) NOT NULL,
++
++    CONSTRAINT "Training_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateIndex
++CREATE INDEX "Training_organizationId_attendedOn_id_idx" ON "Training"("organizationId", "attendedOn", "id");
++
++-- CreateIndex
++CREATE INDEX "Training_userId_organizationId_idx" ON "Training"("userId", "organizationId");
++
++-- AddForeignKey
++ALTER TABLE "Training" ADD CONSTRAINT "Training_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "Training" ADD CONSTRAINT "Training_userId_organizationId_fkey" FOREIGN KEY ("userId", "organizationId") REFERENCES "User"("id", "organizationId") ON DELETE RESTRICT ON UPDATE RESTRICT;
++
++ALTER TABLE "Training" ADD CONSTRAINT "Training_expiry_after_attendance" CHECK ("expiresOn" IS NULL OR "expiresOn" >= "attendedOn");
++
++COMMIT;
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index 23180bc..da63df6 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -17,6 +17,7 @@ model Organization {
+   users       User[]
+   auditLogs   AuditLog[]
+   equipment   Equipment[]
++  training    Training[]
+ }
+ 
+ model Department {
+@@ -62,6 +63,7 @@ model User {
+   accounts       Account[]
+   sessions       Session[]
+   assignedEquipment Equipment[]
++  training          Training[]
+ 
+   @@unique([id, organizationId])
+ 
+@@ -174,3 +176,27 @@ model Equipment {
+   @@index([departmentId, organizationId])
+   @@index([assignedUserId, organizationId])
+ }
++
++
++enum TrainingStatus {
++  IN_PROGRESS
++  COMPLETED
++}
++
++model Training {
++  id             String         @id @default(uuid()) @db.Uuid
++  organizationId String         @db.Uuid
++  userId         String         @db.Uuid
++  name           String
++  attendedOn     DateTime       @db.Date
++  expiresOn      DateTime?      @db.Date
++  status         TrainingStatus @default(IN_PROGRESS)
++  notes          String?
++  createdAt      DateTime       @default(now())
++  updatedAt      DateTime       @updatedAt
++  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
++  user           User           @relation(fields: [userId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
++
++  @@index([organizationId, attendedOn, id])
++  @@index([userId, organizationId])
++}
+diff --git a/scripts/test-auth.ts b/scripts/test-auth.ts
+index 9768b2f..5b7c9f0 100644
+--- a/scripts/test-auth.ts
++++ b/scripts/test-auth.ts
+@@ -75,6 +75,53 @@ async function main() {
+       await expect(page).toHaveURL(`${baseURL}/dashboard`);
+       await expect(page.getByRole("heading", { level: 1 })).toContainText("開発用管理者");
+       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
++      stage = "training CRUD";
++      await page.getByRole("navigation", { name:"業務メニュー" }).getByRole("link",{name:"社員研修",exact:true}).click();
++      await page.getByRole("link",{name:"研修を登録",exact:true}).click();
++      await page.getByLabel("受講者").selectOption(fixture.userId);
++      await page.getByLabel("研修名",{exact:true}).fill(`安全研修${width}`);
++      await page.getByLabel("受講日",{exact:true}).fill("2026-10-01");
++      await page.getByLabel("有効期限",{exact:true}).fill("2027-10-01");
++      await page.getByLabel("備考",{exact:true}).fill("<script>研修メモ</script>");
++      await page.getByRole("button",{name:"保存する",exact:true}).click();
++      await expect(page.getByRole("heading",{name:`安全研修${width}`,exact:true})).toBeVisible();
++      const trainingURL = page.url();
++      await page.getByText("研修を編集",{exact:true}).click();
++      await page.getByLabel("修了状況").selectOption("COMPLETED");
++      await page.getByRole("button",{name:"保存する",exact:true}).click();
++      stage = "training completion display";
++      await expect(page.locator("dd").filter({hasText:"修了"})).toBeVisible();
++      stage = "training escaped notes";
++      await expect(page.locator("p").filter({hasText:"<script>研修メモ</script>"})).toBeVisible();
++      expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
++      if (process.env.TEST_SCREENSHOT_DIR) {
++        await mkdir(process.env.TEST_SCREENSHOT_DIR,{recursive:true});
++        await page.screenshot({path:join(process.env.TEST_SCREENSHOT_DIR,`training-${width}.png`),fullPage:true});
++      }
++      stage = "training stale form denial";
++      await page.getByText("研修を編集",{exact:true}).click();
++      await page.getByLabel("研修名",{exact:true}).fill("拒否すべき変更");
++      await connection.db.user.update({where:{id:fixture.userId},data:{role:"USER"}});
++      await page.getByRole("button",{name:"保存する",exact:true}).click();
++      await expect(page.locator("form").getByRole("alert")).toContainText("権限がありません");
++      stage = "training read-only page";
++      await page.goto(trainingURL);
++      await expect(page.getByRole("heading",{name:`安全研修${width}`,exact:true})).toBeVisible();
++      await expect(page.getByText("研修を編集",{exact:true})).toHaveCount(0);
++      await expect(page.getByText("研修を削除",{exact:true})).toHaveCount(0);
++      await page.goto(`${baseURL}/dashboard/training`);
++      await expect(page.getByRole("link",{name:"研修を登録",exact:true})).toHaveCount(0);
++      await page.goto(`${baseURL}/dashboard/training/new`);
++      await expect(page.getByRole("heading",{name:"アクセスできません"})).toBeVisible();
++      await connection.db.user.update({where:{id:fixture.userId},data:{role:"MANAGER"}});
++      await page.goto(trainingURL);
++      await page.getByText("研修を削除",{exact:true}).click();
++      await page.getByLabel("この研修を削除することを確認しました").check();
++      await page.getByRole("button",{name:"削除する",exact:true}).click();
++      await expect(page).toHaveURL(`${baseURL}/dashboard/training`);
++      expect((await page.goto(trainingURL))?.status()).toBe(404);
++      await connection.db.user.update({where:{id:fixture.userId},data:{role:"ADMIN"}});
++      await page.goto(`${baseURL}/dashboard`);
+       stage = "equipment CRUD";
+       await page.getByRole("navigation", { name: "業務メニュー" }).getByRole("link", { name: "備品", exact: true }).click();
+       await page.getByRole("link", { name: "備品を登録", exact: true }).click();
+@@ -205,7 +252,7 @@ async function main() {
+       await expect(page).toHaveURL(`${baseURL}/login`);
+       await context.close();
+     }
+-    console.log("Authentication and management browser checks passed: desktop/tablet/mobile, CRUD, role restrictions, stale-form denial, login, logout, disabled session.");
++    console.log("Authentication and management browser checks passed: desktop/tablet/mobile, training/equipment/management CRUD, role restrictions, stale-form denial, login, logout, disabled session.");
+   } catch (error) {
+     const page = browser?.contexts()[0]?.pages()[0];
+     if (page && process.env.TEST_SCREENSHOT_DIR) {
+diff --git a/src/app/dashboard/layout.tsx b/src/app/dashboard/layout.tsx
+index fdd8eab..86c9432 100644
+--- a/src/app/dashboard/layout.tsx
++++ b/src/app/dashboard/layout.tsx
+@@ -7,6 +7,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
+   return <div className="business-shell">
+     <a className="skip-link" href="#main-content">本文へ移動</a>
+     <header className="business-header"><Link className="brand" href="/dashboard">KUMUNO<span>業務ワークスペース</span></Link><div className="account"><span>{actor.name}</span><LogoutButton /></div></header>
+-    <div className="business-body"><aside className="business-sidebar"><p className="nav-caption">ワークスペース</p><nav aria-label="業務メニュー"><Link href="/dashboard">ダッシュボード</Link><Link href="/dashboard/equipment">備品</Link>{can(actor, "users:read", actor) && <Link href="/dashboard/users">ユーザー</Link>}{can(actor, "departments:read", actor) && <Link href="/dashboard/departments">部署</Link>}</nav><p className="sidebar-note">小さく作る。<br />将来つながる。</p></aside><main id="main-content" className="business-main">{children}</main></div>
++    <div className="business-body"><aside className="business-sidebar"><p className="nav-caption">ワークスペース</p><nav aria-label="業務メニュー"><Link href="/dashboard">ダッシュボード</Link><Link href="/dashboard/equipment">備品</Link>{can(actor, "training:read", actor) && <Link href="/dashboard/training">社員研修</Link>}{can(actor, "users:read", actor) && <Link href="/dashboard/users">ユーザー</Link>}{can(actor, "departments:read", actor) && <Link href="/dashboard/departments">部署</Link>}</nav><p className="sidebar-note">小さく作る。<br />将来つながる。</p></aside><main id="main-content" className="business-main">{children}</main></div>
+   </div>;
+ }
+diff --git a/src/app/dashboard/training/[id]/page.tsx b/src/app/dashboard/training/[id]/page.tsx
+new file mode 100644
+index 0000000..1ffdd97
+--- /dev/null
++++ b/src/app/dashboard/training/[id]/page.tsx
+@@ -0,0 +1,18 @@
++import Link from "next/link";
++import { notFound } from "next/navigation";
++import { requirePermission } from "@/authorization/require-permission";
++import { can } from "@/authorization/policy";
++import { getDatabase } from "@/database/client";
++import { trainingDetail } from "@/training/repository";
++import { TrainingForm } from "@/training/form";
++import { identifier } from "@/management/validation";
++import { statuses } from "@/training/validation";
++import { ManagementForm } from "@/management/form";
++import { deleteTrainingAction } from "@/training/actions";
++export default async function TrainingDetailPage({ params }: { params: Promise<{ id: string }> }) {
++  const actor = await requirePermission("training:read"), { id } = await params;
++  try { identifier(id); } catch { notFound(); }
++  const t = await trainingDetail(getDatabase(),actor.organizationId,id);
++  if (!t) notFound();
++  return <><Link href="/dashboard/training">← 研修一覧</Link><h1 className="mt-6">{t.name}</h1><p className="page-description">{t.user.name} · {statuses[t.status]}</p><section className="panel"><h2>研修の詳細</h2><dl className="form-grid mt-6"><div><dt>受講者</dt><dd>{t.user.name}</dd></div><div><dt>所属部署</dt><dd>{t.user.department?.name ?? "未設定"}</dd></div><div><dt>受講日</dt><dd>{t.attendedOn.toISOString().slice(0,10)}</dd></div><div><dt>有効期限</dt><dd>{t.expiresOn?.toISOString().slice(0,10) ?? "なし"}</dd></div><div><dt>修了状況</dt><dd>{statuses[t.status]}</dd></div></dl><h3 className="mt-6">備考</h3><p className="whitespace-pre-wrap break-words mt-2">{t.notes ?? "なし"}</p></section>{can(actor,"training:manage",actor) && <><details className="panel mt-6"><summary>研修を編集</summary><TrainingForm organizationId={actor.organizationId} training={t} /></details><details className="panel mt-6"><summary>研修を削除</summary><ManagementForm action={deleteTrainingAction} label="削除する"><input name="id" type="hidden" value={t.id} /><label className="confirm-label"><input type="checkbox" name="confirm" value="yes" required />この研修を削除することを確認しました</label></ManagementForm></details></>}</>;
++}
+diff --git a/src/app/dashboard/training/new/page.tsx b/src/app/dashboard/training/new/page.tsx
+new file mode 100644
+index 0000000..924e9fa
+--- /dev/null
++++ b/src/app/dashboard/training/new/page.tsx
+@@ -0,0 +1,9 @@
++import Link from "next/link";
++import { requireUser } from "@/authentication/require-user";
++import { can } from "@/authorization/policy";
++import { TrainingForm } from "@/training/form";
++export default async function NewTrainingPage() {
++ const actor = await requireUser();
++ if (!can(actor,"training:manage",actor)) return <><h1>アクセスできません</h1><p>研修の管理権限が必要です。</p></>;
++ return <><Link href="/dashboard/training">← 研修一覧</Link><h1 className="mt-6 mb-6">研修を登録</h1><section className="panel"><TrainingForm organizationId={actor.organizationId} /></section></>;
++}
+diff --git a/src/app/dashboard/training/page.tsx b/src/app/dashboard/training/page.tsx
+new file mode 100644
+index 0000000..9962e0c
+--- /dev/null
++++ b/src/app/dashboard/training/page.tsx
+@@ -0,0 +1,12 @@
++import Link from "next/link";
++import { requirePermission } from "@/authorization/require-permission";
++import { can } from "@/authorization/policy";
++import { getDatabase } from "@/database/client";
++import { trainingList } from "@/training/repository";
++import { statuses } from "@/training/validation";
++export default async function TrainingPage() {
++  const actor = await requirePermission("training:read");
++  const rows = await trainingList(getDatabase(), actor.organizationId);
++  return <><p className="eyebrow">TRAINING</p><h1>社員研修</h1><p className="page-description">社員ごとの受講日・有効期限・修了状況を管理します。全{rows.length}件</p>{can(actor,"training:manage",actor) && <Link className="primary-button inline-block mb-6" href="/dashboard/training/new">研修を登録</Link>}
++    <section className="panel">{rows.length === 0 && <p>研修はまだありません。</p>}<div className="record-list">{rows.map(t => <article key={t.id} className="record"><div className="record-heading"><Link className="text-orange-800 underline" href={`/dashboard/training/${t.id}`}><h2>{t.name}</h2></Link><span className="badge">{statuses[t.status]}</span></div><p className="record-meta">{t.user.name} · {t.user.department?.name ?? "部署未設定"} · 受講日 {t.attendedOn.toISOString().slice(0,10)} · 期限 {t.expiresOn?.toISOString().slice(0,10) ?? "なし"}</p></article>)}</div></section></>;
++}
+diff --git a/src/audit/log.test.ts b/src/audit/log.test.ts
+index aa785af..a0bb2bc 100644
+--- a/src/audit/log.test.ts
++++ b/src/audit/log.test.ts
+@@ -13,3 +13,8 @@ test("CREATE/UPDATE/DELETEで変更前後の整合性を要求する", () => {
+   expect(() => auditSnapshots({ action: "UPDATE", resourceType: "User", resourceId: "id", after: snapshot })).toThrow();
+   expect(() => auditSnapshots({ action: "CREATE", resourceType: "User", resourceId: "id", before: snapshot, after: snapshot })).toThrow();
+ });
++
++test("Training監査は備考や社員氏名を保存しない", () => {
++  const value = { userId:"employee", name:"安全研修", attendedOn:new Date("2026-10-01"), expiresOn:null, status:"COMPLETED", notes:"secret notes", user:{name:"private employee"} };
++  expect(auditSnapshots({action:"CREATE",resourceType:"Training",resourceId:"id",after:value}).after).toEqual({userId:"employee",name:"安全研修",attendedOn:"2026-10-01",expiresOn:null,status:"COMPLETED"});
++});
+diff --git a/src/audit/log.ts b/src/audit/log.ts
+index 0a24ab9..6c28329 100644
+--- a/src/audit/log.ts
++++ b/src/audit/log.ts
+@@ -4,10 +4,12 @@ import type { AuditAction } from "../generated/prisma/enums";
+ type UserSnapshot = { isActive: boolean; role: string; departmentId: string | null };
+ type DepartmentSnapshot = { code: string; name: string; parentId: string | null };
+ type EquipmentSnapshot = { name: string; category: string; purchaseDate: Date | null; purchasePrice: { toString(): string } | null; departmentId: string | null; assignedUserId: string | null; status: string };
++type TrainingSnapshot = { userId: string; name: string; attendedOn: Date; expiresOn: Date | null; status: string };
+ type Event = { action: AuditAction; resourceId: string } & (
+   { resourceType: "User"; before?: UserSnapshot; after?: UserSnapshot } |
+   { resourceType: "Department"; before?: DepartmentSnapshot; after?: DepartmentSnapshot } |
+-  { resourceType: "Equipment"; before?: EquipmentSnapshot; after?: EquipmentSnapshot }
++  { resourceType: "Equipment"; before?: EquipmentSnapshot; after?: EquipmentSnapshot } |
++  { resourceType: "Training"; before?: TrainingSnapshot; after?: TrainingSnapshot }
+ );
+ 
+ // Explicit projections prevent whole records, credentials and request bodies being logged.
+@@ -30,6 +32,10 @@ export function auditSnapshots(event: Event) {
+     const pick = (v: EquipmentSnapshot) => ({ name: v.name, category: v.category, purchaseDate: v.purchaseDate?.toISOString().slice(0,10) ?? null, purchasePrice: v.purchasePrice?.toString() ?? null, departmentId: v.departmentId, assignedUserId: v.assignedUserId, status: v.status });
+     return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
+   }
++  if (event.resourceType === "Training") {
++    const pick = (v: TrainingSnapshot) => ({ userId: v.userId, name: v.name, attendedOn: v.attendedOn.toISOString().slice(0,10), expiresOn: v.expiresOn?.toISOString().slice(0,10) ?? null, status: v.status });
++    return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
++  }
+   throw new Error("監査対象が不正です。");
+ }
+ 
+diff --git a/src/authorization/policy.test.ts b/src/authorization/policy.test.ts
+index 5134e93..e7aff01 100644
+--- a/src/authorization/policy.test.ts
++++ b/src/authorization/policy.test.ts
+@@ -29,3 +29,12 @@ test("備品は全ロールが参照しAdminとManagerだけが更新できる",
+   expect(can({...user,role},"equipment:manage",{organizationId:"other"})).toBe(false);
+  }
+ });
++
++test("研修は組織内で参照しAdminとManagerのみ更新できる", () => {
++  for(const role of ["ADMIN","MANAGER","USER"] as const) {
++    expect(can({...user,role},"training:read",scope)).toBe(true);
++    expect(can({...user,role},"training:manage",scope)).toBe(role!=="USER");
++    expect(can({...user,role},"training:read",{organizationId:"other"})).toBe(false);
++    expect(can({...user,role,isActive:false},"training:manage",scope)).toBe(false);
++  }
++});
+diff --git a/src/authorization/policy.ts b/src/authorization/policy.ts
+index a9d69f6..f7e68a4 100644
+--- a/src/authorization/policy.ts
++++ b/src/authorization/policy.ts
+@@ -1,7 +1,7 @@
+ import type { Role } from "../generated/prisma/enums";
+ 
+ export type Permission = "dashboard:read" | "users:read" | "users:manage" |
+-  "departments:read" | "departments:manage" | "roles:assign" | "equipment:read" | "equipment:manage";
++  "departments:read" | "departments:manage" | "roles:assign" | "equipment:read" | "equipment:manage" | "training:read" | "training:manage";
+ export type Principal = {
+   id: string; organizationId: string; departmentId: string | null;
+   role: Role; isActive: boolean;
+@@ -9,9 +9,9 @@ export type Principal = {
+ // An explicit scope allows future OWN / DEPARTMENT / SUBTREE policies.
+ export type ResourceScope = { organizationId: string };
+ const grants: Record<Role, readonly Permission[]> = {
+-  ADMIN: ["dashboard:read", "users:read", "users:manage", "departments:read", "departments:manage", "roles:assign", "equipment:read", "equipment:manage"],
+-  MANAGER: ["dashboard:read", "users:read", "departments:read", "equipment:read", "equipment:manage"],
+-  USER: ["dashboard:read", "equipment:read"],
++  ADMIN: ["dashboard:read", "users:read", "users:manage", "departments:read", "departments:manage", "roles:assign", "equipment:read", "equipment:manage", "training:read", "training:manage"],
++  MANAGER: ["dashboard:read", "users:read", "departments:read", "equipment:read", "equipment:manage", "training:read", "training:manage"],
++  USER: ["dashboard:read", "equipment:read", "training:read"],
+ };
+ export function can(user: Principal | null, permission: Permission, scope: ResourceScope): boolean {
+   if (!user?.isActive || !user.organizationId || user.organizationId !== scope.organizationId) return false;
+diff --git a/src/training/actions.ts b/src/training/actions.ts
+new file mode 100644
+index 0000000..2d61aa7
+--- /dev/null
++++ b/src/training/actions.ts
+@@ -0,0 +1,34 @@
++"use server";
++import { headers } from "next/headers";
++import { redirect } from "next/navigation";
++import { revalidatePath } from "next/cache";
++import { requireUser } from "../authentication/require-user";
++import { getAuthConfig } from "../authentication/config";
++import { getDatabase } from "../database/client";
++import { InputError, field } from "../management/validation";
++import { ForbiddenError } from "../authorization/policy";
++import { databaseErrorCode } from "../database/errors";
++import type { FormState } from "../management/actions";
++import { saveTraining, deleteTraining } from "./service";
++async function run(form: FormData, remove: boolean): Promise<FormState> {
++  const actor = await requireUser();
++  if ((await headers()).get("origin") !== getAuthConfig().baseURL) return { error: "送信元を確認できません。" };
++  let id: string | undefined;
++  try {
++    if (remove) {
++      if (form.get("confirm") !== "yes") throw new InputError("削除の確認にチェックしてください。");
++      await deleteTraining(getDatabase(), actor.id, actor.organizationId, field(form,"id",36));
++    } else id = await saveTraining(getDatabase(), actor.id, actor.organizationId, form);
++  } catch (error) {
++    if (error instanceof InputError || error instanceof ForbiddenError) return { error: error.message };
++    const code = databaseErrorCode(error);
++    if (code === "P2034") return { error: "別の更新と競合しました。再読み込みして再操作してください。" };
++    if (code === "P2003") return { error: "受講者を確認してください。" };
++    console.error("研修の保存に失敗しました。", { code });
++    return { error: "保存できませんでした。再試行してください。" };
++  }
++  revalidatePath("/dashboard/training", "layout");
++  redirect(remove ? "/dashboard/training" : `/dashboard/training/${id}`);
++}
++export async function trainingAction(_state: FormState, form: FormData) { return run(form,false); }
++export async function deleteTrainingAction(_state: FormState, form: FormData) { return run(form,true); }
+diff --git a/src/training/form.tsx b/src/training/form.tsx
+new file mode 100644
+index 0000000..63e3131
+--- /dev/null
++++ b/src/training/form.tsx
+@@ -0,0 +1,17 @@
++import { getDatabase } from "../database/client";
++import { ManagementForm } from "../management/form";
++import { trainingAction } from "./actions";
++import { statuses } from "./validation";
++import type { Training } from "../generated/prisma/client";
++export async function TrainingForm({ organizationId, training }: { organizationId: string; training?: Training }) {
++  const users = await getDatabase().user.findMany({ where: { organizationId, OR: [{ isActive: true }, ...(training ? [{ id: training.userId }] : [])] }, select: { id: true, name: true, isActive: true, department: { select: { name: true } } }, orderBy: [{ name: "asc" }, { id: "asc" }] });
++  return <ManagementForm action={trainingAction}><div className="form-grid">
++    <input type="hidden" name="id" value={training?.id ?? ""} />
++    <label>受講者<select name="userId" required defaultValue={training?.userId ?? ""}><option value="">選択してください</option>{users.map(u => <option value={u.id} key={u.id}>{u.name} · {u.department?.name ?? "部署未設定"}{u.isActive ? "" : "（無効）"}</option>)}</select></label>
++    <label>研修名<input name="name" required maxLength={120} defaultValue={training?.name} /></label>
++    <label>受講日<input type="date" name="attendedOn" required defaultValue={training?.attendedOn.toISOString().slice(0,10)} /></label>
++    <label>有効期限<input type="date" name="expiresOn" defaultValue={training?.expiresOn?.toISOString().slice(0,10)} /></label>
++    <label>修了状況<select name="status" defaultValue={training?.status ?? "IN_PROGRESS"}>{Object.entries(statuses).map(([key,label]) => <option value={key} key={key}>{label}</option>)}</select></label>
++    <label>備考<textarea name="notes" maxLength={2000} rows={4} defaultValue={training?.notes ?? ""} /></label>
++  </div></ManagementForm>;
++}
+diff --git a/src/training/repository.ts b/src/training/repository.ts
+new file mode 100644
+index 0000000..2cec197
+--- /dev/null
++++ b/src/training/repository.ts
+@@ -0,0 +1,8 @@
++import type { PrismaClient } from "../generated/prisma/client";
++const user = { select: { name: true, department: { select: { name: true } } } };
++export function trainingList(db: PrismaClient, organizationId: string) {
++  return db.training.findMany({ where: { organizationId }, orderBy: [{ attendedOn: "desc" }, { id: "asc" }], include: { user } });
++}
++export function trainingDetail(db: PrismaClient, organizationId: string, id: string) {
++  return db.training.findFirst({ where: { id, organizationId }, include: { user } });
++}
+diff --git a/src/training/service.ts b/src/training/service.ts
+new file mode 100644
+index 0000000..bd79886
+--- /dev/null
++++ b/src/training/service.ts
+@@ -0,0 +1,29 @@
++import type { PrismaClient } from "../generated/prisma/client";
++import { appendAuditLog } from "../audit/log";
++import { requireTransactionActor } from "../authorization/transaction-actor";
++import { InputError, identifier } from "../management/validation";
++import { parseTraining } from "./validation";
++export async function saveTraining(db: PrismaClient, actorId: string, organizationId: string, form: FormData) {
++  const { id, ...data } = parseTraining(form);
++  return db.$transaction(async tx => {
++    const actor = await requireTransactionActor(tx, actorId, "training:manage", organizationId);
++    const before = id ? await tx.training.findFirst({ where: { id, organizationId } }) : null;
++    if (id && !before) throw new InputError("研修が見つかりません。");
++    const user = await tx.user.findFirst({ where: { id: data.userId, organizationId } });
++    // Historical records remain editable after an employee leaves; new assignments require an active user.
++    if (!user || (!user.isActive && before?.userId !== user.id)) throw new InputError("有効な受講者を選択してください。");
++    const after = before ? await tx.training.update({ where: { id }, data }) : await tx.training.create({ data: { ...data, organizationId } });
++    await appendAuditLog(tx, actor, { action: before ? "UPDATE" : "CREATE", resourceType: "Training", resourceId: after.id, before: before ?? undefined, after });
++    return after.id;
++  }, { isolationLevel: "Serializable" });
++}
++export async function deleteTraining(db: PrismaClient, actorId: string, organizationId: string, id: string) {
++  identifier(id);
++  return db.$transaction(async tx => {
++    const actor = await requireTransactionActor(tx, actorId, "training:manage", organizationId);
++    const before = await tx.training.findFirst({ where: { id, organizationId } });
++    if (!before) throw new InputError("研修が見つかりません。");
++    await tx.training.delete({ where: { id } });
++    await appendAuditLog(tx, actor, { action: "DELETE", resourceType: "Training", resourceId: id, before });
++  }, { isolationLevel: "Serializable" });
++}
+diff --git a/src/training/validation.test.ts b/src/training/validation.test.ts
+new file mode 100644
+index 0000000..e214190
+--- /dev/null
++++ b/src/training/validation.test.ts
+@@ -0,0 +1,11 @@
++import { randomUUID } from "node:crypto";
++import { expect, test } from "vitest";
++import { parseTraining } from "./validation";
++const fields = { id:"", userId: randomUUID(), name: "安全研修", attendedOn: "2026-10-01", expiresOn: "2027-10-01", status: "IN_PROGRESS", notes: "備考" };
++function form(data: Record<string,string>) { const f = new FormData(); for (const [k,v] of Object.entries(data)) f.set(k,v); return f; }
++test("研修の実在日・期限・状態・UUID・長さを検証する", () => {
++  const result = parseTraining(form(fields));
++  expect(result.attendedOn.toISOString().slice(0,10)).toBe(fields.attendedOn);
++  expect(parseTraining(form({...fields,expiresOn:""})).expiresOn).toBeNull();
++  for (const invalid of [{ attendedOn:"2026-02-30" }, { attendedOn:"0000-01-01" }, { expiresOn:"2026-09-30" }, { expiresOn:"2027-02-29" }, { status:"toString" }, { userId:"not-a-uuid" }, { name:"" }, { name:"a".repeat(121) }, { notes:"a".repeat(2001) }]) expect(() => parseTraining(form({...fields,...invalid}))).toThrow();
++});
+diff --git a/src/training/validation.ts b/src/training/validation.ts
+new file mode 100644
+index 0000000..a0ec69f
+--- /dev/null
++++ b/src/training/validation.ts
+@@ -0,0 +1,17 @@
++import { InputError, field, identifier } from "../management/validation";
++import type { TrainingStatus } from "../generated/prisma/enums";
++export const statuses = { IN_PROGRESS: "受講中", COMPLETED: "修了" };
++function date(value: string, label: string): Date {
++  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || !Number.isFinite(Date.parse(value)) || new Date(value).toISOString().slice(0,10) !== value || value < "0001-01-01") throw new InputError(`${label}を確認してください。`);
++  return new Date(value);
++}
++export function parseTraining(form: FormData) {
++  const id = field(form, "id", 36, false);
++  const attendedOn = date(field(form, "attendedOn", 10), "受講日");
++  const expiry = field(form, "expiresOn", 10, false);
++  const expiresOn = expiry ? date(expiry, "有効期限") : null;
++  if (expiresOn && expiresOn < attendedOn) throw new InputError("有効期限は受講日以降にしてください。");
++  const status = field(form, "status");
++  if (!Object.hasOwn(statuses, status)) throw new InputError("修了状況を確認してください。");
++  return { id: id ? identifier(id) : undefined, userId: identifier(field(form, "userId", 36)), name: field(form, "name"), attendedOn, expiresOn, status: status as TrainingStatus, notes: field(form, "notes", 2000, false) || null };
++}
+diff --git a/tests/integration/database.test.ts b/tests/integration/database.test.ts
+index 9effb72..db7db5e 100644
+--- a/tests/integration/database.test.ts
++++ b/tests/integration/database.test.ts
+@@ -1,3 +1,6 @@
++import { saveTraining, deleteTraining } from "../../src/training/service";
++import { trainingDetail, trainingList } from "../../src/training/repository";
++import { cp, readdir } from "node:fs/promises";
+ import { saveEquipment, deleteEquipment } from "../../src/equipment/service";
+ import { equipmentList, equipmentDetail } from "../../src/equipment/repository";
+ import { listQuery } from "../../src/equipment/validation";
+@@ -83,9 +86,9 @@ test("接続失敗時に秘密情報を出さない", async () => {
+ });
+ test("リポジトリのMigrationを初回適用し、再実行しても履歴が増えない", async () => {
+   await migrateDatabase(url);
+-  expect(await historyCount()).toBe(6);
++  expect(await historyCount()).toBe(7);
+   await migrateDatabase(url);
+-  expect(await historyCount()).toBe(6);
++  expect(await historyCount()).toBe(7);
+ });
+ test("後続Migrationが既存データを保持する", async () => {
+   const initial = 'CREATE TABLE probe (id integer PRIMARY KEY); INSERT INTO probe VALUES (1);';
+@@ -481,3 +484,96 @@ test("備品の監査INSERTが失敗したら登録・更新・削除を全て
+  expect(await connection.db.equipment.count()).toBe(1);
+  expect((await equipmentDetail(connection.db,organizationId,id))?.status).toBe("STORAGE");
+ });
++
++
++const trainingFields = { id:"", name:"安全研修", attendedOn:"2026-10-01", expiresOn:"2027-10-01", status:"IN_PROGRESS", notes:"記録しない秘密の備考" };
++test("研修Migration追加は既存User・部署・備品・監査履歴を保持する", async () => {
++  const root = resolve("prisma/migrations");
++  const entries = (await readdir(root)).filter(n=>n!=="migration_lock.toml").sort();
++  await mkdir(join(folder,"migrations"),{recursive:true});
++  await cp(join(root,"migration_lock.toml"),join(folder,"migrations/migration_lock.toml"));
++  for(const name of entries.slice(0,-1)) await cp(join(root,name),join(folder,"migrations",name),{recursive:true});
++  await migrate();
++  const { userId,organizationId } = await seedDevelopment(connection.db,seedEnv);
++  const id = await saveEquipment(connection.db,userId,organizationId,managementForm({...equipmentFields,assignedUserId:userId}));
++  const before = { user:await connection.db.user.findUniqueOrThrow({where:{id:userId}}), departments:await connection.db.department.findMany({orderBy:{id:"asc"}}), equipment:await connection.db.equipment.findUniqueOrThrow({where:{id}}), audit:await connection.db.auditLog.findMany() };
++  const latest = entries.at(-1)!; await cp(join(root,latest),join(folder,"migrations",latest),{recursive:true});
++  await migrate(); await migrate();
++  expect(await historyCount()).toBe(7);
++  expect(await connection.db.user.findUniqueOrThrow({where:{id:userId}})).toEqual(before.user);
++  expect(await connection.db.department.findMany({orderBy:{id:"asc"}})).toEqual(before.departments);
++  expect(await connection.db.equipment.findUniqueOrThrow({where:{id}})).toEqual(before.equipment);
++  expect(await connection.db.auditLog.findMany()).toEqual(before.audit);
++  expect(await connection.db.training.count()).toBe(0);
++});
++test("研修CRUDの監査と共有Userの所属変更、備品共存を確認する", async () => {
++  await migrateDatabase(url);
++  const {userId,organizationId} = await seedDevelopment(connection.db,seedEnv);
++  const equipmentId = await saveEquipment(connection.db,userId,organizationId,managementForm({...equipmentFields,assignedUserId:userId}));
++  const equipment = await equipmentDetail(connection.db,organizationId,equipmentId);
++  const id = await saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId}));
++  const id2 = await saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId}));
++  expect((await trainingList(connection.db,organizationId)).map(t=>t.id)).toHaveLength(2);
++  expect((await trainingDetail(connection.db,organizationId,id))?.user.name).toBe(equipment?.assignedUser?.name);
++  const departmentId = await saveDepartment(connection.db,userId,organizationId,managementForm({id:"",code:"education",name:"教育部",parentId:""}));
++  await connection.db.user.update({where:{id:userId},data:{departmentId}});
++  expect((await trainingDetail(connection.db,organizationId,id))?.user.department?.name).toBe("教育部");
++  expect(await equipmentDetail(connection.db,organizationId,equipmentId)).toEqual(equipment);
++  await saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId,id,status:"COMPLETED"}));
++  await deleteTraining(connection.db,userId,organizationId,id);
++  expect(await trainingDetail(connection.db,organizationId,id)).toBeNull();
++  const logs = await connection.db.auditLog.findMany({where:{resourceType:"Training",resourceId:id}});
++  expect(logs.map(l=>l.action).sort()).toEqual(["CREATE","DELETE","UPDATE"]);
++  expect(logs.find(l=>l.action==="UPDATE")?.before).toMatchObject({status:"IN_PROGRESS"});
++  expect(logs.find(l=>l.action==="UPDATE")?.after).toMatchObject({status:"COMPLETED",userId});
++  expect(JSON.stringify(logs)).not.toContain(trainingFields.notes);
++  expect(await connection.db.training.count({where:{id:id2}})).toBe(1);
++  await expect(connection.db.user.delete({where:{id:userId}})).rejects.toMatchObject({code:"P2003"});
++});
++test("研修の越境読出し・更新・受講者参照をserviceと外部キーで拒否する", async () => {
++  await migrateDatabase(url);
++  const {userId,organizationId} = await seedDevelopment(connection.db,seedEnv);
++  const other = await connection.db.organization.create({data:{code:"other",name:"外部"}});
++  const outsider = await connection.db.user.create({data:{organizationId:other.id,role:"ADMIN",name:"外部",email:"outsider@example.com"}});
++  const id = await saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId}));
++  expect(await trainingList(connection.db,other.id)).toEqual([]);
++  expect(await trainingDetail(connection.db,other.id,id)).toBeNull();
++  await expect(saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId:outsider.id}))).rejects.toThrow();
++  await expect(saveTraining(connection.db,outsider.id,other.id,managementForm({...trainingFields,id,userId:outsider.id}))).rejects.toThrow("見つかりません");
++  await expect(deleteTraining(connection.db,outsider.id,other.id,id)).rejects.toThrow("見つかりません");
++  await expect(saveTraining(connection.db,outsider.id,organizationId,managementForm({...trainingFields,userId}))).rejects.toMatchObject({status:403});
++  await expect(connection.db.training.create({data:{organizationId,userId:outsider.id,name:"不可",attendedOn:new Date("2026-10-01")}})).rejects.toMatchObject({code:"P2003"});
++  await expect(connection.db.training.update({where:{id},data:{expiresOn:new Date("2026-09-30")}})).rejects.toThrow();
++  expect(await connection.db.auditLog.count({where:{resourceType:"Training"}})).toBe(1);
++});
++test("降格・無効な操作者を拒否しManagerと無効社員の過去研修編集を許可する", async () => {
++  await migrateDatabase(url);
++  const {userId,organizationId} = await seedDevelopment(connection.db,seedEnv);
++  const employee = await connection.db.user.create({data:{organizationId,name:"社員",email:"employee@example.com"}});
++  const id = await saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId:employee.id}));
++  await connection.db.user.update({where:{id:employee.id},data:{isActive:false}});
++  await expect(saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId:employee.id}))).rejects.toThrow("有効な受講者");
++  await connection.db.user.update({where:{id:userId},data:{role:"MANAGER"}});
++  await saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,id,userId:employee.id,status:"COMPLETED"}));
++  await connection.db.user.update({where:{id:userId},data:{role:"USER"}});
++  await expect(saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId}))).rejects.toMatchObject({status:403});
++  await expect(saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,id,userId:employee.id}))).rejects.toMatchObject({status:403});
++  await expect(deleteTraining(connection.db,userId,organizationId,id)).rejects.toMatchObject({status:403});
++  await connection.db.user.update({where:{id:userId},data:{role:"ADMIN",isActive:false}});
++  await expect(deleteTraining(connection.db,userId,organizationId,id)).rejects.toMatchObject({status:403});
++  expect((await trainingDetail(connection.db,organizationId,id))?.status).toBe("COMPLETED");
++  expect(await connection.db.auditLog.count({where:{resourceType:"Training"}})).toBe(2);
++});
++test("Trainingの監査INSERT失敗は登録・変更・削除を全て取り消す", async () => {
++  await migrateDatabase(url);
++  const {userId,organizationId} = await seedDevelopment(connection.db,seedEnv);
++  const id = await saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId}));
++  await connection.pool.query(`CREATE FUNCTION "${schema}".fail_training_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test failure'; END; $$`);
++  await connection.pool.query(`CREATE TRIGGER fail_training_audit BEFORE INSERT ON "${schema}"."AuditLog" FOR EACH STATEMENT EXECUTE FUNCTION "${schema}".fail_training_audit()`);
++  await expect(saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId}))).rejects.toThrow();
++  await expect(saveTraining(connection.db,userId,organizationId,managementForm({...trainingFields,userId,id,status:"COMPLETED"}))).rejects.toThrow();
++  await expect(deleteTraining(connection.db,userId,organizationId,id)).rejects.toThrow();
++  expect(await connection.db.training.count()).toBe(1);
++  expect((await trainingDetail(connection.db,organizationId,id))?.status).toBe("IN_PROGRESS");
++  expect(await connection.db.auditLog.count()).toBe(1);
++});

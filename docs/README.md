@@ -13,6 +13,7 @@
 | 共通基盤 | [DB](database.md)、[認証](authentication.md)、[認可](authorization.md)、[監査](audit-log.md) |
 | 参照する業務機能 | [管理画面](management.md)、[備品管理](equipment.md) |
 | データの所有と将来の接続 | [Domain境界](domain-boundaries.md)、[連携方針](integration.md) |
+| v0.1の受入 | [Acceptance Test A〜G](acceptance/v0.1.md)、[研修追加の再現](../examples/training-acceptance/README.md) |
 | 配布・ライセンス | [公開手順](releasing.md)、[依存ライセンス](dependency-licenses.md)、[MIT](../LICENSE) |
 | 運用とセキュリティ | [生成アプリの運用前提](../templates/default/docs/deployment.md)、[セキュリティ方針](../SECURITY.md) |
 

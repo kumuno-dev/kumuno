@@ -72,3 +72,8 @@ npx --yes create-kumuno@next registry-trial --install
 Registryのdist.integrityは保存したtgzと一致しました。新しいnpmキャッシュ・リポジトリ外の一時ディレクトリでnpx --yes create-kumuno@next registry-app --installを実行し、文書・lint・型・単体21件・本番ビルド・ブラウザー4件が成功。一時PostgreSQL 18.4の非管理者ロールでMigrationとSeedの初回/再実行、DB27件、PC/タブレット/スマートフォンの認証・権限・管理・備品操作も成功しました。一時生成物・DBは終了後に除去しました。
 
 候補版tgzの同一版での再公開は行いません。公開後のREADME状況更新はGitHub上で反映し、npm同梱文書への更新は次の版へ含めます。
+
+
+## 正式版とタグの方針
+
+正式版は0.1.0をlatestで公開し、nextを候補版の入口にする。ユーザー承認によりこの方向を採用した。現在は[受入記録](acceptance/v0.1.md)のE（Claude Code）が後日確認であり、版・publishConfig・タグは候補版のまま。正式版への更新時はCLIの版とlockfile、公開設定、公開メタデータ検査、README / CHANGELOGを揃え、配布tgz・CIを検証してから公開する。公開後のRegistry検証を省略しない。
