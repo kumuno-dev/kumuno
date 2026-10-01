@@ -50,8 +50,8 @@ Validationは当初Zodを候補としたが、Milestone 8では少数のFormData
 | 8 | Business UI | 完了。共通Header / Sidebarとユーザー・部署管理を3画面幅で検証 |
 | 9 | Equipment Reference Application | 完了。CRUD・検索・ページ・並び替え・認可・監査を生成物でも検証 |
 | 10 | AI Documentation | 完了。必須文書・共通入口・機能追加手順を生成物に同梱し、欠落・リンクを検証 |
-| 11 | create-kumuno CLI | 同梱配布・依存インストール対話・失敗時の保持を実装。最終検証中 |
-| 12 | CLI Integration Test | ローカル生成物のcheckを先行自動化。配布tgz・CIは未実装 |
+| 11 | create-kumuno CLI | 完了。同梱配布・依存インストール対話・失敗時の保持を検証済み |
+| 12 | CLI Integration Test | 配布tgzの生成・checkを先行自動化。生成物のDB結合テスト・CIは次工程 |
 | 13 | README / OSS Documentation | 第3版のゴールを反映。公開用文書は未完成 |
 | 14 | npm package preparation | 名前の利用可能性・ライセンス・公開手順を確認し、npm公開する |
 | 15 | v0.1 Release Candidate | 未達。第43〜49章のAcceptance Test A〜Gを確認する |
@@ -160,3 +160,12 @@ AGENTS.md / CLAUDE.mdは同じdocsを読む入口へ統一。adding-a-featureに
 文書と製品側の生成検証を変更し、アプリ処理・DB・依存は変更していないため実DB27件はこの工程では再実行していない。AIが実際に研修機能を追加するAcceptance Test D / E、公開tgz、本番デプロイは未実施。
 
 [設計判断0016](decisions/0016-ai-documentation.md)と[生成アプリの文書一覧](../templates/default/docs/README.md)を参照。次はMilestone 11のcreate-kumuno CLI（同梱配布とセットアップUX）。
+
+
+## Milestone 11 完了（2026-10-01）
+
+create-kumunoに独立したテンプレートを同梱し、リポジトリ外でもアプリを生成できる。対話での名前入力・依存導入選択と、--install / --no-install / --yesに対応した。導入失敗時は生成物を保持し、再試行手順を案内する。詳細は[設計判断0017](decisions/0017-cli-bundled-template.md)を参照。
+
+Node.js 24 / macOSでnpm run checkとnpm run test:packが成功。CLIテスト5件、生成アプリの単体21件・ブラウザー4件、lint・型検査・本番ビルドを確認した。97ファイルの実tgzを一時ディレクトリにインストールし、インストール済みCLIからの生成・npm ci・dotfile復元・文書リンク検査を確認した。対話での依存導入スキップと、導入失敗時のファイル保持も確認済み。
+
+新規依存・DB変更はないため実DBテストは再実行していない。npm公開、Windows/Linux実行、配布物からのDB結合テストとCIは未実施。次はMilestone 12としてCLI結合テストとCIを進める。
