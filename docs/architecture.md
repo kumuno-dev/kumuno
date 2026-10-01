@@ -196,3 +196,5 @@ lockfileの全497依存項目にライセンス宣言があること、直接依
 Node.js 24 / macOS / 一時PostgreSQL 18.4の非管理者ロールでcheck、test:pack、test:pack:dbが成功。CLI5件・検証設定1件・単体21件・ブラウザー4件、実DB27件、3画面幅の認証・権限・管理・備品操作が通った。公開候補tgzは101ファイル、138,669 bytes。固定したtgzとnpm publish --dry-runのSHA-512 integrityが一致した。実公開は行っていない。
 
 npm名照会はE404で、利用可能性は公開時に再確認する。Macのnpm whoamiはENEEDAUTH、GitHubはprivate。npm認証、GitHubのpublic切替・非公開報告窓口の確定、候補版の実公開とRegistry経由の検証が未完了のため、Milestone 14全体は完了扱いにしない。公開設定の変更・npm公開はメンテナー確認後に進める。
+
+公開候補の[GitHub Actions](https://github.com/kumuno-dev/kumuno/actions/runs/36800486776)も成功（実装commit: 34290db）。Ubuntuで公開メタデータ・依存ライセンス・配布物のDB/認証/業務画面まで検証した。実公開とGitHub可視性の変更は確認待ち。
