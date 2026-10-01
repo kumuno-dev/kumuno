@@ -26,11 +26,15 @@
     "db:migration:create": "npm --prefix templates/default run db:migration:create --",
     "setup": "npm ci --prefix templates/default",
     "check:structure": "node scripts/check-structure.mjs",
-    "create:app": "node packages/create-kumuno/src/cli.mjs",
+    "create:app": "npm run build:cli && node packages/create-kumuno/src/cli.mjs",
     "test:cli": "npm test --workspace create-kumuno",
     "test:template": "node scripts/test-generated-template.mjs",
     "test:template:db": "node --env-file-if-exists=templates/default/.env.test.local scripts/test-generated-template.mjs --db",
     "db:seed": "npm --prefix templates/default run db:seed --",
-    "test:auth": "npm --prefix templates/default run test:auth --"
+    "test:auth": "npm --prefix templates/default run test:auth --",
+    "build:cli": "npm run bundle --workspace create-kumuno",
+    "pretest:template": "npm run build:cli",
+    "pretest:template:db": "npm run build:cli",
+    "test:pack": "node scripts/test-packed-cli.mjs"
   }
 }

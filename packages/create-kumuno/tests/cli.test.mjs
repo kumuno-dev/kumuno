@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, readdir, mkdir, writeFile, symlink, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, mkdir, writeFile, symlink, rm, realpath } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,7 +26,7 @@ test('生成物の名前・lockを揃え、秘密情報や生成キャッシュ�
 });
 test('パス越境・不正名・不明オプション・引数不足を拒否する', async t => {
   const { cwd, run } = await fixture(t);
-  for (const args of [['../escape'], ['/tmp/escape'], ['CON'], ['con'], ['app', '--unknown'], []]) assert.notEqual(run(...args).status, 0);
+  for (const args of [['../escape'], ['/tmp/escape'], ['CON'], ['con'], ['app', '--unknown'], ['app','--install','--no-install'], ['app','--yes','--no-install'], ['--yes'], []]) assert.notEqual(run(...args).status, 0);
   assert.deepEqual(await readdir(cwd), []);
 });
 test('既存ディレクトリとsymlinkを上書きしない', async t => {
@@ -36,4 +36,24 @@ test('既存ディレクトリとsymlinkを上書きしない', async t => {
   assert.notEqual(run('existing').status, 0); assert.notEqual(run('linked').status, 0);
   assert.equal(await readFile(join(cwd, 'existing/keep'), 'utf8'), 'keep');
   assert.deepEqual(await readdir(join(cwd, 'existing')), ['keep']);
+});
+
+test('非対話の既定は生成だけで、helpは出力先を作らない', async t => {
+  const { cwd, run } = await fixture(t);
+  assert.equal(run('--help').status,0);
+  assert.deepEqual(await readdir(cwd),[]);
+  assert.equal(run('noninteractive').status,0);
+  assert(!(await readdir(join(cwd,'noninteractive'))).includes('node_modules'));
+});
+test('依存導入は生成先でnpm ciを呼び、失敗時も生成物を保持する', async t => {
+  const { cwd } = await fixture(t);
+  const npm = join(cwd,'test npm.mjs');
+  await writeFile(npm, `import {writeFileSync} from 'node:fs'; writeFileSync('install-call.json',JSON.stringify({args:process.argv.slice(2),cwd:process.cwd()})); process.exit(Number(process.env.KUMUNO_TEST_EXIT??0));`);
+  for(const [name,option,exit] of [['installed','--install',0],['yes-app','--yes',0],['failed','--install',42]]) {
+    const result=spawnSync(process.execPath,[cli,name,option],{cwd,encoding:'utf8',env:{...process.env,npm_execpath:npm,KUMUNO_TEST_EXIT:String(exit)}});
+    assert.equal(result.status,exit===0?0:1,result.stderr);
+    assert.deepEqual(JSON.parse(await readFile(join(cwd,name,'install-call.json'))),{args:['ci','--include=dev'],cwd:await realpath(join(cwd,name))});
+    assert.equal(JSON.parse(await readFile(join(cwd,name,'package.json'))).name,name);
+    if(exit!==0) assert.match(result.stderr,/生成済みファイルは保持/);
+  }
 });

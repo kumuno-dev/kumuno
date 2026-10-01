@@ -18,26 +18,36 @@ npx create-kumuno my-business-app
 
 現在は旧工程のStep 1・2（Next.jsとPrisma / PostgreSQL接続・Migration基盤）と、Milestone 1のリポジトリ構成整理が完了しています。Milestone 2・3の生成物検証、Milestone 4の組織・部署・ユーザー・開発Seedまで実装しました。Milestone 5のログイン・ログアウト・保護ページも実装済みです。Milestone 6の3ロールと共通認可も実装済みです。[認可仕様](docs/authorization.md)を参照してください。Milestone 7の[監査ログ](docs/audit-log.md)を実装済みです。Milestone 8の[ユーザー・部署管理画面](docs/management.md)も利用できます。Milestone 9の[備品管理](docs/equipment.md)も実装済みです。Milestone 10の[AI向け開発文書](templates/default/docs/README.md)も生成アプリに同梱します。v3.1の工程と実績の対応は[現在の構成と工程](docs/architecture.md)を参照してください。
 
-## ローカルCLIを試す
+## CLIを試す
 
-Node.js 24.xで、リポジトリのルートから実行します。
+Node.js 24.xで、リポジトリのルートから実行します。対話では依存インストールを確認します。
 
 ```sh
 npm run create:app -- my-trial-app
-cd my-trial-app
-npm ci
-npm run dev
 ```
 
-[http://localhost:3000](http://localhost:3000)を開きます。既に使用中なら`npm run dev -- --port 3001`を使ってください。
+生成だけを行う場合は--no-install、確認せず依存も導入する場合は--installを指定します。
 
-現在の生成物はNext.js・Prisma基盤と共有マスタ・開発Seedを含み、ログインを利用できます。業務機能は未実装です。DBなしでもトップページは表示できます。依存インストールは手動です。既存のディレクトリへは生成しません。名前は小文字英字で始まる英数字・ハイフンを使用します。
+```sh
+npm run create:app -- my-trial-app --no-install
+cd my-trial-app
+npm ci
+cp .env.example .env.local
+```
 
-この試用版はリポジトリ内のテンプレートを参照します。npm公開・tgz同梱方式は未対応です。試したアプリを製品リポジトリにcommitしないよう注意してください。別の場所へ作る場合は、そこで`node /絶対パス/kumuno/packages/create-kumuno/src/cli.mjs my-trial-app`を実行します。
+生成先READMEに従ってPostgreSQL・認証・開発Seedを設定し、npm run devで起動します。DBなしでもトップページは表示できます。ユーザー・部署・備品管理を含みます。既存先への上書きやパス指定は拒否します。
+
+CLIは同梱テンプレートを使います。上記コマンドは同梱内容を毎回更新します。別のディレクトリで直接CLIを起動する場合は、先にrootでnpm run build:cliを実行してください。npm Registryは未公開ですが、tgzの独立生成は検証できます。
+
+```sh
+npm run test:pack
+```
+
+実際にnpm packしたパッケージを一時ディレクトリへインストールし、CLIで生成・依存導入・文書確認・checkを実行します。生成した試用アプリは製品リポジトリへcommitせず、生成先のREADMEとdocsを使って開発します。
 
 ## リポジトリ構成
 
-- `packages/create-kumuno`: CLI用workspace。ローカル試用版・非公開。
+- `packages/create-kumuno`: CLI用workspace。同梱テンプレートで単独配布可能・npm未公開。
 - `templates/default`: 独立したNext.jsアプリ。専用package.json / lockfileを持つ。
 - `docs`: 製品仕様・設計判断。テンプレートのdocsはアプリ利用者向け。
 

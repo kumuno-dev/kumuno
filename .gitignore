@@ -11,3 +11,7 @@ next-env.d.ts
 *.log
 .DS_Store
 **/src/generated/prisma/
+
+packages/create-kumuno/template/
+packages/create-kumuno/.template-stage-*/
+*.tgz

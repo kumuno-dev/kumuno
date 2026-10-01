@@ -4,7 +4,7 @@
 
 最上位仕様は[Master Specification v3.1](master-spec.md)。v0.1のゴールは、npm公開された`create-kumuno`で共通業務基盤と備品管理のReference Applicationを生成し、人とAIが業務機能を追加できること。CLI・生成物の検証・npm公開も完了条件に含む。
 
-旧仕様のStep 1・Step 2は承認済み・実装済み。第3版のMilestone 0として[技術設計案](design/milestone-0.md)を作成した。Milestone 1としてリポジトリをCLI workspaceと独立テンプレートへ再配置した。ユーザーの試用依頼によりローカルCLIの生成処理を先行実装した。npm配布は未対応。既存のPrisma採用決定は維持する。
+旧仕様のStep 1・Step 2は承認済み・実装済み。第3版のMilestone 0として[技術設計案](design/milestone-0.md)を作成した。Milestone 1としてリポジトリをCLI workspaceと独立テンプレートへ再配置した。ユーザーの試用依頼によりローカルCLIの生成処理を先行実装した。テンプレート同梱とtgzの独立生成は対応済み。npm Registryは未公開。既存のPrisma採用決定は維持する。
 
 マスター仕様書はv3.1を正本とし、第2版から継続するCLI・テンプレート・npm公開要件と統合する。原文の章番号の重複・順序ずれのみ補正し、第1〜56章に整理した。第9章・第56章のDB比較については、会話で確定したPrisma採用を本書と選定記録で維持する。第54章の成功指標は、開発者本人以外の利用者がCLIから生成し、AIと業務機能を作れること。
 
@@ -15,7 +15,7 @@ Step 1は実装・検証済み（2026-09-27、macOS arm64、Node.js 24.21.0、np
 Step 2はユーザー決定によりPrismaへ変更し、実装・検証済み（2026-09-27、Node.js 24.21.0、PostgreSQL 18.4）。単体10件・実DB結合6件・ブラウザー4件、lint・型チェック・本番ビルドが成功した。非管理者ロールでのDBテスト、CLIの接続失敗時の終了コードと秘密情報非出力、SQL生成も確認した。一時PostgreSQLで検証し、本番DBや開発用の永続DBは作成していない。TLS接続と他OSの実行は未検証。
 
 ```text
-packages/create-kumuno/ CLI local preview（private）
+packages/create-kumuno/ CLI bundled template（private）
 templates/default/           Next.jsアプリ、専用依存・lockfile・docs
 scripts/check-structure.mjs  workspaceと独立性の検証
 docs/                        製品仕様・設計判断
@@ -50,7 +50,7 @@ Validationは当初Zodを候補としたが、Milestone 8では少数のFormData
 | 8 | Business UI | 完了。共通Header / Sidebarとユーザー・部署管理を3画面幅で検証 |
 | 9 | Equipment Reference Application | 完了。CRUD・検索・ページ・並び替え・認可・監査を生成物でも検証 |
 | 10 | AI Documentation | 完了。必須文書・共通入口・機能追加手順を生成物に同梱し、欠落・リンクを検証 |
-| 11 | create-kumuno CLI | 試用依頼により最小ローカル生成を先行実装。同梱配布・依存インストール対話は未実装 |
+| 11 | create-kumuno CLI | 同梱配布・依存インストール対話・失敗時の保持を実装。最終検証中 |
 | 12 | CLI Integration Test | ローカル生成物のcheckを先行自動化。配布tgz・CIは未実装 |
 | 13 | README / OSS Documentation | 第3版のゴールを反映。公開用文書は未完成 |
 | 14 | npm package preparation | 名前の利用可能性・ライセンス・公開手順を確認し、npm公開する |
