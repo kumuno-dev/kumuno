@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { templateFiles, templateFilter, bundledName } from './template-files.mjs';
 const template = fileURLToPath(new URL('../template/', import.meta.url));
 function instructions(name, installed) {
-  return `cd ${name}\n${installed ? '' : 'npm ci\n'}cp .env.example .env.local\n\nREADMEに従ってPostgreSQLと認証設定を準備してください。\n開発DBを設定後: npm run db:migrate → npm run db:seed → npm run dev\nSeedには自分で決めた初期パスワードが必要です。\n設定と詳しい手順: ${name}/README.md\nAIとの開発手順: ${name}/docs/adding-a-feature.md`;
+  return `cd ${name}\n${installed ? '' : 'npm ci\n'}npm run dev:local\n\n開発用PostgreSQL・認証・初期管理者を自動で準備します。\n初期パスワード: .kumuno/local/login.txt\n既存DBや本番の準備: ${name}/README.md\nAIとの開発手順: ${name}/docs/adding-a-feature.md`;
 }
 async function installDependencies(target) {
   const npmScript = process.env.npm_execpath;

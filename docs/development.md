@@ -181,3 +181,8 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 ## 公開候補版への機能追加を再現する
 
 [研修追加の受入差分](../examples/training-acceptance/README.md)は公開RC専用。`npm run test:acceptance`でCLIのRegistry取得・生成・差分適用・check、`npm run test:acceptance:db`でMigration / Seedの再実行・実DB・研修と既存機能の3画面幅検証まで再現する。後者には専用TEST_DATABASE_URLが必要。CIの通常checkとは別に実行する。Claude Codeによる理解の確認は[受入記録](acceptance/v0.1.md)の別工程。
+
+
+## 開発用DBを自動準備して試す
+
+ソース版の生成物は`npm run dev:local`でPostgreSQL 18.4と初期設定を準備できる。[生成物の説明](../templates/default/docs/local-development.md)を参照。次の候補rc.1向けの変更で、npm公開済みrc.0には未収録。CLI配布物のこの経路は`npm run test:pack:local`で実際のログイン・備品CRUD・非管理者ロール・同時起動拒否・終了・データ保持と再起動を検証する。CIでは`npm run test:pack:db -- --local`で既存の実DB検証と合わせて実行する。

@@ -37,3 +37,6 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 データの流れは認証済みHTTP入口→入力検証→serviceの最新認可→DB更新と監査の一括確定→画面再検証。読み出しは認可済みページ→組織を指定したrepository→表示用データ。備品のserviceでは更新Prisma操作をtransaction内に置き、repositoryは読出しに責任を持つ。
 
 現在の共通FormData補助はsrc/management/validation.ts、共通フォームはsrc/management/form.tsx。大きな汎用層にする前に、再利用する責務だけを選ぶ。[デプロイ](deployment.md)には運用前提と未確認の範囲を記録する。
+
+
+手元の試用は[開発用自動セットアップ](local-development.md)を利用できる。既存DB・本番の設定とは別の開発専用経路。

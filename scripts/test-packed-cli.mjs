@@ -8,6 +8,8 @@ import { createHash } from 'node:crypto';
 import { checkApplicationDocumentation } from './check-application-docs.mjs';
 import { templateFiles, bundledName } from '../packages/create-kumuno/src/template-files.mjs';
 import { requireTestDatabaseUrl, verifyGeneratedDatabase } from './verify-generated-database.mjs';
+import { verifyLocalDevelopment } from './verify-local-development.mjs';
+const localMode=process.argv.includes('--local');
 const databaseMode=process.argv.includes('--db');
 const testUrl=databaseMode ? requireTestDatabaseUrl(process.env.TEST_DATABASE_URL) : undefined;
 const npm=process.env.npm_execpath;
@@ -28,7 +30,7 @@ try {
   assert.equal(packed.name,'create-kumuno');
   assert.equal(packed.version,JSON.parse(await readFile(join(packageRoot,'package.json'))).version);
   for(const entry of templateFiles) assert(entries.some(path=>path===`template/${bundledName(entry)}`||path.startsWith(`template/${bundledName(entry)}/`)),`Missing bundled entry: ${entry}`);
-  assert(!entries.some(path=>/(^|\/)(node_modules|generated|\.next|\.git|test-results|playwright-report)(\/|$)/.test(path)));
+  assert(!entries.some(path=>/(^|\/)(node_modules|generated|\.next|\.git|\.kumuno|test-results|playwright-report)(\/|$)/.test(path)));
   assert(!entries.some(path=>/\.env/.test(path)&&!path.endsWith('__env.example')));
   const runner=join(temporary,'runner');await mkdir(runner);
   run([npm,'install','--prefix',runner,'--ignore-scripts','--no-audit','--no-fund',join(temporary,packed.filename)],temporary);
@@ -49,8 +51,9 @@ try {
   for(const entry of ['.gitignore','.npmrc','.nvmrc','.env.example']) assert((await readdir(app)).includes(entry));
   run([npm,'run','check'],app);
   if(databaseMode) await verifyGeneratedDatabase(app,testUrl,npm,run);
+  if(localMode) await verifyLocalDevelopment(app,env);
   await rm(temporary,{recursive:true,force:true});
-  console.log(`Packed CLI passed: ${entries.length} package files, independent generation, dotfiles, npm ci, documentation, application checks${databaseMode ? ", migration/seed repeatability, DB and authentication browser tests" : ""}.`);
+  console.log(`Packed CLI passed: ${entries.length} package files, independent generation, dotfiles, npm ci, documentation, application checks${databaseMode ? ", migration/seed repeatability, DB and authentication browser tests" : ""}${localMode ? ", automatic local PostgreSQL/login/CRUD/persistent restart" : ""}.`);
 } catch(error) {
   console.error(`Packed CLI verification failed. Fixture retained: ${temporary}`);
   if(databaseMode) {

@@ -1,6 +1,6 @@
 # 依存ライブラリのライセンス一覧
 
-このアプリのpackage-lock.jsonにある全497パッケージ項目（推移依存・OS別optionalを含む）のライセンス宣言を記録します。[機械可読の一覧](dependency-licenses.json)には導入経路・名前・版・宣言・取得先を含め、lockfileの依存項目のSHA-256（アプリ名・ルート項目を除く）で対応を確認できます。同名パッケージの別版やOS別項目はそれぞれ数えます。
+このアプリのpackage-lock.jsonにある全507パッケージ項目（推移依存・OS別optionalを含む）のライセンス宣言を記録します。[機械可読の一覧](dependency-licenses.json)には導入経路・名前・版・宣言・取得先を含め、lockfileの依存項目のSHA-256（アプリ名・ルート項目を除く）で対応を確認できます。同名パッケージの別版やOS別項目はそれぞれ数えます。
 
 KUMUNOが作成したコードは[MIT](../LICENSE)です。依存パッケージの許諾は各パッケージ自身のLICENSE / NOTICEに従います。この一覧はnpm lockfileの宣言の棚卸しで、ネイティブバイナリ内部の全コンポーネントの許諾一覧ではありません。
 
@@ -26,6 +26,7 @@ CLI配布にはnode_modulesやネイティブバイナリを同梱せず、生�
 | @types/pg | 8.23.1 | MIT | 開発時 |
 | @types/react | 19.3.0 | MIT | 開発時 |
 | @types/react-dom | 19.3.0 | MIT | 開発時 |
+| embedded-postgres | 18.4.0-beta.17 | MIT | 開発時 |
 | eslint | 10.11.0 | MIT | 開発時 |
 | eslint-plugin-react-hooks | 7.1.1 | MIT | 開発時 |
 | prisma | 7.10.0 | Apache-2.0 | 開発時 |
@@ -50,7 +51,7 @@ CLI配布にはnode_modulesやネイティブバイナリを同梱せず、生�
 | EPL-2.0 | 1 |
 | ISC | 34 |
 | LGPL-3.0-or-later | 10 |
-| MIT | 349 |
+| MIT | 359 |
 | MIT and ISC | 1 |
 | MPL-2.0 | 24 |
 | Unlicense | 2 |

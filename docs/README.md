@@ -10,6 +10,7 @@
 | 本体の開発・テスト | [開発ガイド](development.md)、[貢献方法](../CONTRIBUTING.md)、[エージェント向け入口](../AGENTS.md) |
 | v0.1の目標と実装状況 | [マスター仕様書v3.1](master-spec.md)、[現在の構成・工程](architecture.md)、[変更履歴](../CHANGELOG.md) |
 | AIと業務機能を追加 | [生成アプリの文書一覧](../templates/default/docs/README.md)、[機能追加手順](../templates/default/docs/adding-a-feature.md) |
+| DB準備なしで手元の試用 | [開発用セットアップ](../templates/default/docs/local-development.md)（ソース版 / 次のrc.1候補） |
 | 共通基盤 | [DB](database.md)、[認証](authentication.md)、[認可](authorization.md)、[監査](audit-log.md) |
 | 参照する業務機能 | [管理画面](management.md)、[備品管理](equipment.md) |
 | データの所有と将来の接続 | [Domain境界](domain-boundaries.md)、[連携方針](integration.md) |

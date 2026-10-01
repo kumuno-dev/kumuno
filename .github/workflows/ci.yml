@@ -55,4 +55,4 @@ jobs:
       - name: Check structure, CLI, lint, types, unit tests and production browser smoke tests
         run: npm run check
       - name: Verify packed CLI and generated application with PostgreSQL
-        run: npm run test:pack:db
+        run: npm run test:pack:db -- --local

@@ -11,3 +11,5 @@ next-env.d.ts
 *.log
 .DS_Store
 src/generated/prisma/
+
+.kumuno/

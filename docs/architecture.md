@@ -219,3 +219,12 @@ npm名照会はE404で、利用可能性は公開時に再確認する。Macのn
 生成物の単体24件・実DB32件・スモーク4件、lint・型検査・本番ビルドと3画面幅の研修／既存機能のブラウザー検証が成功した。既存データの保持、監査INSERT失敗時のCRUD取消、越境拒否、権限降格後の古いフォーム拒否を確認した。
 
 ユーザーがClaude Codeの確認を後日へ指定したため、EはCodex側のみ確認済み。Milestone 15 / A〜G全体の完了と正式版公開は保留する。0.1.0-rc.0と現在のnpmタグは変更していない。正式版は受入完了後に0.1.0をlatestで公開・Registry検証する方針。
+
+
+## 開発用DBの自動準備（rc.1候補）
+
+ユーザー承認により、手元の試用を本番DB構築から分けた。生成アプリのdev:localが専用PostgreSQL 18.4を起動し、DB / shadow DB / test DB、ランダム資格情報、認証設定、Migrationと開発用初期管理者、Next.js開発サーバーを準備する。既存.env.localや接続環境変数は拒否して上書きせず、通常のDB接続は維持する。Ctrl+Cで停止し、データ・初期管理者ID・パスワードは再起動でも保持する。
+
+[設計判断0022](decisions/0022-local-development-postgres.md)と[生成物の手順](../templates/default/docs/local-development.md)を参照。embedded-postgresを開発依存として追加し、ライセンス宣言全507項目を更新した。新しいCLI候補は0.1.0-rc.1。現在のnpm公開版rc.0とタグは変更していない。正式版とClaude Codeの確認条件も維持する。
+
+配布物の自動起動・実ログイン・備品CRUD・非管理者ロール・同時起動拒否・終了・既存ID／備品／監査を保持した再起動をmacOSで検証した。単体24件・実DB27件・3画面幅の認証／認可／管理／備品・ブラウザースモーク4件・lint・型・本番ビルドとCLI5件も成功。rc.1の実tgzでtest:pack:db -- --localが成功した。CIへ同じ起動検証を追加した。Windowsの実行は未検証。

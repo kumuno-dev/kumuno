@@ -63,3 +63,6 @@ Milestone 4の`20260928000000_shared_core`は共有マスタ・認証テーブ�
 Milestone 5の`20260928010000_auth_rate_limit`はBetter Auth標準DB試行制限のRateLimitを追加する。認証導入時はMigrationを適用してからログインを試す。
 
 その後のMigrationはUser.role、追記専用AuditLog、Equipmentと組織境界の複合外部キーを追加する。モデルと運用は[認可](authorization.md)、[監査](audit-log.md)、[備品](equipment.md)を参照。
+
+
+手元の試用は[開発用自動セットアップ](local-development.md)を利用できる。既存DB・本番の設定とは別の開発専用経路。

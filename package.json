@@ -42,6 +42,7 @@
     "licenses:update": "node scripts/check-dependency-licenses.mjs --write",
     "check:release": "node scripts/check-release.mjs",
     "test:acceptance": "node scripts/test-acceptance-training.mjs",
-    "test:acceptance:db": "node --env-file-if-exists=templates/default/.env.test.local scripts/test-acceptance-training.mjs --db"
+    "test:acceptance:db": "node --env-file-if-exists=templates/default/.env.test.local scripts/test-acceptance-training.mjs --db",
+    "test:pack:local": "node scripts/test-packed-cli.mjs --local"
   }
 }

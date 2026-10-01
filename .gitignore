@@ -17,3 +17,5 @@ packages/create-kumuno/.template-stage-*/
 *.tgz
 
 artifacts/
+
+**/.kumuno/

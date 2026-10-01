@@ -2,6 +2,19 @@
 
 認証・組織・ユーザー・部署・権限・監査と、備品管理の参照実装を持つ業務アプリです。このディレクトリ単独でセットアップ・開発できます。AIとの開発は[機能追加手順](docs/adding-a-feature.md)から始めます。
 
+## まず手元で試す（おすすめ）
+
+Node.js **24.x**とnpmを用意して実行します。PostgreSQL・Dockerの別途導入や、接続URLの手入力は不要です。
+
+```sh
+npm ci
+npm run dev:local
+```
+
+表示されたURLを開き、メール`admin@example.com`と`.kumuno/local/login.txt`に保存された初期パスワードでログインします。CLIで依存を導入済みならnpm ciは不要です。
+
+Ctrl+Cで終了し、次回も同じコマンドで再開できます。DBデータは保持されます。既存の.env.localや接続環境変数は上書きしません。詳しくは[手元で試す](docs/local-development.md)を参照してください。本番や既存DBのセットアップは次の手順を使います。
+
 ## セットアップ
 
 必要なもの：Node.js **24.x LTS**（検証版は`.nvmrc`）、npm、Git、PostgreSQL **18.x**。トップページの起動・ビルドだけならDBは不要です。

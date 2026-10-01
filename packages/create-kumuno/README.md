@@ -31,7 +31,7 @@ cd my-app
 npm run dev
 ```
 
-トップページの表示はDBなしで確認できる。ログイン・業務画面は生成先READMEに従ってPostgreSQL・認証・Migration・開発Seedを設定する。
+ソース版では生成先でnpm run dev:localを実行し、開発用PostgreSQL・認証・初期管理者まで自動で準備できる。初期パスワードは生成先の.kumuno/local/login.txt。既存DB・本番は生成先READMEの手動設定を使う。次の候補0.1.0-rc.1向けの変更で、npm公開済みrc.0には未収録。
 
 rootでnpm run create:app -- my-appを実行すると依存導入を対話で選べる。毎回テンプレートを同梱ディレクトリへ再生成してから起動する。直接nodeでCLIを実行する場合は、先にrootのnpm run build:cliで同梱内容を更新する。
 

@@ -31,10 +31,12 @@ cd kumuno
 npm ci
 npm run create:app -- my-app --install
 cd my-app
-npm run dev
+npm run dev:local
 ```
 
-[http://localhost:3000](http://localhost:3000)でトップページを確認できます。この段階ではDBは不要です。ログイン・業務画面を使う場合は、生成先READMEに従って**PostgreSQL 18.x → 環境設定 → Migration → 開発Seed**を準備してください。生成先だけで開発・保守できます。
+開発用PostgreSQL・認証設定・初期管理者を自動準備します。表示されたURLからログインでき、初期パスワードは生成先の`.kumuno/local/login.txt`で確認できます。Ctrl+Cで終了し、次回も同じコマンドで再開できます。DBの別途導入は不要です。詳しくは[開発用セットアップ](templates/default/docs/local-development.md)を参照してください。
+
+この簡単セットアップは次の候補版0.1.0-rc.1向けの変更で、現在のnpm版rc.0には未収録です。公開前はソースから試してください。
 
 対話で依存導入を選ぶ場合は--installを省略します。生成だけなら--no-installを指定し、生成先でnpm ciを実行します。既存ディレクトリは上書きしません。[CLIオプション](packages/create-kumuno/README.md)を参照してください。
 

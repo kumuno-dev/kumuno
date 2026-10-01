@@ -1,6 +1,6 @@
 # create-kumunoの公開手順
 
-この文書はメンテナー向けです。現在の候補はcreate-kumuno@0.1.0-rc.0、MIT、npmのnextタグです。2026-10-01にnpmへ公開済みです。rootと生成アプリはprivate: trueを維持し、CLIだけを公開可能にしています。
+この文書はメンテナー向けです。npm公開済みはcreate-kumuno@0.1.0-rc.0、次の候補は0.1.0-rc.1（まだ未公開）です。MIT、候補版のタグはnext。以下のrc.0は初回公開の記録で、新版は末尾のrc.1手順を使います。rootと生成アプリはprivate: trueを維持し、CLIだけを公開可能にしています。
 
 ## 公開前の確認
 
@@ -77,3 +77,17 @@ Registryのdist.integrityは保存したtgzと一致しました。新しいnpm�
 ## 正式版とタグの方針
 
 正式版は0.1.0をlatestで公開し、nextを候補版の入口にする。ユーザー承認によりこの方向を採用した。現在は[受入記録](acceptance/v0.1.md)のE（Claude Code）が後日確認であり、版・publishConfig・タグは候補版のまま。正式版への更新時はCLIの版とlockfile、公開設定、公開メタデータ検査、README / CHANGELOGを揃え、配布tgz・CIを検証してから公開する。公開後のRegistry検証を省略しない。
+
+
+## 次の候補0.1.0-rc.1
+
+開発DB準備の負担を減らすdev:localを追加した候補。公開済みrc.0へ上書きせず、新版として準備する。rc.1はまだnpm未公開。公開前はソースから生成して試す。公開前検証には`npm run test:pack:db -- --local`を含め、固定tgzに新しい設定手順・開発ランナー・ライセンス記録が含まれ、.kumunoのDBと資格情報が含まれないことを確認する。npm公開の承認・本人確認・Registry検証を経てnextを更新する。正式版のlatestへの更新とは別の候補版の公開。
+
+
+rc.1の固定tgzはartifacts/create-kumuno-0.1.0-rc.1.tgz。実公開前は次で確認する。
+
+```sh
+npm publish ./artifacts/create-kumuno-0.1.0-rc.1.tgz --dry-run --tag next --access public --registry=https://registry.npmjs.org/
+```
+
+dry-runの成功だけでは公開成功ではない。検証とメンテナーの承認後、同じ固定tgzをdry-runなしで公開し、ブラウザー等の本人確認とRegistryの版・integrity・nextタグ・実生成を確認する。

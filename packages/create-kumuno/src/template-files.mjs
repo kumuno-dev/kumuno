@@ -5,7 +5,7 @@ export const templateFiles = ['src', 'prisma', 'scripts', 'tests', 'docs', 'pack
 export function bundledName(entry) { return entry.startsWith('.') ? `__${entry.slice(1)}` : entry; }
 export async function templateFilter(source) {
   const entry = basename(source);
-  if (['node_modules', 'generated', '.git', '.next', '.DS_Store', 'coverage', 'out', 'playwright-report', 'test-results', 'next-env.d.ts'].includes(entry) || entry.endsWith('.tsbuildinfo') || entry.endsWith('.log') || (entry.startsWith('.env') && entry !== '.env.example')) return false;
+  if (['node_modules', '.kumuno', 'generated', '.git', '.next', '.DS_Store', 'coverage', 'out', 'playwright-report', 'test-results', 'next-env.d.ts'].includes(entry) || entry.endsWith('.tsbuildinfo') || entry.endsWith('.log') || (entry.startsWith('.env') && entry !== '.env.example')) return false;
   if ((await lstat(source)).isSymbolicLink()) throw new Error('テンプレートにsymlinkが含まれています。');
   return true;
 }
