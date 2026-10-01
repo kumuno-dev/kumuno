@@ -228,3 +228,6 @@ npm名照会はE404で、利用可能性は公開時に再確認する。Macのn
 [設計判断0022](decisions/0022-local-development-postgres.md)と[生成物の手順](../templates/default/docs/local-development.md)を参照。embedded-postgresを開発依存として追加し、ライセンス宣言全507項目を更新した。新しいCLI候補は0.1.0-rc.1。現在のnpm公開版rc.0とタグは変更していない。正式版とClaude Codeの確認条件も維持する。
 
 配布物の自動起動・実ログイン・備品CRUD・非管理者ロール・同時起動拒否・終了・既存ID／備品／監査を保持した再起動をmacOSで検証した。単体24件・実DB27件・3画面幅の認証／認可／管理／備品・ブラウザースモーク4件・lint・型・本番ビルドとCLI5件も成功。rc.1の実tgzでtest:pack:db -- --localが成功した。CIへ同じ起動検証を追加した。Windowsの実行は未検証。
+
+
+自動セットアップ追加の[GitHub Actions](https://github.com/kumuno-dev/kumuno/actions/runs/36811013393)も成功（実装commit: 87af3c9）。Ubuntuで従来の配布物・実DB・3画面幅の業務検証に加え、専用PostgreSQLの初回起動・ログイン・CRUD・終了・再起動を確認した。公開候補rc.1の固定tgzは106ファイル、146,109 bytesで、dry-runとSHA-512 integrityが一致し、.kumuno / 実.env / node_modulesは含まれない。npm認証は確認済み、実公開はメンテナーの確認待ち。

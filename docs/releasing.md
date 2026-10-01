@@ -91,3 +91,10 @@ npm publish ./artifacts/create-kumuno-0.1.0-rc.1.tgz --dry-run --tag next --acce
 ```
 
 dry-runの成功だけでは公開成功ではない。検証とメンテナーの承認後、同じ固定tgzをdry-runなしで公開し、ブラウザー等の本人確認とRegistryの版・integrity・nextタグ・実生成を確認する。
+
+
+rc.1の公開前検証（2026-10-01）: macOSと[Ubuntu CI](https://github.com/kumuno-dev/kumuno/actions/runs/36811013393)でcheck / test:pack:db -- --localが成功。固定tgzは106ファイル、146,109 bytes。dry-runと以下のintegrityが一致した。実公開は確認待ち。
+
+```text
+sha512-aoOLwl7avLU+IA11wskiZpI3vnLgz4ZDV5X1UAt37zxWKWQwKDQM0pVdDAThuvGdPrYSSgEH662PaHp0Q0eB+A==
+```
