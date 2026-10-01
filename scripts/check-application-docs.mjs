@@ -3,7 +3,8 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve } from 'node:path';
 
 export const requiredDocumentation = [
-  'README.md', 'AGENTS.md', 'CLAUDE.md', 'docs/README.md',
+  'README.md', 'LICENSE', 'AGENTS.md', 'CLAUDE.md', 'docs/README.md',
+  'docs/dependency-licenses.md', 'docs/dependency-licenses.json',
   'docs/architecture.md', 'docs/database.md', 'docs/authentication.md',
   'docs/authorization.md', 'docs/organization.md', 'docs/integration.md',
   'docs/domain-boundaries.md', 'docs/audit-log.md', 'docs/adding-a-feature.md',

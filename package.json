@@ -2,7 +2,7 @@
   "name": "kumuno",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": "24.x"
   },
@@ -16,7 +16,7 @@
     "lint": "npm --prefix templates/default run lint --",
     "typecheck": "npm --prefix templates/default run typecheck --",
     "test": "npm --prefix templates/default run test --",
-    "check": "npm run check:structure && npm run test:verification && npm run test:cli && npm --prefix templates/default run check",
+    "check": "npm run check:structure && npm run check:licenses && npm run check:release && npm run test:verification && npm run test:cli && npm --prefix templates/default run check",
     "test:unit": "npm --prefix templates/default run test:unit --",
     "test:e2e": "npm --prefix templates/default run test:e2e --",
     "test:db": "npm --prefix templates/default run test:db --",
@@ -37,6 +37,9 @@
     "pretest:template:db": "npm run build:cli",
     "test:pack": "node scripts/test-packed-cli.mjs",
     "test:pack:db": "node --env-file-if-exists=templates/default/.env.test.local scripts/test-packed-cli.mjs --db",
-    "test:verification": "node --test scripts/tests/*.test.mjs"
+    "test:verification": "node --test scripts/tests/*.test.mjs",
+    "check:licenses": "node scripts/check-dependency-licenses.mjs",
+    "licenses:update": "node scripts/check-dependency-licenses.mjs --write",
+    "check:release": "node scripts/check-release.mjs"
   }
 }

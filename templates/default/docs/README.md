@@ -14,6 +14,7 @@
 | 認証・権限・監査 | [authentication.md](authentication.md)、[authorization.md](authorization.md)、[audit-log.md](audit-log.md) |
 | CRUDの具体例 | [equipment.md](equipment.md)、src/equipment |
 | 共通画面・管理フォーム | [management.md](management.md) |
+| ライセンス | [LICENSE](../LICENSE)、[依存ライブラリの一覧](dependency-licenses.md) |
 | 本番へ動かす準備 | [deployment.md](deployment.md) |
 
 実装済み機能と未実装の機能は各文書で区別する。設計を変える場合は関連文書も更新し、実行した検証と残る課題を報告する。

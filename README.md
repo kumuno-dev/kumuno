@@ -7,7 +7,7 @@ AI coding agentsのための、オープンソース業務システム開発基�
 
 KUMUNO is an open-source foundation for building business applications with AI coding agents.
 
-**公開準備中です。npm版は未公開、配布ライセンスは未確定です。** 公開後の開始コマンドは次を予定しています。
+**公開準備中です。MITを採用し、npm版は未公開です。** 公開後の開始コマンドは次を予定しています。
 
 ```sh
 npx create-kumuno my-app
@@ -61,8 +61,8 @@ Next.js・React・TypeScript・Tailwind CSS・PostgreSQL・Prisma・Better Auth�
 
 Milestone 13まで完了し、配布tgzからの生成・ビルド・DB・認証・業務画面をmacOSとUbuntuのCIで検証済みです。[CI](https://github.com/kumuno-dev/kumuno/actions/workflows/ci.yml)と[工程・検証実績](docs/architecture.md)を参照してください。
 
-npm公開準備とライセンス決定、v0.1 Release Candidateの確認が残っています。Windows、npm Registryからの実行、本番TLS・プロキシ・バックアップ復旧は未検証です。本番初期管理者の自動作成、公開サインアップ、パスワードリセットは未実装です。[運用の前提](templates/default/docs/deployment.md)を確認してください。
+create-kumuno@0.1.0-rc.0をnextタグ向けに準備しています。npm公開とv0.1 Release Candidateの確認が残っています。[公開手順](docs/releasing.md)を参照してください。Windows、npm Registryからの実行、本番TLS・プロキシ・バックアップ復旧は未検証です。本番初期管理者の自動作成、公開サインアップ、パスワードリセットは未実装です。[運用の前提](templates/default/docs/deployment.md)を確認してください。
 
 ## ライセンス
 
-MITを第一候補とし、公開準備工程で決定します。現段階ではpackage.jsonはprivate: true / UNLICENSEDです。利用許諾を確定したOSSリリースとしては公開していません。依存ライブラリのライセンス確認も公開前に行います。
+KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。CLIと生成アプリにもLICENSEを同梱します。依存ライブラリは各パッケージ自身のライセンスに従います。[依存ライセンスの確認記録](docs/dependency-licenses.md)を参照してください。

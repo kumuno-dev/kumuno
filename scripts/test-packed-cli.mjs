@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { checkApplicationDocumentation } from './check-application-docs.mjs';
 import { templateFiles, bundledName } from '../packages/create-kumuno/src/template-files.mjs';
 import { requireTestDatabaseUrl, verifyGeneratedDatabase } from './verify-generated-database.mjs';
@@ -23,6 +24,9 @@ function run(args,cwd,capture=false) {
 try {
   const [packed]=JSON.parse(run([npm,'pack','--json','--pack-destination',temporary],packageRoot,true));
   const entries=packed.files.map(file=>file.path);
+  assert(entries.includes('LICENSE'));
+  assert.equal(packed.name,'create-kumuno');
+  assert.equal(packed.version,JSON.parse(await readFile(join(packageRoot,'package.json'))).version);
   for(const entry of templateFiles) assert(entries.some(path=>path===`template/${bundledName(entry)}`||path.startsWith(`template/${bundledName(entry)}/`)),`Missing bundled entry: ${entry}`);
   assert(!entries.some(path=>/(^|\/)(node_modules|generated|\.next|\.git|test-results|playwright-report)(\/|$)/.test(path)));
   assert(!entries.some(path=>/\.env/.test(path)&&!path.endsWith('__env.example')));
@@ -33,6 +37,13 @@ try {
   run([cli,'packed-app','--install'],temporary);
   const app=join(temporary,'packed-app');
   await checkApplicationDocumentation(app);
+  assert.equal(await readFile(join(app,'LICENSE'),'utf8'),await readFile(join(packageRoot,'LICENSE'),'utf8'));
+  assert.equal(JSON.parse(await readFile(join(app,'package.json'))).license,'MIT');
+  const applicationLock=JSON.parse(await readFile(join(app,'package-lock.json')));
+  assert.equal(applicationLock.packages[''].license,'MIT');
+  const inventory=JSON.parse(await readFile(join(app,'docs/dependency-licenses.json')));
+  const dependencyHash=createHash('sha256').update(JSON.stringify(Object.fromEntries(Object.entries(applicationLock.packages).filter(([path])=>path)))).digest('hex');
+  assert.equal(inventory.dependencySha256,dependencyHash,'Generated license inventory must match its dependencies');
   assert.equal(JSON.parse(await readFile(join(app,'package.json'))).name,'packed-app');
   assert.equal(JSON.parse(await readFile(join(app,'package-lock.json'))).packages[''].name,'packed-app');
   for(const entry of ['.gitignore','.npmrc','.nvmrc','.env.example']) assert((await readdir(app)).includes(entry));

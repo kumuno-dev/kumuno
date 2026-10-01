@@ -111,7 +111,7 @@ DB名は`_test`で終わる必要があります。テストは毎回一意なsc
 - [DB規約](docs/database.md)
 - [AI向け入口](AGENTS.md)
 
-本体の配布ライセンスは未確定です。
+KUMUNOが作成したコードは[MIT License](LICENSE)です。[依存ライブラリの宣言一覧](docs/dependency-licenses.md)も参照してください。
 
 ## セットアップで困った場合
 

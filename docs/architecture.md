@@ -53,7 +53,7 @@ Validationは当初Zodを候補としたが、Milestone 8では少数のFormData
 | 11 | create-kumuno CLI | 完了。同梱配布・依存インストール対話・失敗時の保持を検証済み |
 | 12 | CLI Integration Test | 完了。配布tgzのDB/認証結合検証とUbuntu上のGitHub Actionsが成功 |
 | 13 | README / OSS Documentation | 完了。導入・開発・貢献・セキュリティ・変更履歴とIssue/PR文書を整備 |
-| 14 | npm package preparation | 名前の利用可能性・ライセンス・公開手順を確認し、npm公開する |
+| 14 | npm package preparation | MIT・候補版・同梱物・公開手順・dry-runを検証済み。実公開はnpm認証待ち |
 | 15 | v0.1 Release Candidate | 未達。第43〜49章のAcceptance Test A〜Gを確認する |
 
 テストと文書更新は各工程で行い、Milestone 10・12まで後回しにしない。第35章のCIにはlint・typecheck・test・build・CLI生成テストを含める。ユーザー・部署管理は第44章の必須条件。
@@ -185,3 +185,14 @@ READMEをブランドの思想・未公開状態・ローカルQuick Start・現
 Node.js 24 / macOSでnpm run checkとnpm run test:packが成功。CLI5件・検証設定1件・単体21件・ブラウザー4件、配布物の独立生成・依存導入・生成アプリの文書リンク・lint・型検査・本番ビルドを確認した。変更文書のローカルリンクとnpmコマンドも確認した。
 
 文書のみの変更で、DB・依存・アプリ動作は変更していないため、実DB検証は再実行していない。ライセンスと固定の非公開報告窓口の確定、npm公開、Windows・Registry経由の確認は残る。次はMilestone 14のnpm package preparation。
+
+
+## Milestone 14 公開準備（2026-10-01）
+
+ユーザー承認によりMITを採用し、root・CLI・生成アプリへLICENSEとpackageメタデータを反映した。CLIはcreate-kumuno@0.1.0-rc.0、npm公式registry / public / nextタグとし、rootと生成アプリのprivateは維持した。[公開手順](releasing.md)、[依存ライセンス記録](dependency-licenses.md)、[設計判断0020](decisions/0020-npm-release-preparation.md)を追加した。
+
+lockfileの全497依存項目にライセンス宣言があること、直接依存24件のpackage.jsonと同梱許諾文22件を確認した。依存の版・resolved・integrityは変更していない。LICENSEと依存宣言一覧を生成物に含め、配布物でも一致を検証する。
+
+Node.js 24 / macOS / 一時PostgreSQL 18.4の非管理者ロールでcheck、test:pack、test:pack:dbが成功。CLI5件・検証設定1件・単体21件・ブラウザー4件、実DB27件、3画面幅の認証・権限・管理・備品操作が通った。公開候補tgzは101ファイル、138,669 bytes。固定したtgzとnpm publish --dry-runのSHA-512 integrityが一致した。実公開は行っていない。
+
+npm名照会はE404で、利用可能性は公開時に再確認する。Macのnpm whoamiはENEEDAUTH、GitHubはprivate。npm認証、GitHubのpublic切替・非公開報告窓口の確定、候補版の実公開とRegistry経由の検証が未完了のため、Milestone 14全体は完了扱いにしない。公開設定の変更・npm公開はメンテナー確認後に進める。

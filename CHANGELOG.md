@@ -11,5 +11,6 @@ v0.1の公開準備中です。以下は開発版で利用・検証できる機�
 - create-kumunoのテンプレート同梱、対話入力、依存導入オプション、失敗時の生成物保持。
 - 実tgzからのアプリ生成・check・DB/認証結合テストとGitHub ActionsのCI。
 - README、開発・貢献・セキュリティ文書、文書一覧。
+- MIT LICENSEの同梱、create-kumuno@0.1.0-rc.0の公開メタデータ、依存ライセンス一覧と検査。
 
-公開までの工程と検証実績は[architecture.md](docs/architecture.md)を参照してください。ライセンス決定・npm公開・Release CandidateのAcceptance Testは残っています。
+公開までの工程と検証実績は[architecture.md](docs/architecture.md)を参照してください。MITを採用済みです。npm公開とRelease CandidateのAcceptance Testは残っています。

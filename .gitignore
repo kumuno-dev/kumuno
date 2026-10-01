@@ -15,3 +15,5 @@ next-env.d.ts
 packages/create-kumuno/template/
 packages/create-kumuno/.template-stage-*/
 *.tgz
+
+artifacts/

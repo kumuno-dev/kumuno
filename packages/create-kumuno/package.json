@@ -1,8 +1,7 @@
 {
   "name": "create-kumuno",
-  "version": "0.0.0",
-  "private": true,
-  "license": "UNLICENSED",
+  "version": "0.1.0-rc.0",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": "24.x"
@@ -19,6 +18,31 @@
   "files": [
     "src/",
     "template/",
-    "README.md"
-  ]
+    "README.md",
+    "LICENSE"
+  ],
+  "description": "Generate a business application foundation for AI coding agents with authentication, RBAC, audit logs and equipment management.",
+  "homepage": "https://kumuno.jp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kumuno-dev/kumuno.git",
+    "directory": "packages/create-kumuno"
+  },
+  "bugs": {
+    "url": "https://github.com/kumuno-dev/kumuno/issues"
+  },
+  "keywords": [
+    "kumuno",
+    "cli",
+    "create",
+    "business-app",
+    "ai-coding",
+    "nextjs",
+    "prisma"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "next"
+  }
 }

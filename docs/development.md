@@ -121,6 +121,9 @@ DBの接続先はCI専用サービスです。本番・開発DBやGitHub Secrets
 
 | コマンド | 内容 |
 | --- | --- |
+| `npm run check:licenses` | 依存ライセンス一覧とlockfileの一致 |
+| `npm run licenses:update` | 依存ライセンス一覧を再生成 |
+| `npm run check:release` | 公開候補の版・MIT・メタデータ・lockfile一致 |
 | `npm run check:structure` | workspace境界・生成アプリ文書の検査 |
 | `npm run test:verification` | 専用テストDB設定の回帰検査 |
 | `npm run test:cli` | CLI入力・生成・依存導入のテスト |
@@ -171,3 +174,5 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 | 生成物だけで失敗 | 表示された一時生成物のREADME・package.json・ログを確認する |
 
 失敗した生成物には.env以外の機密データも混入し得るため、Issueへ添付する前に内容を確認してください。DB検証用の接続設定ファイルは検証処理が除去します。[貢献方法](../CONTRIBUTING.md)と[セキュリティ方針](../SECURITY.md)も参照してください。
+
+公開準備は[releasing.md](releasing.md)を参照してください。npm run checkは依存ライセンス一覧と公開メタデータも検査します。

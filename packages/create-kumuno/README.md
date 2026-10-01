@@ -2,7 +2,7 @@
 
 Node.js 24.x / npmで、認証・認可・監査・ユーザー／部署管理・備品管理とAI開発文書を持つNext.jsアプリを生成する。CLIは同じnpmパッケージ内のtemplateを読み、実行時に製品リポジトリへアクセスしない。
 
-現在はprivate・0.0.0・UNLICENSEDの配布準備版。npm Registryへは未公開。公開時のコマンドはnpx create-kumuno my-appを想定し、名前・版・ライセンスは公開工程で確定する。
+公開候補は0.1.0-rc.0、[MIT License](LICENSE)を採用。npm Registryへは未公開。公開時はnextタグを使い、npx create-kumuno@next my-appで試せるようにする。正式版の開始コマンドはnpx create-kumuno my-appを予定する。
 
 ## オプション
 
@@ -37,7 +37,7 @@ rootでnpm run create:app -- my-appを実行すると依存導入を対話で選
 
 ## 同梱と検証
 
-prepackでtemplates/defaultから許可したファイルをコピーする。templateは生成物なのでGitへ含めない。npmが除外・改名するdotfileは__gitignore / __npmrc / __nvmrc / __env.exampleへ変換し、アプリ生成時に元へ戻す。Node Modules・Prisma生成物・キャッシュ・レポート・実際の.envは除外する。
+prepackでtemplates/defaultから許可したファイルをコピーする。templateは生成物なのでGitへ含めない。npmが除外・改名するdotfileは__gitignore / __npmrc / __nvmrc / __env.exampleへ変換し、アプリ生成時に元へ戻す。LICENSEと依存ライセンス一覧も生成アプリへ同梱する。Node Modules・Prisma生成物・キャッシュ・レポート・実際の.envは除外する。
 
 rootのnpm run test:cliは生成・入力拒否・既存先保護・依存導入失敗を検証する。npm run test:packは実tgzをリポジトリ外へインストールし、生成・実依存導入・文書・生成アプリのcheckを確認する。npm公開は行わない。
 
