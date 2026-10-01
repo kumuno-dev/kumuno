@@ -1,6 +1,6 @@
 # KUMUNOへの貢献
 
-不具合の再現、文書の改善、テストやコードの提案を歓迎します。現在は公開準備中で、npm未公開・MIT License採用済みです。[README](README.md)と[現在の工程](docs/architecture.md)から利用可能範囲を確認してください。
+不具合の再現、文書の改善、テストやコードの提案を歓迎します。現在は公開候補版0.1.0-rc.0をnpmで提供し、MIT Licenseを採用しています。[README](README.md)と[現在の工程](docs/architecture.md)から利用可能範囲を確認してください。
 
 ## 不具合・機能提案
 

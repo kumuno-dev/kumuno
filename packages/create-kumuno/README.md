@@ -2,7 +2,7 @@
 
 Node.js 24.x / npmで、認証・認可・監査・ユーザー／部署管理・備品管理とAI開発文書を持つNext.jsアプリを生成する。CLIは同じnpmパッケージ内のtemplateを読み、実行時に製品リポジトリへアクセスしない。
 
-公開候補は0.1.0-rc.0、[MIT License](LICENSE)を採用。npm Registryへは未公開。公開時はnextタグを使い、npx create-kumuno@next my-appで試せるようにする。正式版の開始コマンドはnpx create-kumuno my-appを予定する。
+公開候補は0.1.0-rc.0、[MIT License](LICENSE)を採用。npm Registryへ公開済み。npx create-kumuno@next my-appで試せる。初回公開でlatestも同版を指し、削除要求はnpm側が400で拒否した。候補版のため試用では@nextを明示する。正式版の開始コマンドはnpx create-kumuno my-appを予定する。
 
 ## オプション
 
@@ -43,4 +43,4 @@ rootのnpm run test:cliは生成・入力拒否・既存先保護・依存導入
 
 rootのnpm run test:pack:dbは専用TEST_DATABASE_URLを必須にし、配布物から生成したアプリのcheck・Migration/Seed再実行・実DB・認証/業務ブラウザーテストを実行する。GitHub ActionsでもUbuntu・Node.js 24・PostgreSQL 18・Chromiumで同じ検証を行う。
 
-Windows用のnpm呼出し分岐はあるが実行未検証。npm Registryからのnpx実行と公開版は後続工程。
+Windows用のnpm呼出し分岐はあるが実行未検証。npm Registryからのnpx生成・check・DB/認証/業務画面の検証は完了。正式版のAcceptance Testは後続工程。

@@ -7,15 +7,21 @@ AI coding agentsのための、オープンソース業務システム開発基�
 
 KUMUNO is an open-source foundation for building business applications with AI coding agents.
 
-**公開準備中です。MITを採用し、npm版は未公開です。** 公開後の開始コマンドは次を予定しています。
+**公開候補版0.1.0-rc.0をnpmへ公開しました。MIT Licenseです。** Node.js 24.xで、次のコマンドから試せます。正式版v0.1の確認は継続中です。
 
 ```sh
-npx create-kumuno my-app
+npx create-kumuno@next my-app
 ```
 
 [公式サイト](https://kumuno.jp) · [GitHub](https://github.com/kumuno-dev/kumuno) · [ドキュメント](docs/README.md)
 
-## 今すぐローカルで試す
+## npm版を試す
+
+生成後はmy-appへ移動してnpm run devを実行します。ログイン・業務画面には生成先READMEのPostgreSQL・認証・Migration・開発Seedの設定が必要です。
+
+[公開パッケージ](https://www.npmjs.com/package/create-kumuno)は現在、nextとlatestの両タグが0.1.0-rc.0を指しています。npm側がlatest削除を400で拒否したため、候補版であることを明示し、試用では@nextを指定します。
+
+## ソースからローカルで試す
 
 Node.js **24.x**、npm、Gitを用意し、次を実行します。
 
@@ -61,7 +67,7 @@ Next.js・React・TypeScript・Tailwind CSS・PostgreSQL・Prisma・Better Auth�
 
 Milestone 13まで完了し、配布tgzからの生成・ビルド・DB・認証・業務画面をmacOSとUbuntuのCIで検証済みです。[CI](https://github.com/kumuno-dev/kumuno/actions/workflows/ci.yml)と[工程・検証実績](docs/architecture.md)を参照してください。
 
-create-kumuno@0.1.0-rc.0をnextタグ向けに準備しています。npm公開とv0.1 Release Candidateの確認が残っています。[公開手順](docs/releasing.md)を参照してください。Windows、npm Registryからの実行、本番TLS・プロキシ・バックアップ復旧は未検証です。本番初期管理者の自動作成、公開サインアップ、パスワードリセットは未実装です。[運用の前提](templates/default/docs/deployment.md)を確認してください。
+Milestone 14のnpm公開とRegistryからの生成・DB検証まで完了しました。v0.1 Release CandidateのAcceptance Test確認が残っています。[公開手順](docs/releasing.md)を参照してください。Windows、本番TLS・プロキシ・バックアップ復旧は未検証です。本番初期管理者の自動作成、公開サインアップ、パスワードリセットは未実装です。[運用の前提](templates/default/docs/deployment.md)を確認してください。
 
 ## ライセンス
 

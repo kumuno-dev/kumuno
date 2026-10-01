@@ -4,7 +4,7 @@
 
 最上位仕様は[Master Specification v3.1](master-spec.md)。v0.1のゴールは、npm公開された`create-kumuno`で共通業務基盤と備品管理のReference Applicationを生成し、人とAIが業務機能を追加できること。CLI・生成物の検証・npm公開も完了条件に含む。
 
-旧仕様のStep 1・Step 2は承認済み・実装済み。第3版のMilestone 0として[技術設計案](design/milestone-0.md)を作成した。Milestone 1としてリポジトリをCLI workspaceと独立テンプレートへ再配置した。ユーザーの試用依頼によりローカルCLIの生成処理を先行実装した。テンプレート同梱とtgzの独立生成は対応済み。npm Registryは未公開。既存のPrisma採用決定は維持する。
+旧仕様のStep 1・Step 2は承認済み・実装済み。第3版のMilestone 0として[技術設計案](design/milestone-0.md)を作成した。Milestone 1としてリポジトリをCLI workspaceと独立テンプレートへ再配置した。ユーザーの試用依頼によりローカルCLIの生成処理を先行実装した。テンプレート同梱とtgzの独立生成は対応済み。npm Registryへ0.1.0-rc.0を公開済み。既存のPrisma採用決定は維持する。
 
 マスター仕様書はv3.1を正本とし、第2版から継続するCLI・テンプレート・npm公開要件と統合する。原文の章番号の重複・順序ずれのみ補正し、第1〜56章に整理した。第9章・第56章のDB比較については、会話で確定したPrisma採用を本書と選定記録で維持する。第54章の成功指標は、開発者本人以外の利用者がCLIから生成し、AIと業務機能を作れること。
 
@@ -53,7 +53,7 @@ Validationは当初Zodを候補としたが、Milestone 8では少数のFormData
 | 11 | create-kumuno CLI | 完了。同梱配布・依存インストール対話・失敗時の保持を検証済み |
 | 12 | CLI Integration Test | 完了。配布tgzのDB/認証結合検証とUbuntu上のGitHub Actionsが成功 |
 | 13 | README / OSS Documentation | 完了。導入・開発・貢献・セキュリティ・変更履歴とIssue/PR文書を整備 |
-| 14 | npm package preparation | MIT・候補版・同梱物・公開手順・dry-runを検証済み。GitHub一般公開済み。npm実公開は2FA設定待ち |
+| 14 | npm package preparation | 完了。MIT・公開候補版のnpm公開・Registryからの生成とDB/認証検証が成功 |
 | 15 | v0.1 Release Candidate | 未達。第43〜49章のAcceptance Test A〜Gを確認する |
 
 テストと文書更新は各工程で行い、Milestone 10・12まで後回しにしない。第35章のCIにはlint・typecheck・test・build・CLI生成テストを含める。ユーザー・部署管理は第44章の必須条件。
@@ -203,3 +203,10 @@ npm名照会はE404で、利用可能性は公開時に再確認する。Macのn
 ## GitHub一般公開とnpm公開試行（2026-10-01）
 
 ユーザーがGitHubのpublic切替と候補版のnpm公開を明示承認した。kumuno-dev/kumunoをpublicへ切り替え、非公開脆弱性報告を有効化・確認した。npmログインも確認済み。固定tgzをnextタグで公開しようとしたが、npmアカウントの2FAが無効で403となった。npm名照会は引き続きE404で、実公開は未完了。承認は維持し、メンテナーの2FA設定完了後に再試行・Registry検証を行う。
+
+
+## Milestone 14 完了（2026-10-01）
+
+ユーザーの2FA設定後、公開操作の本人確認を経てcreate-kumuno@0.1.0-rc.0をnextタグでnpmへ公開した。Registryのdist.integrityは検証済みの固定tgzと一致した。新しいnpmキャッシュを使い、リポジトリ外でnpx create-kumuno@nextから生成・依存導入し、文書・lint・型・単体21件・本番ビルド・ブラウザー4件を確認した。一時PostgreSQL 18.4の非管理者ロールでMigration/Seed再実行・実DB27件・3画面幅の認証/認可/管理/備品操作も成功した。
+
+初回公開でlatestも候補版を指し、タグ削除はnpm側が400で拒否した。現在のnext / latestはともに0.1.0-rc.0で、試用には@nextを明示する。安定版の公開完了とは扱わない。GitHubはpublic、非公開脆弱性報告も有効。次はMilestone 15としてAcceptance Test A〜Gとv0.1 Release Candidateを確認する。
