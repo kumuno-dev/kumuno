@@ -81,7 +81,7 @@ Registryのdist.integrityは保存したtgzと一致しました。新しいnpm�
 
 ## 次の候補0.1.0-rc.1
 
-開発DB準備の負担を減らすdev:localを追加した候補。公開済みrc.0へ上書きせず、新版として準備する。rc.1はまだnpm未公開。公開前はソースから生成して試す。公開前検証には`npm run test:pack:db -- --local`を含め、固定tgzに新しい設定手順・開発ランナー・ライセンス記録が含まれ、.kumunoのDBと資格情報が含まれないことを確認する。npm公開の承認・本人確認・Registry検証を経てnextを更新する。正式版のlatestへの更新とは別の候補版の公開。
+開発DB準備の負担を減らすdev:localと、医療機器台帳を追加した候補。公開済みrc.0へ上書きせず、新版として準備する。rc.1はまだnpm未公開。公開前はソースから生成して試す。公開前検証には`npm run test:pack:db -- --local`を含め、固定tgzに新しい設定手順・開発ランナー・ライセンス記録が含まれ、.kumunoのDBと資格情報が含まれないことを確認する。npm公開の承認・本人確認・Registry検証を経てnextを更新する。正式版のlatestへの更新とは別の候補版の公開。
 
 
 rc.1の固定tgzはartifacts/create-kumuno-0.1.0-rc.1.tgz。実公開前は次で確認する。
@@ -93,7 +93,7 @@ npm publish ./artifacts/create-kumuno-0.1.0-rc.1.tgz --dry-run --tag next --acce
 dry-runの成功だけでは公開成功ではない。検証とメンテナーの承認後、同じ固定tgzをdry-runなしで公開し、ブラウザー等の本人確認とRegistryの版・integrity・nextタグ・実生成を確認する。
 
 
-rc.1の公開前検証（2026-10-01）: macOSと[Ubuntu CI](https://github.com/kumuno-dev/kumuno/actions/runs/36811013393)でcheck / test:pack:db -- --localが成功。固定tgzは106ファイル、146,109 bytes。dry-runと以下のintegrityが一致した。実公開は確認待ち。
+医療機器台帳追加前のrc.1公開前検証（2026-10-01）: macOSと[Ubuntu CI](https://github.com/kumuno-dev/kumuno/actions/runs/36811013393)でcheck / test:pack:db -- --localが成功。固定tgzは106ファイル、146,109 bytes。dry-runと以下のintegrityが一致した。この固定tgzには医療機器台帳が含まれないため、次の公開には再pack・dry-run・integrity確認が必要。実公開は確認待ち。
 
 ```text
 sha512-aoOLwl7avLU+IA11wskiZpI3vnLgz4ZDV5X1UAt37zxWKWQwKDQM0pVdDAThuvGdPrYSSgEH662PaHp0Q0eB+A==

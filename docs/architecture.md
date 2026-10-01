@@ -231,3 +231,11 @@ npm名照会はE404で、利用可能性は公開時に再確認する。Macのn
 
 
 自動セットアップ追加の[GitHub Actions](https://github.com/kumuno-dev/kumuno/actions/runs/36811013393)も成功（実装commit: 87af3c9）。Ubuntuで従来の配布物・実DB・3画面幅の業務検証に加え、専用PostgreSQLの初回起動・ログイン・CRUD・終了・再起動を確認した。公開候補rc.1の固定tgzは106ファイル、146,109 bytesで、dry-runとSHA-512 integrityが一致し、.kumuno / 実.env / node_modulesは含まれない。npm認証は確認済み、実公開はメンテナーの確認待ち。
+
+## 医療機器管理の第一段階
+
+ユーザーの指定サイトとExcel運用をもとに、ソース版へ医療機器台帳を追加した。MedicalDeviceは業務固有モデルで、共通の組織・部署・権限・監査を再利用する。登録・編集・詳細・検索・状態フィルター・ページ切替を提供する。ADMIN/MANAGERは管理、USERは参照。既存生成アプリは自動更新しない。npm公開には未収録。
+
+貸出・返却・点検・修理は後続。[設計案](design/medical-equipment-template.md)、[判断0023](decisions/0023-medical-device-ledger.md)、[実装仕様](../templates/default/docs/medical-equipment.md)を参照。CLIの医療テンプレート選択は未実装。
+
+医療機器台帳の検証（2026-10-01、macOS arm64 / Node.js 24.21.0 / PostgreSQL 18.4）: root check成功、配布物からの生成チェック（単体26件・スモーク4件）、実DB32件、本番ビルド、PC/タブレット/スマートフォンの登録・編集・検索・番号重複・最新権限の拒否が成功。既存6Migrationからのデータ保持、dev:localでの台帳と監査の停止/再起動後の保持も成功。`npm run test:pack:db -- --local`の配布検証は117ファイルで成功。Linuxでの今回の変更と実施設の点検・貸出運用は、この時点では未確認。

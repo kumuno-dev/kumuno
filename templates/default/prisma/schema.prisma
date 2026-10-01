@@ -17,6 +17,7 @@ model Organization {
   users       User[]
   auditLogs   AuditLog[]
   equipment   Equipment[]
+  medicalDevices MedicalDevice[]
 }
 
 model Department {
@@ -32,6 +33,7 @@ model Department {
   children       Department[] @relation("DepartmentTree")
   users          User[]
   equipment      Equipment[]
+  medicalDevices MedicalDevice[]
 
   @@unique([id, organizationId])
   @@unique([organizationId, code])
@@ -173,4 +175,37 @@ model Equipment {
   @@index([organizationId, name, id])
   @@index([departmentId, organizationId])
   @@index([assignedUserId, organizationId])
+}
+
+// Ledger lifecycle only; lending availability belongs to a later workflow.
+enum MedicalDeviceStatus {
+  IN_SERVICE
+  SUSPENDED
+  RETIRED
+}
+
+model MedicalDevice {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  managementNumber String
+  assetNumber String?
+  name String
+  category String
+  manufacturer String?
+  modelName String?
+  serialNumber String?
+  departmentId String? @db.Uuid
+  location String?
+  purchaseDate DateTime? @db.Date
+  warrantyUntil DateTime? @db.Date
+  status MedicalDeviceStatus @default(IN_SERVICE)
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  department Department? @relation(fields: [departmentId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([organizationId, managementNumber])
+  @@index([organizationId, name, id])
+  @@index([departmentId, organizationId])
 }

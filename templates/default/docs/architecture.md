@@ -40,3 +40,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 
 
 手元の試用は[開発用自動セットアップ](local-development.md)を利用できる。既存DB・本番の設定とは別の開発専用経路。
+
+医療機器台帳はsrc/medical-equipmentとMedicalDeviceモデルで管理する。共通マスタを再利用し、一般備品とは異なる医療固有の属性を所有する。[台帳仕様](medical-equipment.md)を参照。

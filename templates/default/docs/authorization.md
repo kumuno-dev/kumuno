@@ -36,3 +36,5 @@ v0.1のスコープはORGANIZATION。対象コンテキストをロールと分�
 npm run test:unitで許可表と拒否条件、npm run test:dbで既定値・降格の即時反映・Seed再実行・クライアント入力による昇格拒否を検証する。
 
 備品は全ロールにequipment:read、AdminとManagerにequipment:manageを付与する。[備品仕様](equipment.md)を参照。
+
+医療機器台帳は全ロールにmedical-equipment:read、ADMINとMANAGERにmedical-equipment:manageを付与する。[台帳仕様](medical-equipment.md)を参照。

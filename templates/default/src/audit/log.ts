@@ -4,10 +4,12 @@ import type { AuditAction } from "../generated/prisma/enums";
 type UserSnapshot = { isActive: boolean; role: string; departmentId: string | null };
 type DepartmentSnapshot = { code: string; name: string; parentId: string | null };
 type EquipmentSnapshot = { name: string; category: string; purchaseDate: Date | null; purchasePrice: { toString(): string } | null; departmentId: string | null; assignedUserId: string | null; status: string };
+type MedicalDeviceSnapshot = { managementNumber: string; assetNumber: string | null; name: string; category: string; manufacturer: string | null; modelName: string | null; serialNumber: string | null; departmentId: string | null; location: string | null; purchaseDate: Date | null; warrantyUntil: Date | null; status: string };
 type Event = { action: AuditAction; resourceId: string } & (
   { resourceType: "User"; before?: UserSnapshot; after?: UserSnapshot } |
   { resourceType: "Department"; before?: DepartmentSnapshot; after?: DepartmentSnapshot } |
-  { resourceType: "Equipment"; before?: EquipmentSnapshot; after?: EquipmentSnapshot }
+  { resourceType: "Equipment"; before?: EquipmentSnapshot; after?: EquipmentSnapshot } |
+  { resourceType: "MedicalDevice"; before?: MedicalDeviceSnapshot; after?: MedicalDeviceSnapshot }
 );
 
 // Explicit projections prevent whole records, credentials and request bodies being logged.
@@ -28,6 +30,10 @@ export function auditSnapshots(event: Event) {
   }
   if (event.resourceType === "Equipment") {
     const pick = (v: EquipmentSnapshot) => ({ name: v.name, category: v.category, purchaseDate: v.purchaseDate?.toISOString().slice(0,10) ?? null, purchasePrice: v.purchasePrice?.toString() ?? null, departmentId: v.departmentId, assignedUserId: v.assignedUserId, status: v.status });
+    return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
+  }
+  if (event.resourceType === "MedicalDevice") {
+    const pick = (v: MedicalDeviceSnapshot) => ({ managementNumber: v.managementNumber, assetNumber: v.assetNumber, name: v.name, category: v.category, manufacturer: v.manufacturer, modelName: v.modelName, serialNumber: v.serialNumber, departmentId: v.departmentId, location: v.location, purchaseDate: v.purchaseDate?.toISOString().slice(0,10) ?? null, warrantyUntil: v.warrantyUntil?.toISOString().slice(0,10) ?? null, status: v.status });
     return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
   }
   throw new Error("監査対象が不正です。");

@@ -36,6 +36,8 @@ npm run dev:local
 
 開発用PostgreSQL・認証設定・初期管理者を自動準備します。表示されたURLからログインでき、初期パスワードは生成先の`.kumuno/local/login.txt`で確認できます。Ctrl+Cで終了し、次回も同じコマンドで再開できます。DBの別途導入は不要です。詳しくは[開発用セットアップ](templates/default/docs/local-development.md)を参照してください。
 
+医療機器台帳（登録・編集・検索）もソース版に追加しました。ログイン後のメニューから試せます。[台帳の仕様](templates/default/docs/medical-equipment.md)を参照してください。現在のnpm版には未収録です。
+
 この簡単セットアップは次の候補版0.1.0-rc.1向けの変更で、現在のnpm版rc.0には未収録です。公開前はソースから試してください。
 
 対話で依存導入を選ぶ場合は--installを省略します。生成だけなら--no-installを指定し、生成先でnpm ciを実行します。既存ディレクトリは上書きしません。[CLIオプション](packages/create-kumuno/README.md)を参照してください。

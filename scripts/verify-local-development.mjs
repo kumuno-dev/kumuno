@@ -54,6 +54,12 @@ export async function verifyLocalDevelopment(app, env) {
     await page.getByLabel('カテゴリ',{exact:true}).fill('開発用');
     await page.getByRole('button',{name:'保存する',exact:true}).click();
     await expect(page.getByRole('heading',{name:'local-persistence-probe',exact:true})).toBeVisible();
+    await page.goto(`${base}/dashboard/medical-equipment/new`);
+    await page.getByLabel('機器管理番号（必須）',{exact:true}).fill('ME-LOCAL-001');
+    await page.getByLabel('機器名（必須）',{exact:true}).fill('local-medical-persistence');
+    await page.getByLabel('種別（必須）',{exact:true}).fill('試用ポンプ');
+    await page.getByRole('button',{name:'保存する',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'local-medical-persistence',exact:true})).toBeVisible();
     await browser.close();browser=undefined;
     const pool=await connect(first);
     let before;
@@ -72,6 +78,8 @@ export async function verifyLocalDevelopment(app, env) {
     try {
       assert.equal((await again.query('SELECT id FROM "User"')).rows[0].id,before);
       assert.equal((await again.query('SELECT count(*)::int AS count FROM "Equipment"')).rows[0].count,1);
+      assert.equal((await again.query('SELECT "managementNumber" FROM "MedicalDevice"')).rows[0].managementNumber,'ME-LOCAL-001');
+      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalDevice\'')).rows[0].count,1);
       assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'Equipment\'')).rows[0].count,1);
     }finally{await again.end();}
     await stop();
