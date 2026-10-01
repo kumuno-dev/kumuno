@@ -1,3 +1,4 @@
+import { recordMedicalInspection,medicalInspectionList,inspectionQuery,todayInJapan } from "../../src/medical-equipment/inspections";
 import { lendMedicalDevice, returnMedicalDevice, medicalLoanList, loanQuery } from "../../src/medical-equipment/loans";
 import { saveMedicalDevice } from "../../src/medical-equipment/service";
 import { medicalDeviceList, medicalDeviceDetail } from "../../src/medical-equipment/repository";
@@ -87,9 +88,9 @@ test("接続失敗時に秘密情報を出さない", async () => {
 });
 test("リポジトリのMigrationを初回適用し、再実行しても履歴が増えない", async () => {
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(8);
+  expect(await historyCount()).toBe(9);
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(8);
+  expect(await historyCount()).toBe(9);
 });
 test("後続Migrationが既存データを保持する", async () => {
   const initial = 'CREATE TABLE probe (id integer PRIMARY KEY); INSERT INTO probe VALUES (1);';
@@ -548,7 +549,7 @@ test("医療機器の監査失敗時は登録・編集を取り消す", async ()
 test("医療機器Migrationを既存の共通マスタ・備品へ追加してもデータを保持する", async () => {
   await mkdir(join(folder,"migrations"),{recursive:true});
   for (const entry of await readdir("prisma/migrations")) {
-    if (["20261001090000_medical_device","20261001100000_medical_loans"].includes(entry)) continue;
+    if (["20261001090000_medical_device","20261001100000_medical_loans","20261001110000_medical_inspections"].includes(entry)) continue;
     await cp(join("prisma/migrations",entry),join(folder,"migrations",entry),{recursive:true});
   }
   await migrate();
@@ -556,7 +557,7 @@ test("医療機器Migrationを既存の共通マスタ・備品へ追加して�
   const {userId,organizationId} = await seedDevelopment(connection.db,seedEnv);
   const equipmentId = await saveEquipment(connection.db,userId,organizationId,managementForm(equipmentFields));
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(8);
+  expect(await historyCount()).toBe(9);
   expect(await equipmentDetail(connection.db,organizationId,equipmentId)).toMatchObject({name:equipmentFields.name});
   const id = await saveMedicalDevice(connection.db,userId,organizationId,managementForm(medicalFields));
   expect(await medicalDeviceDetail(connection.db,organizationId,id)).toMatchObject({name:medicalFields.name});
@@ -578,7 +579,9 @@ test("医療機器の貸出・返却と点検待ち・履歴・監査を同時�
   await expect(lendMedicalDevice(connection.db,f.userId,f.organizationId,f.form)).rejects.toThrow();
   await expect(saveMedicalDevice(connection.db,f.userId,f.organizationId,managementForm({...medicalFields,id:f.deviceId,status:"RETIRED"}))).rejects.toThrow();
   await returnMedicalDevice(connection.db,f.userId,f.organizationId,loan.id);
-  expect(await connection.db.medicalLoan.findUnique({where:{id:loan.id}})).toMatchObject({returnedById:f.userId});
+  const returnedLoan = await connection.db.medicalLoan.findUniqueOrThrow({where:{id:loan.id}});
+  expect(returnedLoan).toMatchObject({returnedById:f.userId});
+  expect(Math.abs(returnedLoan.returnedAt!.getTime()-Date.now())).toBeLessThan(60_000);
   expect((await medicalDeviceDetail(connection.db,f.organizationId,f.deviceId))?.returnInspectionPending).toBe(true);
   await expect(returnMedicalDevice(connection.db,f.userId,f.organizationId,loan.id)).rejects.toThrow();
   await expect(lendMedicalDevice(connection.db,f.userId,f.organizationId,f.form)).rejects.toThrow();
@@ -654,7 +657,7 @@ test("貸出一覧は検索・ページ・返却状態と過去の貸出先名�
 test("既存7Migrationの医療機器台帳へ貸出Migrationを追加しても機器を保持する", async () => {
   await mkdir(join(folder,"migrations"),{recursive:true});
   for (const entry of await readdir("prisma/migrations")) {
-    if (entry === "20261001100000_medical_loans") continue;
+    if (["20261001100000_medical_loans","20261001110000_medical_inspections"].includes(entry)) continue;
     await cp(join("prisma/migrations",entry),join(folder,"migrations",entry),{recursive:true});
   }
   await migrate();
@@ -663,7 +666,7 @@ test("既存7Migrationの医療機器台帳へ貸出Migrationを追加しても�
   await connection.pool.query('INSERT INTO "MedicalDevice" (id,"organizationId","managementNumber",name,category,"updatedAt") VALUES ($1,$2,$3,$4,$5,now())',[device,org,"ME-PRIOR","以前の機器","ポンプ"]);
   expect(await historyCount()).toBe(7);
   await migrateDatabase(url);
-  expect(await historyCount()).toBe(8);
+  expect(await historyCount()).toBe(9);
   expect(await medicalDeviceDetail(connection.db,org,device)).toMatchObject({name:"以前の機器",returnInspectionPending:false});
   expect(await connection.db.medicalLoan.count()).toBe(0);
 });
@@ -677,4 +680,119 @@ test("search_path指定なしの生成アプリ接続でも貸出と返却を保
     await returnMedicalDevice(app.db,f.userId,f.organizationId,loan.id);
     expect((await medicalDeviceDetail(app.db,f.organizationId,f.deviceId))?.returnInspectionPending).toBe(true);
   } finally {await app.close();}
+});
+
+async function inspectionForm(deviceId:string,change:Record<string,string>={}) {
+  const device = await connection.db.medicalDevice.findUniqueOrThrow({where:{id:deviceId}});
+  return managementForm({deviceId,version:device.updatedAt.toISOString(),inspectionDate:todayInJapan(),nextInspectionDate:"",kind:"PERIODIC",result:"INCOMPLETE",content:"施設の手順に沿った試用確認",confirm:"yes",...change});
+}
+test("点検の未完了・不合格は停止し、合格で再貸出できる", async () => {
+  const f = await medicalLoanFixture();
+  await lendMedicalDevice(connection.db,f.userId,f.organizationId,f.form);
+  const loan = await connection.db.medicalLoan.findFirstOrThrow();
+  await returnMedicalDevice(connection.db,f.userId,f.organizationId,loan.id);
+  for (const result of ["INCOMPLETE","FAILED"]) {
+    await recordMedicalInspection(connection.db,f.userId,f.organizationId,await inspectionForm(f.deviceId,{kind:"POST_RETURN",result}));
+    await expect(lendMedicalDevice(connection.db,f.userId,f.organizationId,f.form)).rejects.toThrow();
+  }
+  const old = await inspectionForm(f.deviceId,{kind:"POST_RETURN",result:"PASSED"});
+  await recordMedicalInspection(connection.db,f.userId,f.organizationId,old);
+  expect((await medicalDeviceDetail(connection.db,f.organizationId,f.deviceId))?.returnInspectionPending).toBe(false);
+  const inspections = await connection.db.medicalInspection.findMany({where:{deviceId:f.deviceId}});
+  expect(inspections).toHaveLength(3);
+  expect(inspections.find(i=>i.result === "PASSED")).toMatchObject({clearedPending:true,inspectedById:f.userId,returnLoanId:loan.id});
+  await lendMedicalDevice(connection.db,f.userId,f.organizationId,f.form);
+  const next = await connection.db.medicalLoan.findFirstOrThrow({where:{returnedAt:null}});
+  await returnMedicalDevice(connection.db,f.userId,f.organizationId,next.id);
+  await expect(recordMedicalInspection(connection.db,f.userId,f.organizationId,old)).rejects.toThrow();
+  expect((await medicalDeviceDetail(connection.db,f.organizationId,f.deviceId))?.returnInspectionPending).toBe(true);
+  await recordMedicalInspection(connection.db,f.userId,f.organizationId,await inspectionForm(f.deviceId,{kind:"POST_RETURN",result:"PASSED"}));
+  await lendMedicalDevice(connection.db,f.userId,f.organizationId,f.form);
+  expect(await connection.db.medicalLoan.count({where:{returnedAt:null}})).toBe(1);
+});
+test("点検の越境・無効ユーザー・最新権限を拒否し、MANAGERを許可する", async () => {
+  const f = await medicalLoanFixture();
+  const form = await inspectionForm(f.deviceId);
+  const other = await connection.db.organization.create({data:{code:"inspection-other",name:"外部"}});
+  const outsider = await connection.db.user.create({data:{organizationId:other.id,name:"外部",email:"outside@inspection.example",role:"ADMIN"}});
+  await expect(recordMedicalInspection(connection.db,outsider.id,other.id,form)).rejects.toThrow();
+  await connection.db.user.update({where:{id:f.userId},data:{role:"USER"}});
+  await expect(recordMedicalInspection(connection.db,f.userId,f.organizationId,form)).rejects.toMatchObject({status:403});
+  await connection.db.user.update({where:{id:f.userId},data:{role:"MANAGER"}});
+  await recordMedicalInspection(connection.db,f.userId,f.organizationId,form);
+  await connection.db.user.update({where:{id:f.userId},data:{isActive:false}});
+  await expect(recordMedicalInspection(connection.db,f.userId,f.organizationId,await inspectionForm(f.deviceId))).rejects.toMatchObject({status:403});
+  expect((await medicalInspectionList(connection.db,other.id,inspectionQuery({}))).total).toBe(0);
+});
+test("貸出中・廃棄済みの点検を拒否し、停止中の合格で運用を再開しない", async () => {
+  const f = await medicalLoanFixture();
+  await lendMedicalDevice(connection.db,f.userId,f.organizationId,f.form);
+  await expect(recordMedicalInspection(connection.db,f.userId,f.organizationId,await inspectionForm(f.deviceId,{result:"PASSED"}))).rejects.toThrow();
+  const loan = await connection.db.medicalLoan.findFirstOrThrow();await returnMedicalDevice(connection.db,f.userId,f.organizationId,loan.id);
+  await expect(recordMedicalInspection(connection.db,f.userId,f.organizationId,await inspectionForm(f.deviceId,{kind:"POST_RETURN",result:"PASSED",inspectionDate:"2000-01-01"}))).rejects.toThrow();
+  await saveMedicalDevice(connection.db,f.userId,f.organizationId,managementForm({...medicalFields,id:f.deviceId,status:"SUSPENDED"}));
+  await recordMedicalInspection(connection.db,f.userId,f.organizationId,await inspectionForm(f.deviceId,{result:"PASSED"}));
+  expect((await medicalDeviceDetail(connection.db,f.organizationId,f.deviceId))?.returnInspectionPending).toBe(true);
+  expect((await connection.db.medicalInspection.findFirstOrThrow()).clearedPending).toBe(false);
+  await saveMedicalDevice(connection.db,f.userId,f.organizationId,managementForm({...medicalFields,id:f.deviceId,status:"RETIRED"}));
+  await expect(recordMedicalInspection(connection.db,f.userId,f.organizationId,await inspectionForm(f.deviceId))).rejects.toThrow();
+});
+test("同じ点検フォームの同時保存は1件だけ確定する", async () => {
+  const f = await medicalLoanFixture(), form = await inspectionForm(f.deviceId,{result:"PASSED"});
+  const result = await Promise.allSettled([recordMedicalInspection(connection.db,f.userId,f.organizationId,form),recordMedicalInspection(connection.db,f.userId,f.organizationId,form)]);
+  expect(result.filter(x=>x.status === "fulfilled")).toHaveLength(1);
+  expect(await connection.db.medicalInspection.count()).toBe(1);
+});
+test("点検の監査失敗時は点検記録と再貸出許可を全て取り消す", async () => {
+  const f = await medicalLoanFixture();
+  await recordMedicalInspection(connection.db,f.userId,f.organizationId,await inspectionForm(f.deviceId,{result:"FAILED"}));
+  await connection.pool.query(`CREATE FUNCTION "${schema}".fail_inspection_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test failure'; END; $$`);
+  await connection.pool.query(`CREATE TRIGGER fail_inspection_audit BEFORE INSERT ON "${schema}"."AuditLog" FOR EACH STATEMENT EXECUTE FUNCTION "${schema}".fail_inspection_audit()`);
+  await expect(recordMedicalInspection(connection.db,f.userId,f.organizationId,await inspectionForm(f.deviceId,{result:"PASSED"}))).rejects.toThrow();
+  expect(await connection.db.medicalInspection.count()).toBe(1);
+  expect((await medicalDeviceDetail(connection.db,f.organizationId,f.deviceId))?.returnInspectionPending).toBe(true);
+  const logs = await connection.db.auditLog.findMany({where:{resourceType:"MedicalInspection"}});
+  expect(JSON.stringify(logs)).not.toContain("施設の手順に沿った試用確認");
+});
+test("点検一覧の結果・機器検索・ページ切替は組織内で一致する", async () => {
+  const f = await medicalLoanFixture();
+  await connection.db.medicalInspection.createMany({data:Array.from({length:12},(_,i)=>({organizationId:f.organizationId,deviceId:f.deviceId,inspectedById:f.userId,inspectionDate:new Date("2026-01-01"),kind:"PERIODIC" as const,result:i===0 ? "FAILED" as const : "PASSED" as const,content:"試用履歴"}))});
+  const first = await medicalInspectionList(connection.db,f.organizationId,inspectionQuery({q:"ME-001"}));
+  const second = await medicalInspectionList(connection.db,f.organizationId,inspectionQuery({page:"2"}));
+  expect(first.rows).toHaveLength(10);expect(second.rows).toHaveLength(2);
+  expect(new Set([...first.rows,...second.rows].map(x=>x.id)).size).toBe(12);
+  expect((await medicalInspectionList(connection.db,f.organizationId,inspectionQuery({result:"FAILED"}))).total).toBe(1);
+  expect((await medicalInspectionList(connection.db,f.organizationId,inspectionQuery({page:"999"}))).page).toBe(2);
+});
+test("既存8Migrationの台帳・返却・点検待ちを保持して点検を追加する", async () => {
+  await mkdir(join(folder,"migrations"),{recursive:true});
+  for (const entry of await readdir("prisma/migrations")) {
+    if (entry === "20261001110000_medical_inspections") continue;
+    await cp(join("prisma/migrations",entry),join(folder,"migrations",entry),{recursive:true});
+  }
+  await migrate();expect(await historyCount()).toBe(8);
+  const {userId,organizationId} = await seedDevelopment(connection.db,seedEnv);
+  const id = await saveMedicalDevice(connection.db,userId,organizationId,managementForm(medicalFields));
+  const department = await connection.db.department.findFirstOrThrow();
+  await lendMedicalDevice(connection.db,userId,organizationId,managementForm({deviceId:id,departmentId:department.id,destinationLocation:"既存の場所"}));
+  const loan = await connection.db.medicalLoan.findFirstOrThrow();
+  await connection.db.$transaction(async tx=>{
+    const after = await tx.medicalLoan.update({where:{id:loan.id},data:{returnedAt:new Date(Date.now()+9*60*60*1000),returnedById:userId}});
+    await tx.medicalDevice.update({where:{id},data:{returnInspectionPending:true}});
+    await appendAuditLog(tx,{id:userId,organizationId},{action:"UPDATE",resourceType:"MedicalLoan",resourceId:loan.id,before:loan,after});
+  });
+  const original = await connection.db.auditLog.findFirstOrThrow({where:{resourceId:loan.id,action:"UPDATE"}});
+  const stored = await connection.db.medicalLoan.findUniqueOrThrow({where:{id:loan.id}});
+  await migrateDatabase(url);expect(await historyCount()).toBe(9);
+  expect((await medicalDeviceDetail(connection.db,organizationId,id))?.returnInspectionPending).toBe(true);
+  expect(await connection.db.medicalLoan.findUniqueOrThrow({where:{id:loan.id}})).toMatchObject({destinationLocation:"既存の場所",returnedAt:stored.returnedAt});
+  expect((await medicalLoanList(connection.db,organizationId,loanQuery({state:"returned"}))).rows[0].returnedAt?.toISOString()).toBe(original.timestamp.toISOString());
+  expect(await connection.db.auditLog.findUnique({where:{id:original.id}})).toMatchObject({after:original.after});
+  await recordMedicalInspection(connection.db,userId,organizationId,await inspectionForm(id,{kind:"POST_RETURN",result:"PASSED"}));
+  expect(await connection.db.medicalInspection.count()).toBe(1);
+  await lendMedicalDevice(connection.db,userId,organizationId,managementForm({deviceId:id,departmentId:department.id,destinationLocation:"新しい貸出"}));
+  const recent = await connection.db.medicalLoan.findFirstOrThrow({where:{returnedAt:null}});
+  await returnMedicalDevice(connection.db,userId,organizationId,recent.id);
+  await recordMedicalInspection(connection.db,userId,organizationId,await inspectionForm(id,{kind:"POST_RETURN",result:"PASSED"}));
+  expect(await connection.db.medicalInspection.count({where:{returnLoanId:recent.id}})).toBe(1);
 });

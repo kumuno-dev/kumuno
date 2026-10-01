@@ -36,7 +36,8 @@ export async function returnMedicalDevice(db: PrismaClient, actorId: string, org
     if (!before) throw new InputError("貸出記録が見つかりません。");
     await lockMedicalDevice(tx,organizationId,before.deviceId);
     if (before.returnedAt) throw new InputError("この貸出は返却済みです。");
-    const [{now}] = await tx.$queryRaw<{now:Date}[]>`SELECT CURRENT_TIMESTAMP AS now`;
+    const [{instant}] = await tx.$queryRaw<{instant:string}[]>`SELECT CURRENT_TIMESTAMP::text AS instant`;
+    const now = new Date(instant);
     const result = await tx.medicalLoan.updateMany({where:{id:loanId,organizationId,returnedAt:null},data:{returnedAt:now,returnedById:actor.id}});
     if (result.count !== 1) throw new InputError("この貸出は返却済みです。");
     const after = await tx.medicalLoan.findUniqueOrThrow({where:{id:loanId}});
@@ -57,9 +58,25 @@ export async function medicalLoanList(db: PrismaClient, organizationId: string, 
   return db.$transaction(async tx => {
     const total = await tx.medicalLoan.count({where}), pages = Math.max(1,Math.ceil(total/query.size)),page = Math.min(query.page,pages);
     const rows = await tx.medicalLoan.findMany({where,orderBy:[{loanedAt:"desc"},{id:"asc"}],skip:(page-1)*query.size,take:query.size,include:{device:{select:{name:true,managementNumber:true}},loanedBy:{select:{name:true}},returnedBy:{select:{name:true}}}});
-    return {rows,total,page,pages};
+    return {rows:await withReturnTimes(tx,organizationId,rows),total,page,pages};
   },{isolationLevel:"RepeatableRead"});
 }
 export function displayDate(date: Date) {
   return new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(date);
+}
+
+// Read compatibility for the earlier raw timestamptz decoding bug.
+// Existing business records and original audits are never changed here.
+export async function withReturnTimes<T extends {id:string;loanedAt:Date;returnedAt:Date|null;returnedById:string|null}>(db:Prisma.TransactionClient,organizationId:string,rows:T[]):Promise<T[]> {
+  const returned = rows.filter(l=>l.returnedAt);
+  if (!returned.length) return rows;
+  const audits = await db.auditLog.findMany({where:{organizationId,resourceType:"MedicalLoan",resourceId:{in:returned.map(l=>l.id)},action:"UPDATE"},orderBy:[{timestamp:"asc"},{id:"asc"}],select:{resourceId:true,timestamp:true,userId:true,before:true,after:true}});
+  return rows.map(l=>{
+    if (!l.returnedAt) return l;
+    const audit = audits.find(a=>{
+      if (!a.before || typeof a.before !== "object" || Array.isArray(a.before) || !a.after || typeof a.after !== "object" || Array.isArray(a.after)) return false;
+      return a.before.returnedAt === null && a.after.returnedAt === l.returnedAt!.toISOString() && a.userId === l.returnedById && a.timestamp >= l.loanedAt;
+    });
+    return audit && Math.abs(l.returnedAt.getTime()-audit.timestamp.getTime()) > 1000 ? {...l,returnedAt:audit.timestamp} : l;
+  });
 }

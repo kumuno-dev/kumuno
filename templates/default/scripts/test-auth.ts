@@ -183,11 +183,36 @@ async function main() {
       await page.goto(medicalURL);
       await page.getByRole("checkbox",{name:"機器の返却を確認しました"}).check();
       await page.getByRole("button",{name:"返却を記録",exact:true}).click();
-      await expect(page.getByText("返却後の点検待ちです。再貸出はできません。点検記録・完了処理は次の工程で追加します。",{exact:true})).toBeVisible();
+      await expect(page.getByText("返却後の点検待ちです。点検記録で合格を登録すると、運用中の機器は再貸出できます。",{exact:true})).toBeVisible();
       await expect(page.getByRole("button",{name:"貸出を登録",exact:true})).toHaveCount(0);
       await page.goto(`${baseURL}/dashboard/medical-loans?state=returned&q=ME-E2E-${width}`);
       await expect(page.locator("article.record")).toHaveCount(1);
       await expect(page.locator("article.record")).toContainText("返却済み");
+      stage = "medical inspections fail pass and reloan";
+      await page.goto(medicalURL);
+      const inspectionForm = page.locator("form").filter({has:page.locator('input[name="version"]')});
+      for (const [result,content] of [["FAILED","試用点検：不合格"],["PASSED","試用点検：合格"]]) {
+        await page.locator("details").filter({has:page.locator("summary").filter({hasText:"点検を記録"})}).evaluate(el=>{(el as HTMLDetailsElement).open=true;});
+        await inspectionForm.getByLabel("点検結果",{exact:true}).selectOption(result);
+        await inspectionForm.getByLabel("実施した点検内容（必須）",{exact:true}).fill(content);
+        await inspectionForm.getByRole("checkbox",{name:"点検内容と結果を確認しました"}).check();
+        await inspectionForm.getByRole("button",{name:"点検結果を保存",exact:true}).click();
+        await expect(page.getByText(content,{exact:true})).toBeVisible();
+        if (result === "FAILED") await expect(page.getByRole("button",{name:"貸出を登録",exact:true})).toHaveCount(0);
+      }
+      await expect(page.getByRole("button",{name:"貸出を登録",exact:true})).toBeVisible();
+      await page.goto(`${baseURL}/dashboard/medical-inspections?q=ME-E2E-${width}`);
+      await expect(page.locator("article.record")).toHaveCount(2);
+      await page.getByLabel("点検結果",{exact:true}).selectOption("PASSED");
+      await page.getByRole("button",{name:"検索する",exact:true}).click();
+      await expect(page.locator("article.record")).toHaveCount(1);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      if (process.env.TEST_SCREENSHOT_DIR) await page.screenshot({path:join(process.env.TEST_SCREENSHOT_DIR,`medical-inspections-${width}.png`),fullPage:true});
+      await page.goto(medicalURL);
+      await page.getByLabel("貸出先の部署（必須）",{exact:true}).selectOption({label:"総務部"});
+      await page.getByRole("button",{name:"貸出を登録",exact:true}).click();
+      await expect(page.getByRole("button",{name:"返却を記録",exact:true})).toBeVisible();
+      await expect(page.getByText("点検を記録",{exact:true})).toHaveCount(0);
       await page.goto(`${baseURL}/dashboard`);
       stage = "management CRUD";
       await page.getByRole("navigation", { name: "業務メニュー" }).getByRole("link", { name: "部署", exact: true }).click();

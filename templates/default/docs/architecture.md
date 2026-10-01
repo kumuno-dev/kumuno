@@ -44,3 +44,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 医療機器台帳はsrc/medical-equipmentとMedicalDeviceモデルで管理する。共通マスタを再利用し、一般備品とは異なる医療固有の属性を所有する。[台帳仕様](medical-equipment.md)を参照。
 
 医療機器の貸出・返却はMedicalLoanとsrc/medical-equipment/loans.tsで管理する。台帳から現在の貸出先を表示し、返却時は点検待ちにする。独立した人物・病棟マスタは追加しない。
+
+医療機器の点検はMedicalInspectionとsrc/medical-equipment/inspections.tsで管理する。点検結果、古いフォームと同時操作を検証し、合格後の点検待ち解除と監査を同時保存する。

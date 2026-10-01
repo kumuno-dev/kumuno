@@ -19,6 +19,7 @@ model Organization {
   equipment   Equipment[]
   medicalDevices MedicalDevice[]
   medicalLoans MedicalLoan[]
+  medicalInspections MedicalInspection[]
 }
 
 model Department {
@@ -68,6 +69,7 @@ model User {
   assignedEquipment Equipment[]
   issuedMedicalLoans MedicalLoan[] @relation("MedicalLoanIssuer")
   returnedMedicalLoans MedicalLoan[] @relation("MedicalLoanReturner")
+  medicalInspections MedicalInspection[]
 
   @@unique([id, organizationId])
 
@@ -211,6 +213,7 @@ model MedicalDevice {
   department Department? @relation(fields: [departmentId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
 
   loans MedicalLoan[]
+  inspections MedicalInspection[]
 
   @@unique([id, organizationId])
   @@unique([organizationId, managementNumber])
@@ -235,9 +238,48 @@ model MedicalLoan {
   loanedBy User @relation("MedicalLoanIssuer", fields: [loanedById, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
   returnedBy User? @relation("MedicalLoanReturner", fields: [returnedById, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
 
+  inspections MedicalInspection[]
+
+  @@unique([id, organizationId])
   @@index([organizationId, returnedAt, loanedAt, id])
   @@index([deviceId, organizationId])
   @@index([departmentId, organizationId])
   @@index([loanedById, organizationId])
   @@index([returnedById, organizationId])
+}
+
+enum MedicalInspectionResult {
+  PASSED
+  FAILED
+  INCOMPLETE
+}
+
+enum MedicalInspectionKind {
+  POST_RETURN
+  PERIODIC
+  OTHER
+}
+
+model MedicalInspection {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  deviceId String @db.Uuid
+  inspectedById String @db.Uuid
+  returnLoanId String? @db.Uuid
+  inspectionDate DateTime @db.Date
+  kind MedicalInspectionKind
+  result MedicalInspectionResult
+  content String
+  nextInspectionDate DateTime? @db.Date
+  recordedAt DateTime @default(now()) @db.Timestamptz(3)
+  clearedPending Boolean @default(false)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  device MedicalDevice @relation(fields: [deviceId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+  returnLoan MedicalLoan? @relation(fields: [returnLoanId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+  inspectedBy User @relation(fields: [inspectedById, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([organizationId, inspectionDate, id])
+  @@index([deviceId, organizationId])
+  @@index([inspectedById, organizationId])
+  @@index([returnLoanId, organizationId])
 }

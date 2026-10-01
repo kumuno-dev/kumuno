@@ -1,3 +1,4 @@
+import { parseInspection,inspectionQuery,todayInJapan } from "./inspections";
 import { parseLoan, loanQuery } from "./loans";
 import { expect, test } from "vitest";
 import { parseMedicalDevice, listQuery } from "./validation";
@@ -23,4 +24,13 @@ test("貸出先のID・場所の長さを検査し、一覧入力を制限する
   f.set("destinationLocation","x".repeat(121)); expect(() => parseLoan(f)).toThrow();
   f.set("destinationLocation"," 場所 "); expect(parseLoan(f).destinationLocation).toBe("場所");
   expect(loanQuery({q:["a"],state:"unknown",page:"-1"})).toMatchObject({q:"",returned:false,page:1});
+});
+
+test("点検の確認・日付・結果・本文・版を検証する", () => {
+  const values = {deviceId:"11111111-1111-4111-8111-111111111111",version:"2026-01-01T00:00:00.000Z",inspectionDate:todayInJapan(),nextInspectionDate:"",kind:"PERIODIC",result:"PASSED",content:"確認内容",confirm:"yes"};
+  const make = (change:Record<string,string>={}) => {const f = new FormData();for (const [k,v] of Object.entries({...values,...change})) f.set(k,v);return f;};
+  expect(parseInspection(make()).result).toBe("PASSED");
+  const invalid:Record<string,string>[] = [{confirm:""},{result:"toString"},{kind:"other"},{inspectionDate:"2026-02-30"},{inspectionDate:"2099-01-01"},{nextInspectionDate:"2000-01-01"},{version:"bad"},{content:" "},{deviceId:"bad"}];
+  for (const c of invalid) expect(()=>parseInspection(make(c))).toThrow();
+  expect(inspectionQuery({q:["a"],result:"toString",page:"-1"})).toMatchObject({q:"",result:undefined,page:1});
 });

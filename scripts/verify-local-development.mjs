@@ -66,7 +66,13 @@ export async function verifyLocalDevelopment(app, env) {
     await expect(page.getByText('貸出中：総務部 / local-loan-persistence',{exact:true})).toBeVisible();
     await page.getByRole('checkbox',{name:'機器の返却を確認しました'}).check();
     await page.getByRole('button',{name:'返却を記録',exact:true}).click();
-    await expect(page.getByText('返却後の点検待ちです。再貸出はできません。点検記録・完了処理は次の工程で追加します。',{exact:true})).toBeVisible();
+    await expect(page.getByText('返却後の点検待ちです。点検記録で合格を登録すると、運用中の機器は再貸出できます。',{exact:true})).toBeVisible();
+    await page.locator('details').filter({has:page.locator('summary').filter({hasText:'点検を記録'})}).evaluate(el=>{el.open=true;});
+    await page.getByLabel('点検結果',{exact:true}).selectOption('PASSED');
+    await page.getByLabel('実施した点検内容（必須）',{exact:true}).fill('local-inspection-persistence');
+    await page.getByRole('checkbox',{name:'点検内容と結果を確認しました'}).check();
+    await page.getByRole('button',{name:'点検結果を保存',exact:true}).click();
+    await expect(page.getByRole('button',{name:'貸出を登録',exact:true})).toBeVisible();
     await browser.close();browser=undefined;
     const pool=await connect(first);
     let before;
@@ -86,11 +92,13 @@ export async function verifyLocalDevelopment(app, env) {
       assert.equal((await again.query('SELECT id FROM "User"')).rows[0].id,before);
       assert.equal((await again.query('SELECT count(*)::int AS count FROM "Equipment"')).rows[0].count,1);
       assert.equal((await again.query('SELECT "managementNumber" FROM "MedicalDevice"')).rows[0].managementNumber,'ME-LOCAL-001');
-      assert.equal((await again.query('SELECT "returnInspectionPending" FROM "MedicalDevice"')).rows[0].returnInspectionPending,true);
+      assert.equal((await again.query('SELECT "returnInspectionPending" FROM "MedicalDevice"')).rows[0].returnInspectionPending,false);
+      assert.equal((await again.query('SELECT result FROM "MedicalInspection"')).rows[0].result,'PASSED');
+      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalInspection\'')).rows[0].count,1);
       const loan=(await again.query('SELECT "returnedAt", "destinationLocation" FROM "MedicalLoan"')).rows[0];
       assert(loan.returnedAt);assert.equal(loan.destinationLocation,'local-loan-persistence');
       assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalLoan\'')).rows[0].count,2);
-      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalDevice\'')).rows[0].count,2);
+      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalDevice\'')).rows[0].count,3);
       assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'Equipment\'')).rows[0].count,1);
     }finally{await again.end();}
     await stop();

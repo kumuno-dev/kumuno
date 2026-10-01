@@ -35,3 +35,5 @@ npm run test:unitで秘匿属性の除外と変更前後の整合性、npm run t
 医療機器台帳のMedicalDeviceも登録・編集と同一トランザクションで監査を保存する。管理番号・メーカー・型式等の明示的な台帳属性を投影し、備考は監査へ保存しない。[台帳仕様](medical-equipment.md)を参照。
 
 貸出MedicalLoanのCREATE、返却時のMedicalLoanとMedicalDeviceのUPDATEも業務更新と同じトランザクションで記録する。貸出場所等の自由入力を監査へ保存しない。
+
+MedicalInspectionのCREATEとMedicalDeviceのUPDATEも点検・再貸出許可と同時に保存する。点検内容の自由入力を監査へ保存しない。
