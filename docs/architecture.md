@@ -51,7 +51,7 @@ Validationは当初Zodを候補としたが、Milestone 8では少数のFormData
 | 9 | Equipment Reference Application | 完了。CRUD・検索・ページ・並び替え・認可・監査を生成物でも検証 |
 | 10 | AI Documentation | 完了。必須文書・共通入口・機能追加手順を生成物に同梱し、欠落・リンクを検証 |
 | 11 | create-kumuno CLI | 完了。同梱配布・依存インストール対話・失敗時の保持を検証済み |
-| 12 | CLI Integration Test | 配布tgzからのcheck・DB/認証結合検証を実装。GitHub Actionsの初回実行を確認中 |
+| 12 | CLI Integration Test | 完了。配布tgzのDB/認証結合検証とUbuntu上のGitHub Actionsが成功 |
 | 13 | README / OSS Documentation | 第3版のゴールを反映。公開用文書は未完成 |
 | 14 | npm package preparation | 名前の利用可能性・ライセンス・公開手順を確認し、npm公開する |
 | 15 | v0.1 Release Candidate | 未達。第43〜49章のAcceptance Test A〜Gを確認する |
@@ -171,8 +171,8 @@ Node.js 24 / macOSでnpm run checkとnpm run test:packが成功。CLIテスト5�
 新規依存・DB変更はないため実DBテストは再実行していない。npm公開、Windows/Linux実行、配布物からのDB結合テストとCIは未実施。次はMilestone 12としてCLI結合テストとCIを進める。
 
 
-## Milestone 12 検証（2026-10-01）
+## Milestone 12 完了（2026-10-01）
 
 実tgzをリポジトリ外へインストールし、生成物のcheckとDB結合検証を行うtest:pack:dbを追加した。GitHub ActionsはUbuntu・Node.js 24・専用PostgreSQL 18・Chromiumでcheckとtest:pack:dbを順に実行する。詳細は[設計判断0018](decisions/0018-packed-cli-integration-ci.md)を参照。
 
-macOS / Node.js 24 / 一時PostgreSQL 18.4の非管理者ロールでnpm run checkとnpm run test:pack:dbが成功。CLI5件・検証設定1件・単体21件・ブラウザースモーク4件、生成物のMigration/Seed初回と再実行、実DB27件、PC/タブレット/スマートフォンでの認証・権限・管理画面・備品CRUDが成功した。永続DB変更・新規依存・npm公開は行っていない。GitHub Actionsの初回実行結果は確認中。
+macOS / Node.js 24 / 一時PostgreSQL 18.4の非管理者ロールでnpm run checkとnpm run test:pack:dbが成功。CLI5件・検証設定1件・単体21件・ブラウザースモーク4件、生成物のMigration/Seed初回と再実行、実DB27件、PC/タブレット/スマートフォンでの認証・権限・管理画面・備品CRUDが成功した。永続DB変更・新規依存・npm公開は行っていない。[初回GitHub Actions](https://github.com/kumuno-dev/kumuno/actions/runs/36798463180)も成功（実装commit: 3bac108）。Ubuntu上でcheckとtest:pack:dbが通り、配布物からのDB・認証・業務画面まで確認した。DB検証を意図的に途中で失敗させたローカル確認でも、mode 0600の資格情報ファイル・schemaの除去と接続終了を確認済み。Windowsとnpm Registry経由は未検証。次はMilestone 13のREADME / OSS Documentation。
