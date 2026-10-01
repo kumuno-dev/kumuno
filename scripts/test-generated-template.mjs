@@ -1,3 +1,4 @@
+import { checkApplicationDocumentation } from './check-application-docs.mjs';
 import { spawnSync } from 'node:child_process';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -39,6 +40,7 @@ try {
     const document = await readFile(join(app, path), 'utf8');
     assert(!document.includes('docs/master-spec.md'), 'Product development instructions must not leak into the application');
   }
+  await checkApplicationDocumentation(app);
   run([npm, 'ci'], app);
   if (databaseMode) {
     const require = createRequire(join(app, 'package.json'));

@@ -61,3 +61,5 @@ SQLite・PGlite・モックDBでは代替しない。特定ホスティングサ
 Milestone 4の`20260928000000_shared_core`は共有マスタ・認証テーブルと外部キーを追加します。自分自身を親部署とするCHECK制約は手動SQLで管理します。Prisma schemaだけから再構築せずMigrationを適用してください。複数部署の循環検証は[部署移動service](organization.md)で行います。
 
 Milestone 5の`20260928010000_auth_rate_limit`はBetter Auth標準DB試行制限のRateLimitを追加する。認証導入時はMigrationを適用してからログインを試す。
+
+その後のMigrationはUser.role、追記専用AuditLog、Equipmentと組織境界の複合外部キーを追加する。モデルと運用は[認可](authorization.md)、[監査](audit-log.md)、[備品](equipment.md)を参照。

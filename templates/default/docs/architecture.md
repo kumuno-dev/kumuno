@@ -1,6 +1,6 @@
 # アプリの構成
 
-Next.js・Prisma・PostgreSQL基盤、共有マスタ（Organization・Department・User）、開発Seedを実装済み。Better Authによるログイン・ログアウト・保護ページを実装済み。3ロールの共通認可を実装済み。共通画面とユーザー・部署管理を実装済み。
+Next.js・Prisma・PostgreSQL基盤、共有マスタ（Organization・Department・User）、開発Seedを実装済み。Better Authによるログイン・ログアウト・保護ページを実装済み。3ロールの共通認可を実装済み。共通画面とユーザー・部署管理、備品管理を実装済み。
 
 - src/app: App Router、画面とレイアウト
 - src/database: 接続設定、サーバー専用入口、Migration CLI補助
@@ -26,3 +26,14 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 管理画面はsrc/app/dashboard、更新と入力検証はsrc/management。[management.md](management.md)を参照。
 
 備品管理はsrc/equipmentに入力・読み出し・更新・HTTP入口を分離する。[equipment.md](equipment.md)を参照。
+
+
+## 開発の入口とFeature配置
+
+[文書一覧](README.md)、[機能追加手順](adding-a-feature.md)、[コーディング規約](coding-conventions.md)を開発の入口とする。[Domain境界](domain-boundaries.md)と[連携方針](integration.md)を保ち、Shared Coreへ業務属性を混入させない。
+
+現在の配置はsrc/equipmentのようにsrc直下のFeatureディレクトリ。新機能もsrc/<feature>にvalidation / repository / service / actions / 固有フォームを置き、URLに対応する画面をsrc/app/dashboard/<feature>へ置く。既存構成を作り直す独自ランタイムや、未使用の抽象層は加えない。
+
+データの流れは認証済みHTTP入口→入力検証→serviceの最新認可→DB更新と監査の一括確定→画面再検証。読み出しは認可済みページ→組織を指定したrepository→表示用データ。備品のserviceでは更新Prisma操作をtransaction内に置き、repositoryは読出しに責任を持つ。
+
+現在の共通FormData補助はsrc/management/validation.ts、共通フォームはsrc/management/form.tsx。大きな汎用層にする前に、再利用する責務だけを選ぶ。[デプロイ](deployment.md)には運用前提と未確認の範囲を記録する。

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { checkApplicationDocumentation } from './check-application-docs.mjs';
 import { readFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
@@ -21,4 +22,5 @@ for (const group of ['dependencies', 'devDependencies']) {
 for (const path of ['README.md', 'AGENTS.md', 'CLAUDE.md', '.env.example', '.npmrc', '.nvmrc', 'docs/architecture.md', 'docs/database.md']) {
   await access(resolve(root, 'templates/default', path));
 }
+await checkApplicationDocumentation(resolve(root, 'templates/default'));
 console.log('Workspace boundaries and standalone template manifest verified. CLI local preview is tested separately.');

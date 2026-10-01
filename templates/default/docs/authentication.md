@@ -18,7 +18,7 @@ npm run devで起動し、/loginでadmin@example.comとSeed時に指定したパ
 - 固定のBETTER_AUTH_URLをtrusted originとし、POSTのOrigin一致とBetter Auth標準CSRF検査を両方行う。ブラウザーの入力だけで所属や有効状態を変更できない。
 - CookieはHttpOnly・SameSite=Lax。HTTPSではSecure。HTTPはループバック開発用originのみ許可する。本番はHTTPSを設定する。
 - セッションは8時間。現在の保護ページは参照時に延長せず、有効期限後に再ログインする。Cookieキャッシュを無効にし、毎回DBを確認する。
-- requireUserを保護ページ・将来のServer Action/Route Handler入口で呼ぶ。レイアウトやCookieの有無だけで保護しない。ユーザーIDは確認済みセッションから取り出す。必要な権限判定はMilestone 6で追加する。
+- requireUserを保護ページ・Server Action/Route Handler入口で呼ぶ。レイアウトやCookieの有無だけで保護しない。ユーザーIDは確認済みセッションから取り出す。権限判定には共通のrequirePermission / assertPermissionを使う。[認可仕様](authorization.md)を参照。
 - getActiveUserは業務上の人物情報だけを返し、セッションtoken・ハッシュを渡さない。HTTP応答も成功/失敗のみ返し、Cookieは標準処理を維持する。
 - disableUserはユーザー無効化と既存セッション削除を同じDB transactionで実行する内部関数。管理画面の無効化／再有効化はmanagement/service.tsで同等の失効と監査を実行する。操作者のRBAC確認と監査保存も同じトランザクションで実行する。呼出元はセッション認証済みのactorIdを渡す。直接DBでisActiveを変更した場合も次の保護ページ参照で拒否し、残るセッションを削除する。
 - ログインと無効化が競合してセッション行が遅れて作成されても、保護処理が最新のisActiveを確認して拒否する。再有効化を管理機能へ追加する際は、残存セッションも削除した上で新規ログインを要求する。

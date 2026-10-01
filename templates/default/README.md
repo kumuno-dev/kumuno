@@ -46,11 +46,11 @@ MigrationはOrganization・階層Department・UserとBetter Auth標準テーブ�
 
 ## 開発用Seed
 
-Migration適用後、アプリの`.env.local`へ`SEED_ALLOW_DEVELOPMENT=true`と`SEED_ADMIN_PASSWORD`（自分で決めた12〜128文字）を設定し、`npm run db:seed`を実行します。製品リポジトリでは`templates/default/.env.local`です。接続先が開発用DBであることを確認してください。`NODE_ENV=production`では拒否します。実行後はSeed用設定を削除してください。
+Migration適用後、アプリの`.env.local`へ`SEED_ALLOW_DEVELOPMENT=true`と`SEED_ADMIN_PASSWORD`（自分で決めた12〜128文字）を設定し、`npm run db:seed`を実行します。接続先が開発用DBであることを確認してください。`NODE_ENV=production`では拒否します。実行後はSeed用設定を削除してください。
 
 サンプル組織、本部→総務部、`admin@example.com`を作成します。固定パスワードはありません。資格情報はBetter Auth標準のハッシュでAccountに保存します。再実行は既存のID・編集内容・パスワードを保持し、パスワード変更には使えません。既存メールとの所属・資格情報の競合時は全体をロールバックします。
 
-このユーザーでログインを試せます。管理者権限はMilestone 6で追加します。Seedは本番の初期管理者作成には使用しません。
+このユーザーでログインを試せます。新規作成する開発ユーザーのロールはAdminです。再実行では変更済みロールを保持します。Seedは本番の初期管理者作成には使用しません。
 
 ## ログインを試す
 
@@ -95,7 +95,7 @@ DB名は`_test`で終わる必要があります。テストは毎回一意なsc
 | `npm test` | 単体テスト＋本番ビルド＋PC・スマートフォンのスモークテスト |
 | `npm run test:unit` | DB設定・エラー処理の単体テスト |
 | `npm run test:db` | 実PostgreSQLの結合テスト（別途必須） |
-| `npm run test:auth` | 専用DBとブラウザーによる認証検証（別途必須） |
+| `npm run test:auth` | 専用DBと3画面幅の認証・管理・備品操作検証（別途必須） |
 | `npm run test:e2e` | 本番ビルドとブラウザーテスト |
 | `npm run db:check` | 接続を確認して終了 |
 | `npm run db:generate` | Prisma Client生成（DB接続不要） |
@@ -126,3 +126,7 @@ DB名は`_test`で終わる必要があります。テストは毎回一意なsc
 | ブラウザーテストが起動しない | Chromiumをインストールし、ポート3100を空ける |
 
 生成アプリの依存・設定・docsはこのディレクトリ内で完結します。KUMUNO開発用リポジトリを参照せず、このREADMEとdocsを基準に保守してください。
+
+## AIと新機能を開発する
+
+[文書一覧](docs/README.md)から[機能追加手順](docs/adding-a-feature.md)と[規約](docs/coding-conventions.md)へ進み、備品管理を参照してください。AGENTS.mdとCLAUDE.mdは同じdocsへの入口です。運用の前提は[deployment.md](docs/deployment.md)を参照してください。

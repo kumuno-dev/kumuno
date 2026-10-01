@@ -25,13 +25,13 @@ docs/                        製品仕様・設計判断
 
 Next.jsによるエージェント規約ファイルの自動書き換えは`agentRules: false`で無効化し、プロジェクト規約を手動管理する。フレームワークAPIの確認にはインストール版同梱の`node_modules/next/dist/docs/`を利用する。
 
-## 後続の配置方針（未実装）
+## Featureの配置と実装方針
 
-`database/`、`authentication/`、`authorization/`、`audit/`は`src/`直下に責務別で置く。業務機能は`src/features/<feature>/`にまとめ、その中でdomain・validation・service・repository・actions・固有UIを分離する。共通UIは`src/components/`に置く。必要な工程で追加し、空の抽象層は先に作らない。
+`database/`、`authentication/`、`authorization/`、`audit/`は`src/`直下に責務別で置く。実際の参照実装は`src/equipment/`で、validation・service・repository・actions・固有UIを分離する。新機能も`src/<feature>/`へ置く。共通フォームは`src/management/form.tsx`を再利用する。空の抽象層は先に作らない。
 
 DBはPostgreSQL、アクセス層はPrisma 7.10.0 + adapter-pg + pg、SQL生成・適用はPrisma Migrateを採用済み。詳細は[database.md](database.md)と[選定記録](decisions/0002-postgresql-foundation.md)。認証はBetter Authの標準構成とPrisma adapterを採用する。ハッシュはAccount.passwordに保存し、User.passwordHashは設けない。ユーザー承認に合わせて最上位仕様を更新済み。[認証設計](authentication.md)を参照。依存・標準認証モデルはMilestone 4で導入済み。ログイン・ログアウト・セッション管理を実装済み。
 
-ValidationはZodを候補とする（未導入）。VitestはStep 2から設定・DB基盤の単体・結合テストに使用する。
+Validationは当初Zodを候補としたが、Milestone 8では少数のFormDataに通常のTypeScript検証を採用した。[0014](decisions/0014-business-ui.md)を参照。VitestはStep 2から設定・DB基盤の単体・結合テストに使用する。
 
 ## 第3版の工程と現在地
 
@@ -49,7 +49,7 @@ ValidationはZodを候補とする（未導入）。VitestはStep 2から設定�
 | 7 | Audit Log | 完了。部署移動・ユーザー無効化の同時保存、失敗時の全体取消、追記専用履歴を検証 |
 | 8 | Business UI | 完了。共通Header / Sidebarとユーザー・部署管理を3画面幅で検証 |
 | 9 | Equipment Reference Application | 完了。CRUD・検索・ページ・並び替え・認可・監査を生成物でも検証 |
-| 10 | AI Documentation | 入口・基盤・Domain境界・連携規約を作成済み。生成物への同梱は未実施 |
+| 10 | AI Documentation | 完了。必須文書・共通入口・機能追加手順を生成物に同梱し、欠落・リンクを検証 |
 | 11 | create-kumuno CLI | 試用依頼により最小ローカル生成を先行実装。同梱配布・依存インストール対話は未実装 |
 | 12 | CLI Integration Test | ローカル生成物のcheckを先行自動化。配布tgz・CIは未実装 |
 | 13 | README / OSS Documentation | 第3版のゴールを反映。公開用文書は未完成 |
@@ -149,3 +149,14 @@ v3.1更新の検証：2026-09-28、Node.js 24.21.0 / macOSでnpm ci、npm exec -
 新規依存はない。Equipmentと複合外部キーのMigrationを追加したが永続DBへの適用は行っていない。大量データ性能、実TLS、本番プロキシ、他OS、配布tgzは未検証。
 
 [備品管理仕様](equipment.md)と[設計判断0015](decisions/0015-equipment-reference.md)を追加。次はMilestone 10のAI Documentation。
+
+
+## Milestone 10の検証結果
+
+2026-10-01、Node.js 24.21.0 / macOSでnpm run check、test:templateが成功。必須文書17ファイルとdocs内のローカルファイルリンク、製品仕様や端末固有パスに依存しないことをテンプレートとCLI生成物の両方で検証した。CLI3件、単体21件、基本ブラウザー4件、lint・型検査・本番ビルドが成功した。
+
+AGENTS.md / CLAUDE.mdは同じdocsを読む入口へ統一。adding-a-featureに仕様書の10段階、coding-conventionsに設計・入力・認可・監査・エラーの規約を記載。Domain境界・連携・deploymentを生成物内で完結する内容にした。現在のsrc/equipment配置と共通機能に合わせ、古いID未決定・権限未実装の説明を修正した。
+
+文書と製品側の生成検証を変更し、アプリ処理・DB・依存は変更していないため実DB27件はこの工程では再実行していない。AIが実際に研修機能を追加するAcceptance Test D / E、公開tgz、本番デプロイは未実施。
+
+[設計判断0016](decisions/0016-ai-documentation.md)と[生成アプリの文書一覧](../templates/default/docs/README.md)を参照。次はMilestone 11のcreate-kumuno CLI（同梱配布とセットアップUX）。
