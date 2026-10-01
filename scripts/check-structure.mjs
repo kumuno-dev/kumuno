@@ -23,4 +23,4 @@ for (const path of ['README.md', 'AGENTS.md', 'CLAUDE.md', '.env.example', '.npm
   await access(resolve(root, 'templates/default', path));
 }
 await checkApplicationDocumentation(resolve(root, 'templates/default'));
-console.log('Workspace boundaries and standalone template manifest verified. CLI local preview is tested separately.');
+console.log('Workspace boundaries and standalone template manifest verified. Bundled CLI is tested separately.');

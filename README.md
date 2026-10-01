@@ -130,7 +130,15 @@ npm run check
 npm run test:template
 ```
 
-CLIでOSの一時ディレクトリに生成し、環境変数のDB設定を引き継がず、npm ci・lint・型チェック・単体テスト・本番ビルド・ブラウザーテストを実行します。成功時は一時生成物を削除し、失敗時は確認用に残して場所を表示します。ネットワーク接続とインストール済みChromiumが必要です。npm run checkと同じポート3100を使うため、順に実行してください。公開用tgzのテストとは別です。
+CLIでOSの一時ディレクトリに生成し、環境変数のDB設定を引き継がず、npm ci・lint・型チェック・単体テスト・本番ビルド・ブラウザーテストを実行します。成功時は一時生成物を削除し、失敗時は確認用に残して場所を表示します。ネットワーク接続とインストール済みChromiumが必要です。npm run checkと同じポート3100を使うため、順に実行してください。配布tgzの検証とは別です。
+
+**CLIの配布物を検証します（npmへ公開しません）。**
+
+```sh
+npm run test:pack
+```
+
+実tgzをリポジトリ外へインストールし、CLIによる生成・依存導入・dotfile復元・文書リンク・生成アプリのcheckを検証します。
 
 **DB変更時には、さらに実PostgreSQLの結合テストを実行します。** `templates/default/.env.test.local`を作り、専用テストDBを指定します（パスワード部分は自分の設定に置き換えます）。
 
@@ -147,11 +155,18 @@ CLIやテンプレートのDB基盤を変更した場合は、生成物でも検
 
 ```sh
 npm run test:template:db
+npm run test:pack:db
 ```
 
-生成アプリの.env.local / .env.test.local経由で接続・MigrationとSeedの初回/再実行・実DB結合テスト・認証ブラウザーテストを確認します。専用DB内の一意なschemaだけを作成・削除し、接続情報を保存した一時ファイルは失敗時も除去します。接続設定なしでは省略せず失敗します。生成に続いてnpm ciを行うためネットワーク接続が必要です。
+test:template:dbはローカルCLI、test:pack:dbは実tgzからインストールしたCLIを使います。test:pack:dbは生成アプリのcheckも実行します。生成アプリの.env.local / .env.test.local経由で接続・MigrationとSeedの初回/再実行・実DB結合テスト・認証ブラウザーテストを確認します。専用DB内の一意なschemaだけを作成・削除し、接続情報を保存した一時ファイルは失敗時も除去します。接続設定なしでは省略せず失敗します。生成に続いてnpm ciを行うためネットワーク接続が必要です。
 
 DB名は`_test`で終わる必要があります。テストは毎回一意なschemaを作成し、それだけを削除します。`DATABASE_URL`への代替接続や、設定なしでのテスト省略は行いません。テストロールには専用DB内でのschema作成権限が必要です。
+
+## CI
+
+[GitHub Actions](.github/workflows/ci.yml)はmainへのpush、Pull Request、手動実行で起動します。Ubuntu・Node.js 24・専用PostgreSQL 18・Chromiumを用意し、npm run checkとnpm run test:pack:dbを順に実行します。構成・CLI・lint・型・単体・本番ビルド・ブラウザーに加え、配布物からのMigration・Seed・DB・認証・権限・管理画面・備品管理を検証します。
+
+DBの接続先はCI専用サービスです。本番・開発DBやGitHub Secretsは使用しません。依存はlockfileから導入し、公式Actionsはcommit SHAで固定しています。npm公開は実行しません。テストサーバーが同じポートを使うため、ローカルでも各検証コマンドを順に実行してください。
 
 | コマンド | 内容 |
 | --- | --- |

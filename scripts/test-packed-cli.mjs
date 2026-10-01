@@ -6,6 +6,9 @@ import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import { checkApplicationDocumentation } from './check-application-docs.mjs';
 import { templateFiles, bundledName } from '../packages/create-kumuno/src/template-files.mjs';
+import { requireTestDatabaseUrl, verifyGeneratedDatabase } from './verify-generated-database.mjs';
+const databaseMode=process.argv.includes('--db');
+const testUrl=databaseMode ? requireTestDatabaseUrl(process.env.TEST_DATABASE_URL) : undefined;
 const npm=process.env.npm_execpath;
 assert(npm,'Run npm run test:pack.');
 const packageRoot=fileURLToPath(new URL('../packages/create-kumuno/',import.meta.url));
@@ -34,9 +37,13 @@ try {
   assert.equal(JSON.parse(await readFile(join(app,'package-lock.json'))).packages[''].name,'packed-app');
   for(const entry of ['.gitignore','.npmrc','.nvmrc','.env.example']) assert((await readdir(app)).includes(entry));
   run([npm,'run','check'],app);
+  if(databaseMode) await verifyGeneratedDatabase(app,testUrl,npm,run);
   await rm(temporary,{recursive:true,force:true});
-  console.log(`Packed CLI passed: ${entries.length} package files, independent generation, dotfiles, npm ci, documentation, application checks.`);
+  console.log(`Packed CLI passed: ${entries.length} package files, independent generation, dotfiles, npm ci, documentation, application checks${databaseMode ? ", migration/seed repeatability, DB and authentication browser tests" : ""}.`);
 } catch(error) {
   console.error(`Packed CLI verification failed. Fixture retained: ${temporary}`);
-  throw error;
+  if(databaseMode) {
+    console.error("配布CLIのDB検証に失敗しました。専用DBの接続・権限を確認してください。");
+    process.exitCode=1;
+  } else throw error;
 }

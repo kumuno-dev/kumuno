@@ -30,4 +30,6 @@ prepackでtemplates/defaultから許可したファイルをコピーする。te
 
 rootのnpm run test:cliは生成・入力拒否・既存先保護・依存導入失敗を検証する。npm run test:packは実tgzをリポジトリ外へインストールし、生成・実依存導入・文書・生成アプリのcheckを確認する。npm公開は行わない。
 
-Windows用のnpm呼出し分岐はあるが、実行検証はmacOSのみ。npm Registryからのnpx実行、公開版、CIでの配布検証は後続工程。
+rootのnpm run test:pack:dbは専用TEST_DATABASE_URLを必須にし、配布物から生成したアプリのcheck・Migration/Seed再実行・実DB・認証/業務ブラウザーテストを実行する。GitHub ActionsでもUbuntu・Node.js 24・PostgreSQL 18・Chromiumで同じ検証を行う。
+
+Windows用のnpm呼出し分岐はあるが実行未検証。npm Registryからのnpx実行と公開版は後続工程。

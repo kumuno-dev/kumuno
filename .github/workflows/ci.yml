@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: kumuno
+          POSTGRES_PASSWORD: kumuno-ci-only
+          POSTGRES_DB: kumuno_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U kumuno -d kumuno_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      TEST_DATABASE_URL: postgresql://kumuno:kumuno-ci-only@127.0.0.1:5432/kumuno_test
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            templates/default/package-lock.json
+      - name: Install development dependencies
+        run: |
+          npm ci
+          npm run setup
+      - name: Install Chromium and system dependencies
+        working-directory: templates/default
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Check structure, CLI, lint, types, unit tests and production browser smoke tests
+        run: npm run check
+      - name: Verify packed CLI and generated application with PostgreSQL
+        run: npm run test:pack:db
