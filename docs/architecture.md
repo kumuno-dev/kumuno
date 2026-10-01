@@ -53,7 +53,7 @@ Validationは当初Zodを候補としたが、Milestone 8では少数のFormData
 | 11 | create-kumuno CLI | 完了。同梱配布・依存インストール対話・失敗時の保持を検証済み |
 | 12 | CLI Integration Test | 完了。配布tgzのDB/認証結合検証とUbuntu上のGitHub Actionsが成功 |
 | 13 | README / OSS Documentation | 完了。導入・開発・貢献・セキュリティ・変更履歴とIssue/PR文書を整備 |
-| 14 | npm package preparation | MIT・候補版・同梱物・公開手順・dry-runを検証済み。実公開はnpm認証待ち |
+| 14 | npm package preparation | MIT・候補版・同梱物・公開手順・dry-runを検証済み。GitHub一般公開済み。npm実公開は2FA設定待ち |
 | 15 | v0.1 Release Candidate | 未達。第43〜49章のAcceptance Test A〜Gを確認する |
 
 テストと文書更新は各工程で行い、Milestone 10・12まで後回しにしない。第35章のCIにはlint・typecheck・test・build・CLI生成テストを含める。ユーザー・部署管理は第44章の必須条件。
@@ -198,3 +198,8 @@ Node.js 24 / macOS / 一時PostgreSQL 18.4の非管理者ロールでcheck、tes
 npm名照会はE404で、利用可能性は公開時に再確認する。Macのnpm whoamiはENEEDAUTH、GitHubはprivate。npm認証、GitHubのpublic切替・非公開報告窓口の確定、候補版の実公開とRegistry経由の検証が未完了のため、Milestone 14全体は完了扱いにしない。公開設定の変更・npm公開はメンテナー確認後に進める。
 
 公開候補の[GitHub Actions](https://github.com/kumuno-dev/kumuno/actions/runs/36800486776)も成功（実装commit: 34290db）。Ubuntuで公開メタデータ・依存ライセンス・配布物のDB/認証/業務画面まで検証した。実公開とGitHub可視性の変更は確認待ち。
+
+
+## GitHub一般公開とnpm公開試行（2026-10-01）
+
+ユーザーがGitHubのpublic切替と候補版のnpm公開を明示承認した。kumuno-dev/kumunoをpublicへ切り替え、非公開脆弱性報告を有効化・確認した。npmログインも確認済み。固定tgzをnextタグで公開しようとしたが、npmアカウントの2FAが無効で403となった。npm名照会は引き続きE404で、実公開は未完了。承認は維持し、メンテナーの2FA設定完了後に再試行・Registry検証を行う。

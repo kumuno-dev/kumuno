@@ -23,14 +23,14 @@ npm view create-kumuno name version --registry=https://registry.npmjs.org/ --jso
 
 ## npm認証とGitHubの公開状態
 
-このMacは確認時点でnpm whoamiがENEEDAUTHでした。メンテナー本人がnpmへログインし、公開するアカウントを確認します。パスワード・OTP・トークンをチャットやGitへ貼り付けません。
+このMacのnpmログインは2026-10-01に確認済みです。ただしアカウントの2FAが無効で、初回公開はnpmから403で拒否されました。メンテナー本人がnpmのAccount → Two-Factor Authentication → Enable 2FAで設定します。[公式設定手順](https://docs.npmjs.com/configuring-two-factor-authentication/)を参照してください。メンテナー本人がnpmへログインし、公開するアカウントを確認します。パスワード・OTP・トークンをチャットやGitへ貼り付けません。
 
 ```sh
 npm login --registry=https://registry.npmjs.org/
 npm whoami --registry=https://registry.npmjs.org/
 ```
 
-GitHubは現在privateです。リポジトリのpublic切替と[非公開脆弱性報告](../SECURITY.md)の窓口確定は、メンテナーの判断で公開前に行います。この工程では公開設定を変更していません。
+GitHubは2026-10-01にユーザー承認によりpublicへ切り替えました。[非公開脆弱性報告](../SECURITY.md)も有効です。候補版のnpm公開も承認済みで、現在は2FA設定待ちです。公開操作時にはnpmが要求するブラウザーやOTPの本人確認を完了します。
 
 ## 配布ファイルを固定する
 
