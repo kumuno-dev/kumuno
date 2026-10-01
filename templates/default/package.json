@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@kumuno/auth": "file:vendor/kumuno-auth-0.1.0-rc.0.tgz",
+    "@kumuno/rbac": "file:vendor/kumuno-rbac-0.1.0-rc.0.tgz",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
     "better-auth": "1.7.6",

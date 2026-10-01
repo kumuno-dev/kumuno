@@ -20,6 +20,7 @@ artifacts/
 
 **/.kumuno/
 
-# Self-contained first-party auth distribution for standalone generated applications.
+# Self-contained first-party distributions for standalone generated applications.
 !templates/default/vendor/
 !templates/default/vendor/kumuno-auth-0.1.0-rc.0.tgz
+!templates/default/vendor/kumuno-rbac-0.1.0-rc.0.tgz

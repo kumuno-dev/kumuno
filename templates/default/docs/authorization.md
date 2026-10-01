@@ -38,3 +38,9 @@ npm run test:unitで許可表と拒否条件、npm run test:dbで既定値・降
 備品は全ロールにequipment:read、AdminとManagerにequipment:manageを付与する。[備品仕様](equipment.md)を参照。
 
 医療機器台帳は全ロールにmedical-equipment:read、ADMINとMANAGERにmedical-equipment:manageを付与する。[台帳仕様](medical-equipment.md)を参照。
+
+## 共通パッケージと業務権限
+
+基本6権限の判定は@kumuno/rbacが提供し、src/authorization/policy.tsがcreateRbacPolicyで備品・医療機器の権限を明示的に追加する。Adminへの未知操作の自動許可はない。基本権限は追加設定で削除できない。新Domainの操作はこのアプリのPermissionとロール別追加表に定義する。
+
+パッケージはDB・セッションを読み取らない。requirePermission、requireTransactionActorと最新の有効操作者照合はアプリが所有する。vendorの実tgzとlockfileを同梱し、親リポジトリなしでnpm ciできる。

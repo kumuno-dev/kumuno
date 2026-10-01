@@ -52,3 +52,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 任意の医療テストデータはsamples.tsとMedicalSampleDatasetで一度だけ準備する。isSampleを組織に紐づく表示Cookieで絞り込み、通常の業務データは変更しない。overview.tsは同じ一覧条件から状態別台数と直近の点検予定を取得する。
 
 認証の共通実装は@kumuno/auth。factory.tsでアプリが所有するPrisma adapterと有効ユーザー照合を渡す。DB・RBAC・監査・業務Domain・UIの所有はアプリに維持する。[認証仕様](authentication.md)を参照。
+
+認可の共通判定は@kumuno/rbac。src/authorization/policy.tsで業務Permissionを追加し、最新操作者のDB照合・更新transactionはアプリ側に保つ。[認可仕様](authorization.md)を参照。

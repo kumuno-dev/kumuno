@@ -1,0 +1,13 @@
+# 0030: RBACの共通判定を独立パッケージにする
+
+日付: 2026-10-02。採用。
+
+既存アプリへも共通権限モデルを導入できるよう、@kumuno/rbacを抽出する。Prisma Roleへの型依存をなくし、ADMIN / MANAGER / USER、基本6権限、Principal、ResourceScope、can、assertPermission、ForbiddenErrorを公開する。部署・本人スコープは実装しない。
+
+createRbacPolicyはロール別の業務Permissionを基本権限へ追加する。備品・医療機器のPermissionは利用アプリに残し、共通パッケージが業務Domainへ依存しない。追加表は入力配列をコピーし、未知操作にAdminのワイルドカード権限を付けない。
+
+判定は同期の純粋関数。セッション取得、最新DB操作者照合、リソース組織の確認、更新と監査のtransactionはアプリが所有する。単純なパッケージ置換で既存の権限判定箇所やDB制約を変えない。
+
+npm未公開のため、authと同様にMITのnpm pack実tgzをvendorへ同梱する。配布物の公開ファイル・lockの整合、別アプリへの実導入とTypeScript、ロール表・拒否条件・設定の変更耐性、既存生成アプリの回帰を確認する。Registry公開と機能選択CLIは別工程。
+
+公開exportsにはNode.js 24のrequire経路からもESM実装を解決できるdefaultを指定する。生成アプリのtsxによるSeed・ローカル初期設定でも同じ判定を使うため、独立導入テストでimportとrequireが同じForbiddenErrorを返すことを確認する。

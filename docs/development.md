@@ -193,4 +193,8 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 
 パッケージの公開ファイルを変更した場合はbuild:authの後、templates/defaultで`npm install --ignore-scripts @kumuno/auth@file:vendor/kumuno-auth-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行し、配布物・lock・一覧を揃える。root checkは公開ファイルとtgzの一致・SHA-512・lockを検査する。CLIのbundle/prepackも認証配布物を更新する。tgzが変わった状態で古いlockを公開しない。
 
-生成アプリはvendorを含めて単独で動く。公開後のRegistry依存への切り替え、RBAC・監査の抽出、CLIの機能選択は後続。
+生成アプリはvendorを含めて単独で動く。公開後のRegistry依存への切り替え、監査の抽出、CLIの機能選択は後続。
+
+## 権限パッケージの開発
+
+@kumuno/rbacはpackages/rbacにあり、npm未公開。`npm run build:rbac`でvendorの実tgzを作成し、`npm run test:rbac-package`で許可表・拒否条件・別アプリへの導入と公開型を検証する。公開ファイルの変更後はbuild:rbac、templates/defaultで`npm install --ignore-scripts @kumuno/rbac@file:vendor/kumuno-rbac-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLIのbundle/prepackはauthとrbacを同梱する。次の抽出はaudit-log。
