@@ -7,7 +7,8 @@
     "node": "24.x"
   },
   "workspaces": [
-    "packages/create-kumuno"
+    "packages/create-kumuno",
+    "packages/auth"
   ],
   "scripts": {
     "dev": "npm --prefix templates/default run dev --",
@@ -16,7 +17,7 @@
     "lint": "npm --prefix templates/default run lint --",
     "typecheck": "npm --prefix templates/default run typecheck --",
     "test": "npm --prefix templates/default run test --",
-    "check": "npm run check:structure && npm run check:licenses && npm run check:release && npm run test:verification && npm run test:cli && npm --prefix templates/default run check",
+    "check": "npm run check:structure && npm run check:licenses && npm run check:release && npm run test:verification && npm run test:auth-package && npm run test:cli && npm --prefix templates/default run check",
     "test:unit": "npm --prefix templates/default run test:unit --",
     "test:e2e": "npm --prefix templates/default run test:e2e --",
     "test:db": "npm --prefix templates/default run test:db --",
@@ -43,6 +44,8 @@
     "check:release": "node scripts/check-release.mjs",
     "test:acceptance": "node scripts/test-acceptance-training.mjs",
     "test:acceptance:db": "node --env-file-if-exists=templates/default/.env.test.local scripts/test-acceptance-training.mjs --db",
-    "test:pack:local": "node scripts/test-packed-cli.mjs --local"
+    "test:pack:local": "node scripts/test-packed-cli.mjs --local",
+    "build:auth": "node scripts/bundle-auth.mjs",
+    "test:auth-package": "npm test --workspace @kumuno/auth && node scripts/test-auth-package-install.mjs"
   }
 }

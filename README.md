@@ -76,3 +76,5 @@ Milestone 14のnpm公開とRegistryからの生成・DB検証まで完了しま�
 ## ライセンス
 
 KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。CLIと生成アプリにもLICENSEを同梱します。依存ライブラリは各パッケージ自身のライセンスに従います。[依存ライセンスの確認記録](docs/dependency-licenses.md)を参照してください。
+
+共通機能をnpmパッケージとして組み合わせる構成へ移行しています。最初の[@kumuno/auth](packages/auth/README.md)は未公開のRC候補です。既存アプリへの導入は実tgzで検証し、CLIへも同梱します。[構成と追加順](docs/package-architecture.md)を参照してください。

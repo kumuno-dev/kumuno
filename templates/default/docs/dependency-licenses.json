@@ -1,6 +1,6 @@
 {
   "source": "package-lock.json",
-  "dependencySha256": "a73c746dadac2858aac149fc292730f28952070aefd278d8ae7047c8cdce38b1",
+  "dependencySha256": "28c45d119459ea28d6b0eb1abb627bbc5218c1c7f799bdc7acce76a6e93dbb13",
   "entries": [
     {
       "path": "node_modules/@alloc/quick-lru",
@@ -1018,6 +1018,15 @@
       "development": true,
       "optional": false,
       "tarball": "https://registry.npmjs.org/@keyv/serialize/-/serialize-1.1.1.tgz"
+    },
+    {
+      "path": "node_modules/@kumuno/auth",
+      "name": "@kumuno/auth",
+      "version": "0.1.0-rc.0",
+      "license": "MIT",
+      "development": false,
+      "optional": false,
+      "tarball": "file:vendor/kumuno-auth-0.1.0-rc.0.tgz"
     },
     {
       "path": "node_modules/@next/env",

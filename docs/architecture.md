@@ -271,3 +271,9 @@ npm名照会はE404で、利用可能性は公開時に再確認する。Macのn
 選択欄が切り替え後の現在値と一致することは、最終コードの本番ビルドと3画面幅の認証付き操作テストで追加確認した。
 
 試用中のmedical-loan-demoを停止後に非公開バックアップし、同じ55072ポートで更新した。Organization・Department・User・MedicalDeviceの既存列・MedicalLoan・MedicalInspection・MedicalRepair・AuditLogの件数/ハッシュが更新前後で一致。既存機器のisSampleはfalseで、架空データはユーザーが「あり」を選ぶまで追加しない。DB・設定・ログイン資格情報を保持した。
+
+## 組合せ型KUMUNOへの第1段階
+
+@kumuno/authへBetter Authの設定とHTTP入口の保護を抽出。アプリはadapterと最新の有効ユーザー照合を渡し、Prisma schema・業務照合・RBAC・監査・UIを所有する。未公開パッケージは自己完結するtgzをCLIへ同梱する。[判断0029](decisions/0029-auth-package.md)、[全体構成](package-architecture.md)を参照。npm公開は行わない。
+
+第1段階の検証（2026-10-01、macOS / Node.js 24.21.0 / PostgreSQL 18.4）: 認証パッケージ単体4件、別アプリへの実tgzインストール・実行時import・公開型の確認が成功。root check、CLI5件、生成物の単体29件・実DB58件・スモーク4件、本番ビルド、3画面幅のログイン/ログアウト・最新権限・無効化・医療機器の貸出/点検/修理・テストデータ選択が成功。141ファイルのtest:pack:db -- --localで、親リポジトリなしの依存導入と開発DB起動・停止・再起動後の業務データ/監査保持も確認した。配布物とソース・lockのSHA-512一致を継続チェックへ追加した。npm Registryへの公開、Prisma以外のadapter、今回のLinux/Windows実行は未確認。試用中の既存アプリは自動更新しない。

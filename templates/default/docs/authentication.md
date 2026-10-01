@@ -37,3 +37,9 @@ DB障害時は認証を許可しない。秘密鍵変更は既存Cookieを無効
 npm run checkはDB不要の回帰。専用TEST_DATABASE_URLを.env.test.localへ設定し、npm run test:dbとnpm run test:authを実行する。test:authは一意のschemaへMigration・Seedを適用し、本番ビルドと一時ポートのサーバーでPC/スマートフォンのログイン・ログアウト・未認証アクセス・無効化を確認する。終了時にサーバーと作成したschemaを削除する。パスワードを含むtraceや失敗スクリーンショットは保存しない。build/test:e2e/test:authは同じ.nextを使うので並列実行しない。
 
 ユーザー無効化はdisableUser(db, actorId, userId)を使用する。actorIdは認証済みセッションから取得する。管理権限と組織を検査し、監査を同一トランザクションで記録する。[監査仕様](audit-log.md)を参照。
+
+## @kumuno/authとの接続
+
+認証設定・環境設定の検証・HTTP入口の保護は@kumuno/authに抽出した。factory.tsはアプリのPrisma adapterと、最新のisActiveを読む関数を渡す。Userの業務照合・RBAC・無効化/監査のtransaction・UIは引き続きこのアプリが所有する。既存のDB・認証動作は変えない。
+
+現在は未公開のRCパッケージをvendor/kumuno-auth-0.1.0-rc.0.tgzへ同梱し、アプリ内のfile:依存としてnpm ciが導入する。KUMUNO本体リポジトリのパスやworkspaceへ依存しない。vendorを省略して配布しない。パッケージの説明はnode_modules/@kumuno/auth/README.mdにも同梱される。Registryで公開した後に版を固定して切り替える。npm install @kumuno/authが現在Registryで利用可能とは案内しない。

@@ -1,6 +1,6 @@
 import { lstat } from 'node:fs/promises';
 import { basename } from 'node:path';
-export const templateFiles = ['src', 'prisma', 'scripts', 'tests', 'docs', 'package.json', 'package-lock.json', 'README.md', 'LICENSE', 'AGENTS.md', 'CLAUDE.md', '.env.example', '.gitignore', '.npmrc', '.nvmrc', 'next.config.ts', 'postcss.config.mjs', 'eslint.config.mjs', 'playwright.config.ts', 'tsconfig.json', 'vitest.config.mts', 'vitest.database.config.mts', 'prisma.config.ts'];
+export const templateFiles = ['vendor', 'src', 'prisma', 'scripts', 'tests', 'docs', 'package.json', 'package-lock.json', 'README.md', 'LICENSE', 'AGENTS.md', 'CLAUDE.md', '.env.example', '.gitignore', '.npmrc', '.nvmrc', 'next.config.ts', 'postcss.config.mjs', 'eslint.config.mjs', 'playwright.config.ts', 'tsconfig.json', 'vitest.config.mts', 'vitest.database.config.mts', 'prisma.config.ts'];
 // npm omits or renames some dotfiles; restore their real names during generation.
 export function bundledName(entry) { return entry.startsWith('.') ? `__${entry.slice(1)}` : entry; }
 export async function templateFilter(source) {

@@ -8,6 +8,8 @@
 **Last Updated:** 2026-09-28\
 **Supersedes:** Codex Master Specification v3
 
+追加の承認済み方針（2026-10-01）：共通機能をnpmパッケージとして順に抽出し、既存アプリへの追加とCLIからの新規生成を両立する。[組合せ型構成と追加順](package-architecture.md)を参照。v0.1の既存受入条件は維持する。
+
 ---
 
 # 1. プロジェクト概要

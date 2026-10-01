@@ -186,3 +186,11 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 ## 開発用DBを自動準備して試す
 
 ソース版の生成物は`npm run dev:local`でPostgreSQL 18.4と初期設定を準備できる。[生成物の説明](../templates/default/docs/local-development.md)を参照。次の候補rc.1向けの変更で、npm公開済みrc.0には未収録。CLI配布物のこの経路は`npm run test:pack:local`で実際のログイン・備品CRUD・非管理者ロール・同時起動拒否・終了・データ保持と再起動を検証する。CIでは`npm run test:pack:db -- --local`で既存の実DB検証と合わせて実行する。
+
+## 認証パッケージの開発
+
+第1段階の@kumuno/authはpackages/authにあり、npm未公開。`npm run build:auth`でtemplates/default/vendor/kumuno-auth-0.1.0-rc.0.tgzへ正式なnpm配布物を作る。既存の別アプリへは、このファイルをコピーしてnpm installする。`npm run test:auth-package`で契約テスト・別ディレクトリへの実tgz導入・公開型を確認する。
+
+パッケージの公開ファイルを変更した場合はbuild:authの後、templates/defaultで`npm install --ignore-scripts @kumuno/auth@file:vendor/kumuno-auth-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行し、配布物・lock・一覧を揃える。root checkは公開ファイルとtgzの一致・SHA-512・lockを検査する。CLIのbundle/prepackも認証配布物を更新する。tgzが変わった状態で古いlockを公開しない。
+
+生成アプリはvendorを含めて単独で動く。公開後のRegistry依存への切り替え、RBAC・監査の抽出、CLIの機能選択は後続。

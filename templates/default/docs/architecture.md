@@ -50,3 +50,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 医療機器の修理はMedicalRepairとsrc/medical-equipment/repairs.tsで管理する。修理中は貸出・点検・運用再開を拒否する。修理完了後も台帳での運用再開と合格点検を必要とする。
 
 任意の医療テストデータはsamples.tsとMedicalSampleDatasetで一度だけ準備する。isSampleを組織に紐づく表示Cookieで絞り込み、通常の業務データは変更しない。overview.tsは同じ一覧条件から状態別台数と直近の点検予定を取得する。
+
+認証の共通実装は@kumuno/auth。factory.tsでアプリが所有するPrisma adapterと有効ユーザー照合を渡す。DB・RBAC・監査・業務Domain・UIの所有はアプリに維持する。[認証仕様](authentication.md)を参照。
