@@ -18,6 +18,7 @@ export async function lendMedicalDevice(db: PrismaClient, actorId: string, organ
     await lockMedicalDevice(tx,organizationId,data.deviceId);
     const device = await tx.medicalDevice.findFirst({where:{id:data.deviceId,organizationId}});
     if (!device) throw new InputError("医療機器が見つかりません。");
+    if (await tx.medicalRepair.findFirst({where:{deviceId:device.id,organizationId,status:{not:"COMPLETED"}}})) throw new InputError("修理中の機器は貸出できません。");
     if (device.status !== "IN_SERVICE") throw new InputError("運用停止・廃棄済みの機器は貸出できません。");
     if (device.returnInspectionPending) throw new InputError("返却後の点検待ちです。再貸出できません。");
     if (await tx.medicalLoan.findFirst({where:{deviceId:device.id,organizationId,returnedAt:null}})) throw new InputError("この機器は貸出中です。");

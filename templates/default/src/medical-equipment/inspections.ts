@@ -34,12 +34,18 @@ export async function recordMedicalInspection(db:PrismaClient,actorId:string,org
     await lockMedicalDevice(tx,organizationId,before.id);
     if (before.status === "RETIRED") throw new InputError("廃棄済みの機器には点検を登録できません。");
     if (await tx.medicalLoan.findFirst({where:{deviceId:before.id,organizationId,returnedAt:null}})) throw new InputError("貸出中の機器には点検を登録できません。先に返却を記録してください。");
+    if (await tx.medicalRepair.findFirst({where:{deviceId:before.id,organizationId,status:{not:"COMPLETED"}}})) throw new InputError("修理中の機器には点検を登録できません。先に修理完了を記録してください。");
     const storedReturn = await tx.medicalLoan.findFirst({where:{deviceId:before.id,organizationId,returnedAt:{not:null}},orderBy:[{loanedAt:"desc"},{id:"desc"}]});
     const lastReturn = storedReturn ? (await withReturnTimes(tx,organizationId,[storedReturn]))[0] : null;
     if (data.kind === "POST_RETURN" && !lastReturn) throw new InputError("返却履歴がありません。点検の種類を確認してください。");
     if (lastReturn?.returnedAt && (data.kind === "POST_RETURN" || before.returnInspectionPending) && data.result === "PASSED") {
       const returnedDay = new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).format(lastReturn.returnedAt);
       if (data.inspectionDate.toISOString().slice(0,10) < returnedDay) throw new InputError("合格点検の日付は直近の返却日以降にしてください。");
+    }
+    const lastRepair = await tx.medicalRepair.findFirst({where:{deviceId:before.id,organizationId,status:"COMPLETED"},orderBy:[{completedAt:"desc"},{id:"asc"}]});
+    if (lastRepair?.completedAt && before.returnInspectionPending && data.result === "PASSED") {
+      const repairedDay = new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).format(lastRepair.completedAt);
+      if (data.inspectionDate.toISOString().slice(0,10) < repairedDay) throw new InputError("合格点検の日付は直近の修理完了日以降にしてください。");
     }
     const passed = data.result === "PASSED" && before.status === "IN_SERVICE";
     const after = await tx.medicalDevice.update({where:{id:before.id},data:{returnInspectionPending:!passed,updatedAt:new Date(Math.max(Date.now(),before.updatedAt.getTime()+1))}});

@@ -7,13 +7,15 @@ type EquipmentSnapshot = { name: string; category: string; purchaseDate: Date | 
 type MedicalDeviceSnapshot = { managementNumber: string; assetNumber: string | null; name: string; category: string; manufacturer: string | null; modelName: string | null; serialNumber: string | null; departmentId: string | null; location: string | null; purchaseDate: Date | null; warrantyUntil: Date | null; status: string; returnInspectionPending: boolean };
 type MedicalLoanSnapshot = { deviceId: string; departmentId: string; loanedAt: Date; loanedById: string; returnedAt: Date | null; returnedById: string | null };
 type MedicalInspectionSnapshot = {returnLoanId:string|null; deviceId:string; inspectedById:string; inspectionDate:Date; kind:string; result:string; nextInspectionDate:Date|null; recordedAt:Date; clearedPending:boolean};
+type MedicalRepairSnapshot = {deviceId:string;reportedById:string;status:string;reportedAt:Date;startedAt:Date|null;completedAt:Date|null};
 type Event = { action: AuditAction; resourceId: string } & (
   { resourceType: "User"; before?: UserSnapshot; after?: UserSnapshot } |
   { resourceType: "Department"; before?: DepartmentSnapshot; after?: DepartmentSnapshot } |
   { resourceType: "Equipment"; before?: EquipmentSnapshot; after?: EquipmentSnapshot } |
   { resourceType: "MedicalDevice"; before?: MedicalDeviceSnapshot; after?: MedicalDeviceSnapshot } |
   { resourceType: "MedicalLoan"; before?: MedicalLoanSnapshot; after?: MedicalLoanSnapshot } |
-  { resourceType: "MedicalInspection"; before?: MedicalInspectionSnapshot; after?: MedicalInspectionSnapshot }
+  { resourceType: "MedicalInspection"; before?: MedicalInspectionSnapshot; after?: MedicalInspectionSnapshot } |
+  { resourceType: "MedicalRepair"; before?: MedicalRepairSnapshot; after?: MedicalRepairSnapshot }
 );
 
 // Explicit projections prevent whole records, credentials and request bodies being logged.
@@ -46,6 +48,10 @@ export function auditSnapshots(event: Event) {
   }
   if (event.resourceType === "MedicalInspection") {
     const pick = (v:MedicalInspectionSnapshot) => ({returnLoanId:v.returnLoanId,deviceId:v.deviceId,inspectedById:v.inspectedById,inspectionDate:v.inspectionDate.toISOString().slice(0,10),kind:v.kind,result:v.result,nextInspectionDate:v.nextInspectionDate?.toISOString().slice(0,10) ?? null,recordedAt:v.recordedAt.toISOString(),clearedPending:v.clearedPending});
+    return {before:event.before ? pick(event.before) : undefined,after:event.after ? pick(event.after) : undefined};
+  }
+  if (event.resourceType === "MedicalRepair") {
+    const pick = (v:MedicalRepairSnapshot) => ({deviceId:v.deviceId,reportedById:v.reportedById,status:v.status,reportedAt:v.reportedAt.toISOString(),startedAt:v.startedAt?.toISOString() ?? null,completedAt:v.completedAt?.toISOString() ?? null});
     return {before:event.before ? pick(event.before) : undefined,after:event.after ? pick(event.after) : undefined};
   }
   throw new Error("監査対象が不正です。");

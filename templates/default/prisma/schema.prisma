@@ -20,6 +20,7 @@ model Organization {
   medicalDevices MedicalDevice[]
   medicalLoans MedicalLoan[]
   medicalInspections MedicalInspection[]
+  medicalRepairs MedicalRepair[]
 }
 
 model Department {
@@ -70,6 +71,7 @@ model User {
   issuedMedicalLoans MedicalLoan[] @relation("MedicalLoanIssuer")
   returnedMedicalLoans MedicalLoan[] @relation("MedicalLoanReturner")
   medicalInspections MedicalInspection[]
+  medicalRepairs MedicalRepair[]
 
   @@unique([id, organizationId])
 
@@ -214,6 +216,7 @@ model MedicalDevice {
 
   loans MedicalLoan[]
   inspections MedicalInspection[]
+  repairs MedicalRepair[]
 
   @@unique([id, organizationId])
   @@unique([organizationId, managementNumber])
@@ -282,4 +285,31 @@ model MedicalInspection {
   @@index([deviceId, organizationId])
   @@index([inspectedById, organizationId])
   @@index([returnLoanId, organizationId])
+}
+
+
+enum MedicalRepairStatus {
+  REQUESTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model MedicalRepair {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  deviceId String @db.Uuid
+  reportedById String @db.Uuid
+  status MedicalRepairStatus @default(REQUESTED)
+  problem String
+  completionContent String?
+  reportedAt DateTime @default(now()) @db.Timestamptz(3)
+  startedAt DateTime? @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  device MedicalDevice @relation(fields: [deviceId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+  reportedBy User @relation(fields: [reportedById, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([organizationId, reportedAt, id])
+  @@index([deviceId, organizationId])
+  @@index([reportedById, organizationId])
 }

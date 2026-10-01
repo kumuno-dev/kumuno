@@ -46,3 +46,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 医療機器の貸出・返却はMedicalLoanとsrc/medical-equipment/loans.tsで管理する。台帳から現在の貸出先を表示し、返却時は点検待ちにする。独立した人物・病棟マスタは追加しない。
 
 医療機器の点検はMedicalInspectionとsrc/medical-equipment/inspections.tsで管理する。点検結果、古いフォームと同時操作を検証し、合格後の点検待ち解除と監査を同時保存する。
+
+医療機器の修理はMedicalRepairとsrc/medical-equipment/repairs.tsで管理する。修理中は貸出・点検・運用再開を拒否する。修理完了後も台帳での運用再開と合格点検を必要とする。

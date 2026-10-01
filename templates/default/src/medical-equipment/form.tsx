@@ -18,5 +18,5 @@ export async function MedicalDeviceForm({ organizationId, device }: { organizati
     <label>保証期限<input name="warrantyUntil" type="date" defaultValue={device?.warrantyUntil?.toISOString().slice(0,10)} /></label>
     <label>台帳上の状態<select aria-label="台帳上の状態" name="status" defaultValue={device?.status ?? "IN_SERVICE"}>{Object.entries(statuses).map(([key,label]) => <option key={key} value={key}>{label}</option>)}</select></label>
     <label>備考<textarea name="notes" rows={4} maxLength={2000} defaultValue={device?.notes ?? ""} /></label>
-  </div><p className="record-meta">運用中は台帳上の状態です。貸出可否・点検結果は今後の工程で管理します。</p></ManagementForm>;
+  </div><p className="record-meta">運用中は台帳上の状態です。修理中は運用再開できません。運用再開後も合格点検を記録するまで点検待ちは解除されません。</p></ManagementForm>;
 }

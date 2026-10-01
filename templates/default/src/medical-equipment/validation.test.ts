@@ -1,3 +1,4 @@
+import {parseRepair,repairQuery} from "./repairs";
 import { parseInspection,inspectionQuery,todayInJapan } from "./inspections";
 import { parseLoan, loanQuery } from "./loans";
 import { expect, test } from "vitest";
@@ -33,4 +34,13 @@ test("点検の確認・日付・結果・本文・版を検証する", () => {
   const invalid:Record<string,string>[] = [{confirm:""},{result:"toString"},{kind:"other"},{inspectionDate:"2026-02-30"},{inspectionDate:"2099-01-01"},{nextInspectionDate:"2000-01-01"},{version:"bad"},{content:" "},{deviceId:"bad"}];
   for (const c of invalid) expect(()=>parseInspection(make(c))).toThrow();
   expect(inspectionQuery({q:["a"],result:"toString",page:"-1"})).toMatchObject({q:"",result:undefined,page:1});
+});
+
+
+test("修理依頼・完了は本文と確認を必須とし、不正な操作を拒否する",()=>{
+  const make=(change:Record<string,string>={})=>{const f=new FormData();for(const [k,v] of Object.entries({deviceId:"11111111-1111-4111-8111-111111111111",operation:"request",problem:"不具合",confirm:"yes",...change})) f.set(k,v);return f;};
+  expect(parseRepair(make()).problem).toBe("不具合");
+  const invalid:Record<string,string>[] = [{problem:" "},{confirm:""},{operation:"delete"},{deviceId:"bad"},{operation:"complete",repairId:"11111111-1111-4111-8111-111111111111",completionContent:" "}];
+  for (const c of invalid) expect(()=>parseRepair(make(c))).toThrow();
+  expect(repairQuery({status:"toString",page:"-1",q:["a"]})).toMatchObject({status:undefined,page:1,q:""});
 });
