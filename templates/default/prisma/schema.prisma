@@ -18,6 +18,7 @@ model Organization {
   auditLogs   AuditLog[]
   equipment   Equipment[]
   medicalDevices MedicalDevice[]
+  medicalLoans MedicalLoan[]
 }
 
 model Department {
@@ -34,6 +35,7 @@ model Department {
   users          User[]
   equipment      Equipment[]
   medicalDevices MedicalDevice[]
+  medicalLoans MedicalLoan[]
 
   @@unique([id, organizationId])
   @@unique([organizationId, code])
@@ -64,6 +66,8 @@ model User {
   accounts       Account[]
   sessions       Session[]
   assignedEquipment Equipment[]
+  issuedMedicalLoans MedicalLoan[] @relation("MedicalLoanIssuer")
+  returnedMedicalLoans MedicalLoan[] @relation("MedicalLoanReturner")
 
   @@unique([id, organizationId])
 
@@ -198,6 +202,7 @@ model MedicalDevice {
   location String?
   purchaseDate DateTime? @db.Date
   warrantyUntil DateTime? @db.Date
+  returnInspectionPending Boolean @default(false)
   status MedicalDeviceStatus @default(IN_SERVICE)
   notes String?
   createdAt DateTime @default(now())
@@ -205,7 +210,34 @@ model MedicalDevice {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   department Department? @relation(fields: [departmentId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
 
+  loans MedicalLoan[]
+
+  @@unique([id, organizationId])
   @@unique([organizationId, managementNumber])
   @@index([organizationId, name, id])
   @@index([departmentId, organizationId])
+}
+
+model MedicalLoan {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  deviceId String @db.Uuid
+  departmentId String @db.Uuid
+  destinationName String
+  destinationLocation String?
+  loanedAt DateTime @default(now()) @db.Timestamptz(3)
+  loanedById String @db.Uuid
+  returnedAt DateTime? @db.Timestamptz(3)
+  returnedById String? @db.Uuid
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  device MedicalDevice @relation(fields: [deviceId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+  department Department @relation(fields: [departmentId, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+  loanedBy User @relation("MedicalLoanIssuer", fields: [loanedById, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+  returnedBy User? @relation("MedicalLoanReturner", fields: [returnedById, organizationId], references: [id, organizationId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([organizationId, returnedAt, loanedAt, id])
+  @@index([deviceId, organizationId])
+  @@index([departmentId, organizationId])
+  @@index([loanedById, organizationId])
+  @@index([returnedById, organizationId])
 }

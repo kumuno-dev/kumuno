@@ -239,3 +239,9 @@ npm名照会はE404で、利用可能性は公開時に再確認する。Macのn
 貸出・返却・点検・修理は後続。[設計案](design/medical-equipment-template.md)、[判断0023](decisions/0023-medical-device-ledger.md)、[実装仕様](../templates/default/docs/medical-equipment.md)を参照。CLIの医療テンプレート選択は未実装。
 
 医療機器台帳の検証（2026-10-01、macOS arm64 / Node.js 24.21.0 / PostgreSQL 18.4）: root check成功、配布物からの生成チェック（単体26件・スモーク4件）、実DB32件、本番ビルド、PC/タブレット/スマートフォンの登録・編集・検索・番号重複・最新権限の拒否が成功。既存6Migrationからのデータ保持、dev:localでの台帳と監査の停止/再起動後の保持も成功。`npm run test:pack:db -- --local`の配布検証は117ファイルで成功。Linuxでの今回の変更と実施設の点検・貸出運用は、この時点では未確認。
+
+## 医療機器の貸出・返却
+
+第二段階としてMedicalLoan、貸出中/返却済み一覧、機器詳細の貸出/返却操作を追加。所有部署と貸出先を区別し、組織内の部署・Userを再利用する。部分一意制約で二重貸出を防ぎ、返却後は点検待ちとして再貸出を止める。点検と解除処理は後続。[判断0024](decisions/0024-medical-device-loans.md)と[台帳仕様](../templates/default/docs/medical-equipment.md)を参照。npm公開・既存生成アプリへの自動適用は行わない。
+
+貸出・返却の検証（2026-10-01、macOS arm64 / Node.js 24.21.0 / PostgreSQL 18.4）: root check、配布物の単体27件・スモーク4件、実DB39件、本番ビルド、3画面幅の貸出/返却/履歴/権限変更後の保存拒否が成功。二重貸出・同時返却・越境・監査失敗時の全体取消、既存7Migrationの医療台帳を保持した追加適用、search_pathを手動設定しない生成アプリ接続、停止/再起動後の貸出・返却・点検待ち・監査保持を確認した。配布物122ファイルのtest:pack:db -- --localが成功。今回のLinux/Windows実行と施設固有の点検運用は未確認。

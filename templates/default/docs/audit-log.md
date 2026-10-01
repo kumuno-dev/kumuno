@@ -33,3 +33,5 @@ Userの変更前後はisActive / role / departmentIdだけ。Departmentはcode /
 npm run test:unitで秘匿属性の除外と変更前後の整合性、npm run test:dbで更新との同時保存・認可境界・監査INSERT失敗時の全体ロールバック・履歴の改変拒否・操作者削除後の保持を確認する。test:template:dbではCLI生成物でも確認する。
 
 医療機器台帳のMedicalDeviceも登録・編集と同一トランザクションで監査を保存する。管理番号・メーカー・型式等の明示的な台帳属性を投影し、備考は監査へ保存しない。[台帳仕様](medical-equipment.md)を参照。
+
+貸出MedicalLoanのCREATE、返却時のMedicalLoanとMedicalDeviceのUPDATEも業務更新と同じトランザクションで記録する。貸出場所等の自由入力を監査へ保存しない。
