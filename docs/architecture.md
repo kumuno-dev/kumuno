@@ -52,7 +52,7 @@ Validationは当初Zodを候補としたが、Milestone 8では少数のFormData
 | 10 | AI Documentation | 完了。必須文書・共通入口・機能追加手順を生成物に同梱し、欠落・リンクを検証 |
 | 11 | create-kumuno CLI | 完了。同梱配布・依存インストール対話・失敗時の保持を検証済み |
 | 12 | CLI Integration Test | 完了。配布tgzのDB/認証結合検証とUbuntu上のGitHub Actionsが成功 |
-| 13 | README / OSS Documentation | 第3版のゴールを反映。公開用文書は未完成 |
+| 13 | README / OSS Documentation | 完了。導入・開発・貢献・セキュリティ・変更履歴とIssue/PR文書を整備 |
 | 14 | npm package preparation | 名前の利用可能性・ライセンス・公開手順を確認し、npm公開する |
 | 15 | v0.1 Release Candidate | 未達。第43〜49章のAcceptance Test A〜Gを確認する |
 
@@ -176,3 +176,12 @@ Node.js 24 / macOSでnpm run checkとnpm run test:packが成功。CLIテスト5�
 実tgzをリポジトリ外へインストールし、生成物のcheckとDB結合検証を行うtest:pack:dbを追加した。GitHub ActionsはUbuntu・Node.js 24・専用PostgreSQL 18・Chromiumでcheckとtest:pack:dbを順に実行する。詳細は[設計判断0018](decisions/0018-packed-cli-integration-ci.md)を参照。
 
 macOS / Node.js 24 / 一時PostgreSQL 18.4の非管理者ロールでnpm run checkとnpm run test:pack:dbが成功。CLI5件・検証設定1件・単体21件・ブラウザースモーク4件、生成物のMigration/Seed初回と再実行、実DB27件、PC/タブレット/スマートフォンでの認証・権限・管理画面・備品CRUDが成功した。永続DB変更・新規依存・npm公開は行っていない。[初回GitHub Actions](https://github.com/kumuno-dev/kumuno/actions/runs/36798463180)も成功（実装commit: 3bac108）。Ubuntu上でcheckとtest:pack:dbが通り、配布物からのDB・認証・業務画面まで確認した。DB検証を意図的に途中で失敗させたローカル確認でも、mode 0600の資格情報ファイル・schemaの除去と接続終了を確認済み。Windowsとnpm Registry経由は未検証。次はMilestone 13のREADME / OSS Documentation。
+
+
+## Milestone 13 完了（2026-10-01）
+
+READMEをブランドの思想・未公開状態・ローカルQuick Start・現在の機能・参加方法へ整理した。本体の詳細手順は[開発ガイド](development.md)、文書の入口は[文書一覧](README.md)へ移した。[貢献方法](../CONTRIBUTING.md)、[セキュリティ方針](../SECURITY.md)、[変更履歴](../CHANGELOG.md)、Issue / PRテンプレートを追加した。生成アプリREADMEと古いDB・認証の実装状況も修正した。[設計判断0019](decisions/0019-oss-documentation.md)を参照。
+
+Node.js 24 / macOSでnpm run checkとnpm run test:packが成功。CLI5件・検証設定1件・単体21件・ブラウザー4件、配布物の独立生成・依存導入・生成アプリの文書リンク・lint・型検査・本番ビルドを確認した。変更文書のローカルリンクとnpmコマンドも確認した。
+
+文書のみの変更で、DB・依存・アプリ動作は変更していないため、実DB検証は再実行していない。ライセンスと固定の非公開報告窓口の確定、npm公開、Windows・Registry経由の確認は残る。次はMilestone 14のnpm package preparation。

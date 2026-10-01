@@ -1,12 +1,12 @@
-# KUMUNO application template
+# KUMUNOで生成した業務アプリ
 
-現在はNext.js・Prisma・PostgreSQLの基盤です。メール・パスワード認証と[3ロールの共通認可](docs/authorization.md)を実装済みです。部署移動・ユーザー無効化の[監査ログ](docs/audit-log.md)を実装済みです。[ユーザー・部署管理画面](docs/management.md)を利用できます。[備品管理](docs/equipment.md)も利用できます。このディレクトリ単独でセットアップできます。
+認証・組織・ユーザー・部署・権限・監査と、備品管理の参照実装を持つ業務アプリです。このディレクトリ単独でセットアップ・開発できます。AIとの開発は[機能追加手順](docs/adding-a-feature.md)から始めます。
 
 ## セットアップ
 
 必要なもの：Node.js **24.x LTS**（検証版は`.nvmrc`）、npm、Git、PostgreSQL **18.x**。トップページの起動・ビルドだけならDBは不要です。
 
-CLIで生成したアプリのディレクトリで実行してください。nvmを使う場合は先に`nvm install`、`nvm use`を実行します。
+CLIで生成したアプリのディレクトリで実行します。CLIで依存導入済みならnpm ciは省略できます。nvmを使う場合は先に`nvm install`、`nvm use`を実行します。
 
 ```sh
 npm ci
@@ -17,7 +17,7 @@ npm run dev
 
 ポート3000を使用中なら`npm run dev -- --port 3001`で起動できます。
 
-組織・部署・ユーザーと開発Seedを利用できます。ログインを利用できます。[ユーザー・部署管理画面](docs/management.md)を利用できます。[備品管理](docs/equipment.md)も利用できます。DBの設定は次の手順で行います。
+トップページの表示だけではログイン・業務画面は使えません。次のDB準備・Migration・Seed・認証設定を完了してからログインしてください。
 
 外部フォントや外部APIは使いません。依存パッケージとテスト用ブラウザーの初回取得にはインターネット接続が必要です。
 
@@ -28,8 +28,6 @@ npm run dev
 ```sh
 createuser --pwprompt kumuno
 createdb --owner=kumuno kumuno
-createdb --owner=kumuno kumuno_test
-createdb --owner=kumuno kumuno_shadow
 cp .env.example .env.local
 ```
 
@@ -40,9 +38,9 @@ npm run db:check
 npm run db:migrate
 ```
 
-`npm ci`時にPrisma Clientを自動生成します。モデル変更後は`npm run db:generate`で再生成します。Migrationの作成には、別の専用DBを指す`SHADOW_DATABASE_URL`も設定してください。shadow DBは再構築されるため、開発・テスト・本番DBと共用しません。
+`npm ci`時にPrisma Clientを自動生成します。モデル変更後は`npm run db:generate`で再生成します。Migrationの作成には、別の専用DBを指す`SHADOW_DATABASE_URL`も設定してください。shadow DBは再構築されるため、開発・テスト・本番DBと共用しません。モデル変更が必要になった時点で、DB管理者としてcreatedb --owner=kumuno kumuno_shadowを実行して用意します。
 
-MigrationはOrganization・階層Department・UserとBetter Auth標準テーブルを作成します。詳しい運用規約は[database.md](docs/database.md)を参照してください。
+MigrationはOrganization・階層Department・User、Better Auth標準テーブル、監査ログ、備品テーブルを作成します。詳しい運用規約は[database.md](docs/database.md)を参照してください。
 
 ## 開発用Seed
 
@@ -74,7 +72,7 @@ npm run check
 
 lint、型チェック、単体テスト、本番ビルド、ブラウザーのスモークテストを順に実行します。ブラウザーテストは専用サーバーを`127.0.0.1:3100`で起動・終了します。このポートを空けておいてください。
 
-**DB変更時には、さらに実PostgreSQLの結合テストを実行します。** `.env.test.local`を作り、専用テストDBを指定します（パスワード部分は自分の設定に置き換えます）。
+**DBや認証・権限・業務更新の変更時には、さらに実PostgreSQLの結合テストを実行します。** DB管理者としてcreatedb --owner=kumuno kumuno_testでテストDBを作ります。`.env.test.local`を作り、専用テストDBを指定します（パスワード部分は自分の設定に置き換えます）。
 
 ```dotenv
 TEST_DATABASE_URL=postgresql://kumuno:REPLACE_WITH_YOUR_PASSWORD@127.0.0.1:5432/kumuno_test
@@ -123,6 +121,8 @@ DB名は`_test`で終わる必要があります。テストは毎回一意なsc
 | Prisma Clientが見つからない | npm ciを完了する。モデル変更後はnpm run db:generate |
 | DB操作でDATABASE_URL未設定と表示される | このアプリ直下の.env.localを設定する |
 | test:dbが設定不足で失敗する | .env.test.localに専用TEST_DATABASE_URLを指定する |
+| ログインできない | Migration・Seed・入力したパスワード・BETTER_AUTH_SECRETを確認する |
+| ポートを変更してログインに失敗 | BETTER_AUTH_URLを実際のOriginへ合わせ、サーバーを再起動する |
 | ブラウザーテストが起動しない | Chromiumをインストールし、ポート3100を空ける |
 
 生成アプリの依存・設定・docsはこのディレクトリ内で完結します。KUMUNO開発用リポジトリを参照せず、このREADMEとdocsを基準に保守してください。

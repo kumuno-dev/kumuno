@@ -22,7 +22,18 @@ DB作成・Migration・Seed・サーバー起動・Git操作は自動実行し�
 
 ## 開発リポジトリからの試用
 
-rootでnpm run create:app -- my-appを実行する。毎回テンプレートを同梱ディレクトリへ再生成してから起動する。直接nodeでCLIを実行する場合は、先にrootのnpm run build:cliで同梱内容を更新する。
+リポジトリを取得し、Node.js 24.xでrootのnpm ciを実行してから試す。
+
+```sh
+npm ci
+npm run create:app -- my-app --install
+cd my-app
+npm run dev
+```
+
+トップページの表示はDBなしで確認できる。ログイン・業務画面は生成先READMEに従ってPostgreSQL・認証・Migration・開発Seedを設定する。
+
+rootでnpm run create:app -- my-appを実行すると依存導入を対話で選べる。毎回テンプレートを同梱ディレクトリへ再生成してから起動する。直接nodeでCLIを実行する場合は、先にrootのnpm run build:cliで同梱内容を更新する。
 
 ## 同梱と検証
 
