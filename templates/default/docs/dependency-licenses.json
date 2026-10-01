@@ -1,6 +1,6 @@
 {
   "source": "package-lock.json",
-  "dependencySha256": "1da84eece870799c1fe46c6d86d3b7b005c7e6d2e152d28722c602f2f166cd06",
+  "dependencySha256": "8bff938e0c003ad075f0662245bc082d9484cd74d4bc5cfd3a60216a78d986b0",
   "entries": [
     {
       "path": "node_modules/@alloc/quick-lru",
@@ -1018,6 +1018,15 @@
       "development": true,
       "optional": false,
       "tarball": "https://registry.npmjs.org/@keyv/serialize/-/serialize-1.1.1.tgz"
+    },
+    {
+      "path": "node_modules/@kumuno/approval",
+      "name": "@kumuno/approval",
+      "version": "0.1.0-rc.0",
+      "license": "MIT",
+      "development": false,
+      "optional": false,
+      "tarball": "file:vendor/kumuno-approval-0.1.0-rc.0.tgz"
     },
     {
       "path": "node_modules/@kumuno/audit-log",

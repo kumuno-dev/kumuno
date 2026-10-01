@@ -8,6 +8,7 @@ const source = fileURLToPath(new URL('../../../templates/default/', import.meta.
 execFileSync(process.execPath,[fileURLToPath(new URL("../../../scripts/bundle-auth.mjs",import.meta.url))],{stdio:"inherit"});
 execFileSync(process.execPath,[fileURLToPath(new URL("../../../scripts/bundle-rbac.mjs",import.meta.url))],{stdio:"inherit"});
 execFileSync(process.execPath,[fileURLToPath(new URL("../../../scripts/bundle-audit-log.mjs",import.meta.url))],{stdio:"inherit"});
+execFileSync(process.execPath,[fileURLToPath(new URL("../../../scripts/bundle-approval.mjs",import.meta.url))],{stdio:"inherit"});
 const staging = await mkdtemp(resolve(packageRoot, '.template-stage-'));
 try {
   for (const entry of templateFiles) await cp(resolve(source, entry), resolve(staging, bundledName(entry)), { recursive: true, filter: templateFilter });

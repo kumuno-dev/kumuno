@@ -54,5 +54,7 @@ jobs:
         run: npx --no-install playwright install --with-deps chromium
       - name: Check structure, CLI, lint, types, unit tests and production browser smoke tests
         run: npm run check
+      - name: Verify approval transaction example with PostgreSQL
+        run: npm run test:approval-package:db
       - name: Verify packed CLI and generated application with PostgreSQL
         run: npm run test:pack:db -- --local

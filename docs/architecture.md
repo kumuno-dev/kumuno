@@ -289,3 +289,9 @@ npm名照会はE404で、利用可能性は公開時に再確認する。Macのn
 @kumuno/audit-logへ変更前後の整合確認と監査保存の共通形式を抽出。Prisma・Next.jsへの依存はなく、利用側が同じtransactionに結びついたwriterを渡す。業務属性の許可リスト、Prisma.DbNull、DBの追記専用制約はアプリに維持し、DBモデルは変更しない。実tgzをCLIへ同梱し、npm公開は別工程。[設計判断](decisions/0031-audit-log-package.md)を参照。
 
 第3段階の検証（macOS arm64、Node.js 24.21.0、PostgreSQL 18.4）：root check、監査契約5件・別アプリへの実tgz導入・TypeScript・import/require、配布CLI143ファイルからの独立生成とnpm ci、本番ビルド、単体29件、実DB58件、基本ブラウザー4件、3画面幅の認証・管理・備品・医療操作、ローカルDB自動準備と再起動時の業務データ・監査保持が成功。監査INSERT失敗時の業務/セッション/Account/医療記録のロールバック、履歴のUPDATE/DELETE/TRUNCATE拒否、操作者削除後の履歴保持も確認。新パッケージのLinux / Windows実行とnpm公開は未実施。試用アプリのDBは変更していない。
+
+## 共通パッケージの第4段階（2026-10-02）
+
+@kumuno/approvalの単段承認を実装。DRAFT/RETURNEDから本人が申請し、PENDINGを別の担当者が承認または理由付きで差戻す。自己承認・組織越境・無効ユーザーと古い版を拒否する。DBに依存しない遷移エンジンを実tgzでCLIへ同梱し、[PostgreSQL接続例](../examples/approval/README.md)で最新操作者・Serializable・CAS・履歴と監査の原子性を確認する。承認画面・DBモデル・医療業務への組込みは後続。[設計判断](decisions/0032-approval-package.md)を参照。
+
+第4段階の検証（macOS arm64、Node.js 24.21.0、PostgreSQL 18.4）：root check、承認契約6件、別アプリへの実tgz導入・TypeScript・import/require・RBAC/監査の組合せが成功。専用DBの接続例で申請→差戻し→再申請→承認、自己操作/組織越境/最新降格/無効化の拒否、同じ版で二つの更新を待機させる実競合と一方だけの保存、監査失敗時の状態・履歴の取消を確認。配布CLI145ファイルの生成・npm ci・本番ビルド・単体29件・実DB58件・基本ブラウザー4件・3画面幅の既存業務・開発DB起動と再起動後の保持も成功。承認UI/本番DBモデル、Linux/Windowsでの今回の実行、npm公開は未実施。試用アプリと既存DBは変更していない。

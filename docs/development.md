@@ -202,3 +202,9 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 ## 監査パッケージの開発
 
 @kumuno/audit-logはpackages/audit-logにあり、npm未公開。`npm run build:audit-log`でvendorの実tgzを作り、`npm run test:audit-log-package`で操作形状・JSON・writerの失敗伝播・別アプリへの導入と公開型を検証する。公開ファイルの変更後はbuild:audit-log、templates/defaultで`npm install --ignore-scripts @kumuno/audit-log@file:vendor/kumuno-audit-log-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLI bundle/prepackはauth・rbac・audit-logを同梱する。実DBのロールバック・追記専用制約は引き続き生成アプリのtest:dbで確認する。
+
+## 承認パッケージの開発
+
+@kumuno/approvalはpackages/approvalにあり、npm未公開。`npm run build:approval`で実tgzを作成し、`npm run test:approval-package`で遷移・権限・公開型・別アプリへの導入を確認する。`npm run test:approval-package:db`は専用TEST_DATABASE_URLで[PostgreSQL保存例](../examples/approval/README.md)の競合・監査原子性を確認する。DB名の_test検査後、ランダムschemaだけを使う。CIでも実行する。
+
+公開ファイルの変更後はbuild:approval、templates/defaultで`npm install --ignore-scripts @kumuno/approval@file:vendor/kumuno-approval-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLIにはエンジンを同梱するが、承認UI・DBモデル・業務別の承認条件はまだ追加しない。

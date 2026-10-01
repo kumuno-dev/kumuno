@@ -82,3 +82,5 @@ KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。C
 第2段階として[@kumuno/rbac](packages/rbac/README.md)も抽出しました。3ロール・組織境界の共通判定に、アプリ側で業務権限を追加できます。未公開の実tgzを生成テンプレートへ同梱します。
 
 第3段階として[@kumuno/audit-log](packages/audit-log/README.md)も抽出しました。業務更新と同じtransactionへ保存関数を結びつけ、監査に残す属性はアプリ側で明示します。現在は未公開のtgzをCLIに同梱します。
+
+第4段階として[@kumuno/approval](packages/approval/README.md)の最小状態遷移を追加しました。申請・理由付き差戻し・再申請・承認、自己承認禁止と版番号の確認を提供し、[実DBへの保存例](examples/approval/README.md)でRBAC・監査と組み合わせます。承認画面・業務DBモデルは未実装、npmは未公開です。

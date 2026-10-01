@@ -14,7 +14,7 @@ const entries=Object.entries(lock.packages).filter(([path])=>path).map(([path,pk
 const inventory=JSON.stringify({source:'package-lock.json',dependencySha256:createHash('sha256').update(JSON.stringify(Object.fromEntries(Object.entries(lock.packages).filter(([path])=>path)))).digest('hex'),entries},null,2)+'\n';
 const counts=new Map();for(const pkg of entries)counts.set(pkg.license,(counts.get(pkg.license)??0)+1);
 const direct=Object.entries({...manifest.dependencies,...manifest.devDependencies}).map(([name,version])=>{
-  const pkg=lock.packages[`node_modules/${name}`];assert.equal(pkg.version,["@kumuno/auth", "@kumuno/rbac", "@kumuno/audit-log"].includes(name) ? "0.1.0-rc.0" : version);
+  const pkg=lock.packages[`node_modules/${name}`];assert.equal(pkg.version,["@kumuno/auth", "@kumuno/rbac", "@kumuno/audit-log", "@kumuno/approval"].includes(name) ? "0.1.0-rc.0" : version);
   return `| ${name} | ${version} | ${pkg.license} | ${manifest.dependencies[name]?'実行時':'開発時'} |`;
 }).join('\n');
 const summary=[...counts].sort(([a],[b])=>a.localeCompare(b)).map(([license,count])=>`| ${license} | ${count} |`).join('\n');

@@ -25,3 +25,4 @@ artifacts/
 !templates/default/vendor/kumuno-auth-0.1.0-rc.0.tgz
 !templates/default/vendor/kumuno-rbac-0.1.0-rc.0.tgz
 !templates/default/vendor/kumuno-audit-log-0.1.0-rc.0.tgz
+!templates/default/vendor/kumuno-approval-0.1.0-rc.0.tgz

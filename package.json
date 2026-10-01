@@ -10,7 +10,8 @@
     "packages/create-kumuno",
     "packages/auth",
     "packages/rbac",
-    "packages/audit-log"
+    "packages/audit-log",
+    "packages/approval"
   ],
   "scripts": {
     "dev": "npm --prefix templates/default run dev --",
@@ -19,7 +20,7 @@
     "lint": "npm --prefix templates/default run lint --",
     "typecheck": "npm --prefix templates/default run typecheck --",
     "test": "npm --prefix templates/default run test --",
-    "check": "npm run check:structure && npm run check:licenses && npm run check:release && npm run test:verification && npm run test:auth-package && npm run test:rbac-package && npm run test:audit-log-package && npm run test:cli && npm --prefix templates/default run check",
+    "check": "npm run check:structure && npm run check:licenses && npm run check:release && npm run test:verification && npm run test:auth-package && npm run test:rbac-package && npm run test:audit-log-package && npm run test:approval-package && npm run test:cli && npm --prefix templates/default run check",
     "test:unit": "npm --prefix templates/default run test:unit --",
     "test:e2e": "npm --prefix templates/default run test:e2e --",
     "test:db": "npm --prefix templates/default run test:db --",
@@ -52,6 +53,9 @@
     "build:rbac": "node scripts/bundle-rbac.mjs",
     "test:rbac-package": "npm test --workspace @kumuno/rbac && node scripts/test-rbac-package-install.mjs",
     "build:audit-log": "node scripts/bundle-audit-log.mjs",
-    "test:audit-log-package": "npm test --workspace @kumuno/audit-log && node scripts/test-audit-log-package-install.mjs"
+    "test:audit-log-package": "npm test --workspace @kumuno/audit-log && node scripts/test-audit-log-package-install.mjs",
+    "build:approval": "node scripts/bundle-approval.mjs",
+    "test:approval-package": "npm test --workspace @kumuno/approval && node scripts/test-approval-package-install.mjs",
+    "test:approval-package:db": "node scripts/test-approval-package-install.mjs --db"
   }
 }

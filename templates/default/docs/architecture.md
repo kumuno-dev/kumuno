@@ -56,3 +56,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 認可の共通判定は@kumuno/rbac。src/authorization/policy.tsで業務Permissionを追加し、最新操作者のDB照合・更新transactionはアプリ側に保つ。[認可仕様](authorization.md)を参照。
 
 監査の共通形式と保存処理は@kumuno/audit-log。src/audit/log.tsが安全な属性投影と同じPrisma transactionへの接続を所有する。[監査仕様](audit-log.md)を参照。
+
+@kumuno/approvalは単段承認の状態遷移エンジンとして導入済み。承認画面・DBモデル・既存業務の承認条件は未実装。[導入手順](approval.md)を参照。
