@@ -4,7 +4,7 @@ import type { AuditAction } from "../generated/prisma/enums";
 type UserSnapshot = { isActive: boolean; role: string; departmentId: string | null };
 type DepartmentSnapshot = { code: string; name: string; parentId: string | null };
 type EquipmentSnapshot = { name: string; category: string; purchaseDate: Date | null; purchasePrice: { toString(): string } | null; departmentId: string | null; assignedUserId: string | null; status: string };
-type MedicalDeviceSnapshot = { managementNumber: string; assetNumber: string | null; name: string; category: string; manufacturer: string | null; modelName: string | null; serialNumber: string | null; departmentId: string | null; location: string | null; purchaseDate: Date | null; warrantyUntil: Date | null; status: string; returnInspectionPending: boolean };
+type MedicalDeviceSnapshot = { managementNumber: string; assetNumber: string | null; name: string; category: string; manufacturer: string | null; modelName: string | null; serialNumber: string | null; departmentId: string | null; location: string | null; purchaseDate: Date | null; warrantyUntil: Date | null; status: string; returnInspectionPending: boolean; isSample?:boolean };
 type MedicalLoanSnapshot = { deviceId: string; departmentId: string; loanedAt: Date; loanedById: string; returnedAt: Date | null; returnedById: string | null };
 type MedicalInspectionSnapshot = {returnLoanId:string|null; deviceId:string; inspectedById:string; inspectionDate:Date; kind:string; result:string; nextInspectionDate:Date|null; recordedAt:Date; clearedPending:boolean};
 type MedicalRepairSnapshot = {deviceId:string;reportedById:string;status:string;reportedAt:Date;startedAt:Date|null;completedAt:Date|null};
@@ -39,7 +39,7 @@ export function auditSnapshots(event: Event) {
     return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
   }
   if (event.resourceType === "MedicalDevice") {
-    const pick = (v: MedicalDeviceSnapshot) => ({ managementNumber: v.managementNumber, assetNumber: v.assetNumber, name: v.name, category: v.category, manufacturer: v.manufacturer, modelName: v.modelName, serialNumber: v.serialNumber, departmentId: v.departmentId, location: v.location, purchaseDate: v.purchaseDate?.toISOString().slice(0,10) ?? null, warrantyUntil: v.warrantyUntil?.toISOString().slice(0,10) ?? null, status: v.status, returnInspectionPending: v.returnInspectionPending });
+    const pick = (v: MedicalDeviceSnapshot) => ({ managementNumber: v.managementNumber, assetNumber: v.assetNumber, name: v.name, category: v.category, manufacturer: v.manufacturer, modelName: v.modelName, serialNumber: v.serialNumber, departmentId: v.departmentId, location: v.location, purchaseDate: v.purchaseDate?.toISOString().slice(0,10) ?? null, warrantyUntil: v.warrantyUntil?.toISOString().slice(0,10) ?? null, status: v.status, returnInspectionPending: v.returnInspectionPending, isSample:v.isSample ?? false });
     return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };
   }
   if (event.resourceType === "MedicalLoan") {

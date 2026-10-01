@@ -12,7 +12,7 @@
 | データの所有・将来の連携 | [domain-boundaries.md](domain-boundaries.md)、[integration.md](integration.md) |
 | モデル・Migration | [database.md](database.md)、[organization.md](organization.md) |
 | 認証・権限・監査 | [authentication.md](authentication.md)、[authorization.md](authorization.md)、[audit-log.md](audit-log.md) |
-| 医療機器台帳・貸出・返却・点検・修理 | [医療機器台帳](medical-equipment.md) |
+| 医療機器台帳・貸出・点検・修理・試用データ・ダッシュボード | [医療機器台帳](medical-equipment.md) |
 | CRUDの具体例 | [equipment.md](equipment.md)、src/equipment |
 | 共通画面・管理フォーム | [management.md](management.md) |
 | ライセンス | [LICENSE](../LICENSE)、[依存ライブラリの一覧](dependency-licenses.md) |

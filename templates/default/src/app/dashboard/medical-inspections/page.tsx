@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { includeMedicalSamples } from "@/medical-equipment/sample-preference";
 import { requirePermission } from "@/authorization/require-permission";
 import { getDatabase } from "@/database/client";
 import { medicalInspectionList,inspectionQuery,inspectionResults,inspectionKinds } from "@/medical-equipment/inspections";
 export default async function MedicalInspectionsPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   const actor = await requirePermission("medical-equipment:read"), query = inspectionQuery(await searchParams);
-  const result = await medicalInspectionList(getDatabase(),actor.organizationId,query);
+  const result = await medicalInspectionList(getDatabase(),actor.organizationId,query,await includeMedicalSamples(actor.organizationId));
   const href = (page:number)=>`/dashboard/medical-inspections?${new URLSearchParams({q:query.q,result:query.result ?? "",page:String(page)})}`;
   return <><p className="eyebrow">MEDICAL INSPECTIONS</p><h1>医療機器の点検記録</h1><p className="page-description">機器詳細から点検を記録します。合格・不合格・未完了の履歴を確認できます。</p><Link className="text-orange-800 underline" href="/dashboard/medical-equipment">医療機器台帳から機器を選ぶ →</Link>
     <section className="panel mt-6"><form className="management-form mb-6" method="get"><div className="form-grid"><label>検索<input name="q" maxLength={120} defaultValue={query.q} placeholder="機器管理番号・機器名"/></label><label>点検結果<select aria-label="点検結果" name="result" defaultValue={query.result ?? ""}><option value="">すべて</option>{Object.entries(inspectionResults).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label></div><button className="primary-button">検索する</button></form><p className="record-meta">全{result.total}件</p>{result.rows.length === 0 && <p>該当する点検記録はありません。</p>}

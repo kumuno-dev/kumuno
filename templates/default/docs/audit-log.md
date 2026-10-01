@@ -39,3 +39,5 @@ npm run test:unitで秘匿属性の除外と変更前後の整合性、npm run t
 MedicalInspectionのCREATEとMedicalDeviceのUPDATEも点検・再貸出許可と同時に保存する。点検内容の自由入力を監査へ保存しない。
 
 MedicalRepairのCREATE/UPDATEも業務操作と同時に保存する。修理依頼時はMedicalDeviceの停止もUPDATE監査を保存する。機器・依頼者・状態・日時のみを投影し、不具合・修理内容を監査へ保存しない。
+
+テスト機器の準備も明示的な操作としてCREATE/UPDATE監査を同時保存する。MedicalDeviceの投影にisSampleを含め、テスト機器の識別を保持する。表示切り替えは業務データを変更しないため業務監査を追加しない。

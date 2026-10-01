@@ -149,3 +149,5 @@ KUMUNOが作成したコードは[MIT License](LICENSE)です。[依存ライブ
 [文書一覧](docs/README.md)から[機能追加手順](docs/adding-a-feature.md)と[規約](docs/coding-conventions.md)へ進み、備品管理を参照してください。AGENTS.mdとCLAUDE.mdは同じdocsへの入口です。運用の前提は[deployment.md](docs/deployment.md)を参照してください。
 
 修理は機器詳細の「修理管理」から依頼 → 対応開始 → 完了を記録します。完了後も、台帳で運用中に戻し、合格点検を記録するまで再貸出はできません。
+
+運用のイメージを掴むには「医療機器ダッシュボード」でテストデータ「あり」を選びます。架空の7台を試せます。「なし」に戻すと実データのみを表示し、データは削除しません。

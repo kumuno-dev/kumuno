@@ -98,6 +98,17 @@ export async function verifyLocalDevelopment(app, env) {
     await page.getByRole('checkbox',{name:'点検内容と結果を確認しました'}).check();
     await page.getByRole('button',{name:'点検結果を保存',exact:true}).click();
     await expect(page.getByRole('button',{name:'貸出を登録',exact:true})).toBeVisible();
+
+    await page.goto(`${base}/dashboard/medical-overview`);
+    const sampleForm=page.locator('form').filter({has:page.locator('select[name="sampleMode"]')});
+    await sampleForm.getByLabel('テストデータ',{exact:true}).selectOption('include');
+    await sampleForm.getByRole('button',{name:'表示を切り替える',exact:true}).click();
+    await expect(sampleForm.getByRole('status')).toContainText('テストデータあり');
+    await expect(page.getByTestId('count-repair')).toContainText('1台');
+    await sampleForm.getByLabel('テストデータ',{exact:true}).selectOption('exclude');
+    await sampleForm.getByRole('button',{name:'表示を切り替える',exact:true}).click();
+    await expect(sampleForm.getByRole('status')).toContainText('テストデータなし');
+    await expect(page.getByTestId('count-repair')).toContainText('0台');
     await browser.close();browser=undefined;
     const pool=await connect(first);
     let before;
@@ -116,17 +127,19 @@ export async function verifyLocalDevelopment(app, env) {
     try {
       assert.equal((await again.query('SELECT id FROM "User"')).rows[0].id,before);
       assert.equal((await again.query('SELECT count(*)::int AS count FROM "Equipment"')).rows[0].count,1);
-      assert.equal((await again.query('SELECT "managementNumber" FROM "MedicalDevice"')).rows[0].managementNumber,'ME-LOCAL-001');
-      assert.equal((await again.query('SELECT "returnInspectionPending" FROM "MedicalDevice"')).rows[0].returnInspectionPending,false);
-      assert.equal((await again.query('SELECT result FROM "MedicalInspection"')).rows[0].result,'PASSED');
-      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalInspection\'')).rows[0].count,2);
-      assert.equal((await again.query('SELECT status FROM "MedicalRepair"')).rows[0].status,'COMPLETED');
-      assert.equal((await again.query('SELECT "completionContent" FROM "MedicalRepair"')).rows[0].completionContent,'local-repair-completion');
-      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalRepair\'')).rows[0].count,3);
-      const loan=(await again.query('SELECT "returnedAt", "destinationLocation" FROM "MedicalLoan"')).rows[0];
+      assert.equal((await again.query('SELECT "managementNumber" FROM "MedicalDevice" WHERE "isSample"=false')).rows[0].managementNumber,'ME-LOCAL-001');
+      assert.equal((await again.query('SELECT "returnInspectionPending" FROM "MedicalDevice" WHERE "isSample"=false')).rows[0].returnInspectionPending,false);
+      assert.equal((await again.query("SELECT result FROM \"MedicalInspection\" WHERE content='local-inspection-persistence'")).rows[0].result,'PASSED');
+      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalInspection\'')).rows[0].count,4);
+      assert.equal((await again.query("SELECT status FROM \"MedicalRepair\" WHERE problem='local-repair-problem'")).rows[0].status,'COMPLETED');
+      assert.equal((await again.query("SELECT \"completionContent\" FROM \"MedicalRepair\" WHERE problem='local-repair-problem'")).rows[0].completionContent,'local-repair-completion');
+      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalRepair\'')).rows[0].count,8);
+      assert.equal((await again.query('SELECT count(*)::int AS count FROM "MedicalDevice" WHERE "isSample"=true')).rows[0].count,7);
+      assert.equal((await again.query('SELECT count(*)::int AS count FROM "MedicalSampleDataset"')).rows[0].count,1);
+      const loan=(await again.query("SELECT \"returnedAt\", \"destinationLocation\" FROM \"MedicalLoan\" WHERE \"destinationLocation\"='local-loan-persistence'")).rows[0];
       assert(loan.returnedAt);assert.equal(loan.destinationLocation,'local-loan-persistence');
-      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalLoan\'')).rows[0].count,2);
-      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalDevice\'')).rows[0].count,6);
+      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalLoan\'')).rows[0].count,5);
+      assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'MedicalDevice\'')).rows[0].count,13);
       assert.equal((await again.query('SELECT count(*)::int AS count FROM "AuditLog" WHERE "resourceType"=\'Equipment\'')).rows[0].count,1);
     }finally{await again.end();}
     await stop();

@@ -1,3 +1,4 @@
+import { availabilityLabels,type Availability } from "./availability";
 import { InputError, field, identifier } from "../management/validation";
 import type { MedicalDeviceStatus } from "../generated/prisma/enums";
 export const statuses = { IN_SERVICE: "運用中", SUSPENDED: "運用停止", RETIRED: "廃棄済み" };
@@ -21,6 +22,6 @@ export function parseMedicalDevice(form: FormData) {
 export function listQuery(input: Record<string,string|string[]|undefined>) {
   const value = (key: string) => typeof input[key] === "string" ? input[key] as string : "";
   const status = value("status");
-  return { q: value("q").trim().slice(0,120), status: Object.hasOwn(statuses,status) ? status as MedicalDeviceStatus : undefined,
+  return { availability:Object.hasOwn(availabilityLabels,value("availability")) ? value("availability") as Availability : undefined, q: value("q").trim().slice(0,120), status: Object.hasOwn(statuses,status) ? status as MedicalDeviceStatus : undefined,
     page: /^\d{1,6}$/.test(value("page")) ? Math.max(1,Number(value("page"))) : 1, size: 10 };
 }

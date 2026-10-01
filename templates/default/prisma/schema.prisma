@@ -21,6 +21,7 @@ model Organization {
   medicalLoans MedicalLoan[]
   medicalInspections MedicalInspection[]
   medicalRepairs MedicalRepair[]
+  medicalSampleDataset MedicalSampleDataset?
 }
 
 model Department {
@@ -196,6 +197,7 @@ model MedicalDevice {
   id String @id @default(uuid()) @db.Uuid
   organizationId String @db.Uuid
   managementNumber String
+  isSample Boolean @default(false)
   assetNumber String?
   name String
   category String
@@ -312,4 +314,11 @@ model MedicalRepair {
   @@index([organizationId, reportedAt, id])
   @@index([deviceId, organizationId])
   @@index([reportedById, organizationId])
+}
+
+
+model MedicalSampleDataset {
+  organizationId String @id @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 }

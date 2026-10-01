@@ -45,8 +45,8 @@ export function repairQuery(input:Record<string,string|string[]|undefined>) {
   const status = typeof input.status === "string" && Object.hasOwn(repairStatuses,input.status) ? input.status as MedicalRepairStatus : undefined;
   return {q,status,page:typeof input.page === "string" && /^\d{1,6}$/.test(input.page) ? Math.max(1,Number(input.page)) : 1,size:10};
 }
-export async function medicalRepairList(db:PrismaClient,organizationId:string,query:ReturnType<typeof repairQuery>) {
-  const where:Prisma.MedicalRepairWhereInput = {organizationId,status:query.status,...(query.q ? {OR:[{device:{name:{contains:query.q,mode:"insensitive"}}},{device:{managementNumber:{contains:query.q,mode:"insensitive"}}}]} : {})};
+export async function medicalRepairList(db:PrismaClient,organizationId:string,query:ReturnType<typeof repairQuery>,includeSamples=true) {
+  const where:Prisma.MedicalRepairWhereInput = {organizationId,device:includeSamples ? undefined : {isSample:false},status:query.status,...(query.q ? {OR:[{device:{name:{contains:query.q,mode:"insensitive"}}},{device:{managementNumber:{contains:query.q,mode:"insensitive"}}}]} : {})};
   return db.$transaction(async tx=>{
     const total = await tx.medicalRepair.count({where}), pages = Math.max(1,Math.ceil(total/query.size)),page = Math.min(query.page,pages);
     const rows = await tx.medicalRepair.findMany({where,orderBy:[{reportedAt:"desc"},{id:"asc"}],skip:(page-1)*query.size,take:query.size,include:{device:{select:{name:true,managementNumber:true}},reportedBy:{select:{name:true}}}});

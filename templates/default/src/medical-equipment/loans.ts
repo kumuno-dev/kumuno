@@ -53,8 +53,8 @@ export function loanQuery(input: Record<string,string|string[]|undefined>) {
   const q = typeof input.q === "string" ? input.q.trim().slice(0,120) : "";
   return { q, returned: input.state === "returned", page: typeof input.page === "string" && /^\d{1,6}$/.test(input.page) ? Math.max(1,Number(input.page)) : 1, size:10 };
 }
-export async function medicalLoanList(db: PrismaClient, organizationId: string, query: ReturnType<typeof loanQuery>) {
-  const where: Prisma.MedicalLoanWhereInput = {organizationId,returnedAt:query.returned ? {not:null} : null,
+export async function medicalLoanList(db: PrismaClient, organizationId: string, query: ReturnType<typeof loanQuery>,includeSamples=true) {
+  const where: Prisma.MedicalLoanWhereInput = {organizationId,device:includeSamples ? undefined : {isSample:false},returnedAt:query.returned ? {not:null} : null,
     ...(query.q ? { OR:[{destinationName:{contains:query.q,mode:"insensitive"}},{device:{name:{contains:query.q,mode:"insensitive"}}},{device:{managementNumber:{contains:query.q,mode:"insensitive"}}}] } : {})};
   return db.$transaction(async tx => {
     const total = await tx.medicalLoan.count({where}), pages = Math.max(1,Math.ceil(total/query.size)),page = Math.min(query.page,pages);

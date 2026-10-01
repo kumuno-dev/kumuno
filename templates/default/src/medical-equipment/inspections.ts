@@ -60,8 +60,8 @@ export function inspectionQuery(input:Record<string,string|string[]|undefined>) 
   const result = typeof input.result === "string" && Object.hasOwn(inspectionResults,input.result) ? input.result as MedicalInspectionResult : undefined;
   return {q,result,page:typeof input.page === "string" && /^\d{1,6}$/.test(input.page) ? Math.max(1,Number(input.page)) : 1,size:10};
 }
-export async function medicalInspectionList(db:PrismaClient,organizationId:string,query:ReturnType<typeof inspectionQuery>) {
-  const where:Prisma.MedicalInspectionWhereInput = {organizationId,result:query.result,
+export async function medicalInspectionList(db:PrismaClient,organizationId:string,query:ReturnType<typeof inspectionQuery>,includeSamples=true) {
+  const where:Prisma.MedicalInspectionWhereInput = {organizationId,device:includeSamples ? undefined : {isSample:false},result:query.result,
     ...(query.q ? {OR:[{device:{name:{contains:query.q,mode:"insensitive"}}},{device:{managementNumber:{contains:query.q,mode:"insensitive"}}}]} : {})};
   return db.$transaction(async tx=>{
     const total = await tx.medicalInspection.count({where}), pages = Math.max(1,Math.ceil(total/query.size)),page = Math.min(query.page,pages);

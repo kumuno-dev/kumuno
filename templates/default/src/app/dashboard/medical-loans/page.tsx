@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { includeMedicalSamples } from "@/medical-equipment/sample-preference";
 import { requirePermission } from "@/authorization/require-permission";
 import { getDatabase } from "@/database/client";
 import { medicalLoanList, loanQuery, displayDate } from "@/medical-equipment/loans";
 export default async function MedicalLoansPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   const actor = await requirePermission("medical-equipment:read");
-  const query = loanQuery(await searchParams), result = await medicalLoanList(getDatabase(),actor.organizationId,query);
+  const query = loanQuery(await searchParams), result = await medicalLoanList(getDatabase(),actor.organizationId,query,await includeMedicalSamples(actor.organizationId));
   const href = (page:number,returned=query.returned) => `/dashboard/medical-loans?${new URLSearchParams({q:query.q,state:returned ? "returned" : "active",page:String(page)})}`;
   return <><p className="eyebrow">MEDICAL LOANS</p><h1>医療機器の貸出・返却</h1><p className="page-description">機器詳細から貸出・返却を記録できます。日時は日本時間です。</p><Link className="text-orange-800 underline" href="/dashboard/medical-equipment">医療機器台帳から機器を選ぶ →</Link>
     <section className="panel mt-6"><nav aria-label="貸出状態" className="flex gap-6"><Link aria-current={!query.returned ? "page" : undefined} href={href(1,false)}>貸出中</Link><Link aria-current={query.returned ? "page" : undefined} href={href(1,true)}>返却済み</Link></nav>
