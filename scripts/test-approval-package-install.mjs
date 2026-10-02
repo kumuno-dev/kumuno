@@ -6,11 +6,12 @@ import {mkdtemp,writeFile,rm,cp,readFile} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {fileURLToPath} from "node:url";
+const fromRegistry=process.argv.includes("--registry");
 const root=fileURLToPath(new URL("../",import.meta.url)),fixture=await mkdtemp(join(tmpdir(),"kumuno-approval-consumer-"));
-const run=(command,args)=>execFileSync(command,args,{cwd:fixture,stdio:"pipe",timeout:120000});
+const run=(command,args)=>execFileSync(command,args,{cwd:fixture,stdio:"pipe",timeout:120000,env:{...process.env,npm_config_cache:join(fixture,"npm-cache")}});
 try {
  await writeFile(join(fixture,"package.json"),JSON.stringify({name:"approval-consumer",version:"1.0.0",private:true,type:"module"}));
- const archives=["approval","rbac","audit-log"].map(name=>join(root,"templates/default/vendor/kumuno-"+name+"-0.1.0-rc.0.tgz"));
+ const archives=["approval","rbac","audit-log"].map(name=>fromRegistry ? "@kumuno/"+name+"@0.1.0-rc.0" : join(root,"templates/default/vendor/kumuno-"+name+"-0.1.0-rc.0.tgz"));
  if(withDatabase){const manifest=JSON.parse(await readFile(join(root,"templates/default/package.json"),"utf8"));archives.push("pg@"+manifest.dependencies.pg);}
  run("npm",["install","--ignore-scripts","--no-audit","--no-fund",...archives]);
  await writeFile(join(fixture,"verify.mjs"),`import assert from 'node:assert/strict';

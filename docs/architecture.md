@@ -295,3 +295,7 @@ npm名照会はE404で、利用可能性は公開時に再確認する。Macのn
 @kumuno/approvalの単段承認を実装。DRAFT/RETURNEDから本人が申請し、PENDINGを別の担当者が承認または理由付きで差戻す。自己承認・組織越境・無効ユーザーと古い版を拒否する。DBに依存しない遷移エンジンを実tgzでCLIへ同梱し、[PostgreSQL接続例](../examples/approval/README.md)で最新操作者・Serializable・CAS・履歴と監査の原子性を確認する。承認画面・DBモデル・医療業務への組込みは後続。[設計判断](decisions/0032-approval-package.md)を参照。
 
 第4段階の検証（macOS arm64、Node.js 24.21.0、PostgreSQL 18.4）：root check、承認契約6件、別アプリへの実tgz導入・TypeScript・import/require・RBAC/監査の組合せが成功。専用DBの接続例で申請→差戻し→再申請→承認、自己操作/組織越境/最新降格/無効化の拒否、同じ版で二つの更新を待機させる実競合と一方だけの保存、監査失敗時の状態・履歴の取消を確認。配布CLI145ファイルの生成・npm ci・本番ビルド・単体29件・実DB58件・基本ブラウザー4件・3画面幅の既存業務・開発DB起動と再起動後の保持も成功。承認UI/本番DBモデル、Linux/Windowsでの今回の実行、npm公開は未実施。試用アプリと既存DBは変更していない。
+
+## 2026-10-02のnpm公開
+
+CLI 0.1.0-rc.1と共通4パッケージ0.1.0-rc.0をpublic / nextで公開した。Registryで版・タグ・固定tgzのSHA-512一致、共通4パッケージの独立導入・公開型、CLIの独立生成と開発DB・再起動後の保持を確認。CLIのlatestは従来rc.0のまま。正式版への昇格と既存試用アプリの変更は行っていない。[公開記録](releases/2026-10-02-rc1.md)を参照。

@@ -7,7 +7,7 @@ AI coding agentsのための、オープンソース業務システム開発基�
 
 KUMUNO is an open-source foundation for building business applications with AI coding agents.
 
-**公開候補版0.1.0-rc.0をnpmへ公開しました。MIT Licenseです。** Node.js 24.xで、次のコマンドから試せます。正式版v0.1の確認は継続中です。
+**公開候補版0.1.0-rc.1をnpmへ公開しました。MIT Licenseです。** Node.js 24.xで、次のコマンドから試せます。正式版v0.1の確認は継続中です。
 
 ```sh
 npx create-kumuno@next my-app
@@ -17,9 +17,9 @@ npx create-kumuno@next my-app
 
 ## npm版を試す
 
-生成後はmy-appへ移動してnpm run devを実行します。ログイン・業務画面には生成先READMEのPostgreSQL・認証・Migration・開発Seedの設定が必要です。
+生成時に依存導入を選び、生成後はmy-appへ移動して `npm run dev:local` を実行します。開発用PostgreSQL・認証・初期管理者を自動準備します。Node.js 24.xが必要です。
 
-[公開パッケージ](https://www.npmjs.com/package/create-kumuno)は現在、nextとlatestの両タグが0.1.0-rc.0を指しています。npm側がlatest削除を400で拒否したため、候補版であることを明示し、試用では@nextを指定します。
+[公開パッケージ](https://www.npmjs.com/package/create-kumuno)のnextは0.1.0-rc.1、latestは従来の0.1.0-rc.0です。新しい候補版を試す場合は@nextを指定します。正式版のlatestへの更新は別工程です。
 
 ## ソースからローカルで試す
 
@@ -36,9 +36,9 @@ npm run dev:local
 
 開発用PostgreSQL・認証設定・初期管理者を自動準備します。表示されたURLからログインでき、初期パスワードは生成先の`.kumuno/local/login.txt`で確認できます。Ctrl+Cで終了し、次回も同じコマンドで再開できます。DBの別途導入は不要です。詳しくは[開発用セットアップ](templates/default/docs/local-development.md)を参照してください。
 
-医療機器台帳（登録・編集・検索）と貸出・返却・履歴・点検・修理・合格後の再貸出、任意のテストデータと医療ダッシュボードもソース版に追加しました。ログイン後のメニューから試せます。[台帳の仕様](templates/default/docs/medical-equipment.md)を参照してください。現在のnpm版には未収録です。
+医療機器台帳（登録・編集・検索）と貸出・返却・履歴・点検・修理・合格後の再貸出、任意のテストデータと医療ダッシュボードもソース版に追加しました。ログイン後のメニューから試せます。[台帳の仕様](templates/default/docs/medical-equipment.md)を参照してください。npmの@next版から利用できます。
 
-この簡単セットアップは次の候補版0.1.0-rc.1向けの変更で、現在のnpm版rc.0には未収録です。公開前はソースから試してください。
+この簡単セットアップはnpm公開済み0.1.0-rc.1から利用できます。
 
 対話で依存導入を選ぶ場合は--installを省略します。生成だけなら--no-installを指定し、生成先でnpm ciを実行します。既存ディレクトリは上書きしません。[CLIオプション](packages/create-kumuno/README.md)を参照してください。
 
@@ -77,10 +77,12 @@ Milestone 14のnpm公開とRegistryからの生成・DB検証まで完了しま�
 
 KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。CLIと生成アプリにもLICENSEを同梱します。依存ライブラリは各パッケージ自身のライセンスに従います。[依存ライセンスの確認記録](docs/dependency-licenses.md)を参照してください。
 
-共通機能をnpmパッケージとして組み合わせる構成へ移行しています。最初の[@kumuno/auth](packages/auth/README.md)は未公開のRC候補です。既存アプリへの導入は実tgzで検証し、CLIへも同梱します。[構成と追加順](docs/package-architecture.md)を参照してください。
+共通機能をnpmパッケージとして組み合わせる構成へ移行しています。最初の[@kumuno/auth](packages/auth/README.md)はnpm公開済み0.1.0-rc.0のRC候補です。既存アプリへの導入は実tgzで検証し、CLIへも同梱します。[構成と追加順](docs/package-architecture.md)を参照してください。
 
-第2段階として[@kumuno/rbac](packages/rbac/README.md)も抽出しました。3ロール・組織境界の共通判定に、アプリ側で業務権限を追加できます。未公開の実tgzを生成テンプレートへ同梱します。
+第2段階として[@kumuno/rbac](packages/rbac/README.md)も抽出しました。3ロール・組織境界の共通判定に、アプリ側で業務権限を追加できます。npm公開済みの同一版の実tgzを生成テンプレートへ同梱します。
 
-第3段階として[@kumuno/audit-log](packages/audit-log/README.md)も抽出しました。業務更新と同じtransactionへ保存関数を結びつけ、監査に残す属性はアプリ側で明示します。現在は未公開のtgzをCLIに同梱します。
+第3段階として[@kumuno/audit-log](packages/audit-log/README.md)も抽出しました。業務更新と同じtransactionへ保存関数を結びつけ、監査に残す属性はアプリ側で明示します。npm公開済みの同一版のtgzをCLIに同梱します。
 
-第4段階として[@kumuno/approval](packages/approval/README.md)の最小状態遷移を追加しました。申請・理由付き差戻し・再申請・承認、自己承認禁止と版番号の確認を提供し、[実DBへの保存例](examples/approval/README.md)でRBAC・監査と組み合わせます。承認画面・業務DBモデルは未実装、npmは未公開です。
+第4段階として[@kumuno/approval](packages/approval/README.md)の最小状態遷移を追加しました。申請・理由付き差戻し・再申請・承認、自己承認禁止と版番号の確認を提供し、[実DBへの保存例](examples/approval/README.md)でRBAC・監査と組み合わせます。承認画面・業務DBモデルは未実装、npmへ0.1.0-rc.0を公開済みです。
+
+共通パッケージは `npm install @kumuno/auth@next @kumuno/rbac@next @kumuno/audit-log@next @kumuno/approval@next` で個別導入できます。authはBetter Auth 1.7.6をpeer dependencyとします。DB・UIの接続は利用アプリ側で用意します。[公開記録](docs/releases/2026-10-02-rc1.md)を参照してください。

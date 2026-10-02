@@ -9,6 +9,7 @@ import { checkApplicationDocumentation } from './check-application-docs.mjs';
 import { templateFiles, bundledName } from '../packages/create-kumuno/src/template-files.mjs';
 import { requireTestDatabaseUrl, verifyGeneratedDatabase } from './verify-generated-database.mjs';
 import { verifyLocalDevelopment } from './verify-local-development.mjs';
+const registryMode=process.argv.includes('--registry');
 const localMode=process.argv.includes('--local');
 const databaseMode=process.argv.includes('--db');
 const testUrl=databaseMode ? requireTestDatabaseUrl(process.env.TEST_DATABASE_URL) : undefined;
@@ -16,7 +17,7 @@ const npm=process.env.npm_execpath;
 assert(npm,'Run npm run test:pack.');
 const packageRoot=fileURLToPath(new URL('../packages/create-kumuno/',import.meta.url));
 const temporary=await mkdtemp(join(tmpdir(),'kumuno-packed-'));
-const env={...process.env,NEXT_TELEMETRY_DISABLED:'1'};
+const env={...process.env,NEXT_TELEMETRY_DISABLED:'1',...(registryMode ? {npm_config_cache:join(temporary,'npm-cache')} : {})};
 for(const key of ['DATABASE_URL','TEST_DATABASE_URL','SHADOW_DATABASE_URL','NODE_PATH','SEED_ALLOW_DEVELOPMENT','SEED_ADMIN_PASSWORD','BETTER_AUTH_SECRET','BETTER_AUTH_URL','AUTH_TRUSTED_IP_HEADER']) delete env[key];
 function run(args,cwd,capture=false) {
   const result=spawnSync(process.execPath,args,{cwd,env,stdio:capture?'pipe':'inherit',encoding:'utf8'});
@@ -24,7 +25,8 @@ function run(args,cwd,capture=false) {
   return result.stdout;
 }
 try {
-  const [packed]=JSON.parse(run([npm,'pack','--json','--pack-destination',temporary],packageRoot,true));
+  const manifest=JSON.parse(await readFile(join(packageRoot,'package.json')));
+  const [packed]=JSON.parse(run([npm,'pack',...(registryMode ? [`create-kumuno@${manifest.version}`,'--registry=https://registry.npmjs.org/'] : []),'--json','--pack-destination',temporary],packageRoot,true));
   const entries=packed.files.map(file=>file.path);
   assert(entries.includes('LICENSE'));
   assert.equal(packed.name,'create-kumuno');
@@ -53,7 +55,7 @@ try {
   if(databaseMode) await verifyGeneratedDatabase(app,testUrl,npm,run);
   if(localMode) await verifyLocalDevelopment(app,env);
   await rm(temporary,{recursive:true,force:true});
-  console.log(`Packed CLI passed: ${entries.length} package files, independent generation, dotfiles, npm ci, documentation, application checks${databaseMode ? ", migration/seed repeatability, DB and authentication browser tests" : ""}${localMode ? ", automatic local PostgreSQL/login/CRUD/persistent restart" : ""}.`);
+  console.log(`${registryMode ? "Registry" : "Packed"} CLI passed: ${entries.length} package files, independent generation, dotfiles, npm ci, documentation, application checks${databaseMode ? ", migration/seed repeatability, DB and authentication browser tests" : ""}${localMode ? ", automatic local PostgreSQL/login/CRUD/persistent restart" : ""}.`);
 } catch(error) {
   console.error(`Packed CLI verification failed. Fixture retained: ${temporary}`);
   if(databaseMode) {

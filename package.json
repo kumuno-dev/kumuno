@@ -56,6 +56,8 @@
     "test:audit-log-package": "npm test --workspace @kumuno/audit-log && node scripts/test-audit-log-package-install.mjs",
     "build:approval": "node scripts/bundle-approval.mjs",
     "test:approval-package": "npm test --workspace @kumuno/approval && node scripts/test-approval-package-install.mjs",
-    "test:approval-package:db": "node scripts/test-approval-package-install.mjs --db"
+    "test:approval-package:db": "node scripts/test-approval-package-install.mjs --db",
+    "test:registry-packages": "npm run test:auth-package -- --registry && npm run test:rbac-package -- --registry && npm run test:audit-log-package -- --registry && npm run test:approval-package -- --registry",
+    "test:registry:local": "node scripts/test-packed-cli.mjs --registry --local"
   }
 }

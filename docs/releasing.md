@@ -1,6 +1,6 @@
 # create-kumunoの公開手順
 
-この文書はメンテナー向けです。npm公開済みはcreate-kumuno@0.1.0-rc.0、次の候補は0.1.0-rc.1（まだ未公開）です。MIT、候補版のタグはnext。以下のrc.0は初回公開の記録で、新版は末尾のrc.1手順を使います。rootと生成アプリはprivate: trueを維持し、CLIだけを公開可能にしています。
+この文書はメンテナー向けです。npm公開済みの新しい候補はcreate-kumuno@0.1.0-rc.1です。nextはrc.1、latestは従来のrc.0です。MIT、候補版のタグはnext。以下のrc.0は初回公開の記録で、新版は末尾のrc.1手順を使います。rootと生成アプリはprivate: trueを維持し、CLIとpackages/auth・rbac・audit-log・approvalを公開可能にしています。
 
 ## 公開前の確認
 
@@ -98,3 +98,9 @@ dry-runの成功だけでは公開成功ではない。検証とメンテナー�
 ```text
 sha512-aoOLwl7avLU+IA11wskiZpI3vnLgz4ZDV5X1UAt37zxWKWQwKDQM0pVdDAThuvGdPrYSSgEH662PaHp0Q0eB+A==
 ```
+
+## 2026-10-02の新版と共通パッケージ公開
+
+[公開記録](releases/2026-10-02-rc1.md)を参照。上のrc.1未公開・確認待ちの記述は公開前の履歴。CLI rc.1と共通4パッケージrc.0は公開済み。固定tgzのintegrity一致、公開アクセス、版/タグ、新キャッシュでの実導入を確認した。npmの本人確認は各公開操作で必要だった。再公開は行わず、次の変更は新しい版として準備する。
+
+`npm run test:registry-packages`で公開済み共通4パッケージの独立導入・公開型を再確認できる。`npm run test:registry:local`で公開済みCLIの生成・check・開発DB・再起動を確認する。これらはRegistryへ公開済みの版を検証するため、未公開の開発版では失敗する。

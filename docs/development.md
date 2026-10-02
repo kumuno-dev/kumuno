@@ -185,11 +185,11 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 
 ## 開発用DBを自動準備して試す
 
-ソース版の生成物は`npm run dev:local`でPostgreSQL 18.4と初期設定を準備できる。[生成物の説明](../templates/default/docs/local-development.md)を参照。次の候補rc.1向けの変更で、npm公開済みrc.0には未収録。CLI配布物のこの経路は`npm run test:pack:local`で実際のログイン・備品CRUD・非管理者ロール・同時起動拒否・終了・データ保持と再起動を検証する。CIでは`npm run test:pack:db -- --local`で既存の実DB検証と合わせて実行する。
+ソース版の生成物は`npm run dev:local`でPostgreSQL 18.4と初期設定を準備できる。[生成物の説明](../templates/default/docs/local-development.md)を参照。npm公開済みrc.1の変更で、旧rc.0には未収録。CLI配布物のこの経路は`npm run test:pack:local`で実際のログイン・備品CRUD・非管理者ロール・同時起動拒否・終了・データ保持と再起動を検証する。CIでは`npm run test:pack:db -- --local`で既存の実DB検証と合わせて実行する。
 
 ## 認証パッケージの開発
 
-第1段階の@kumuno/authはpackages/authにあり、npm未公開。`npm run build:auth`でtemplates/default/vendor/kumuno-auth-0.1.0-rc.0.tgzへ正式なnpm配布物を作る。既存の別アプリへは、このファイルをコピーしてnpm installする。`npm run test:auth-package`で契約テスト・別ディレクトリへの実tgz導入・公開型を確認する。
+第1段階の@kumuno/authはpackages/authにあり、npm公開済み0.1.0-rc.0。`npm run build:auth`でtemplates/default/vendor/kumuno-auth-0.1.0-rc.0.tgzへ正式なnpm配布物を作る。既存の別アプリへは、このファイルをコピーしてnpm installする。`npm run test:auth-package`で契約テスト・別ディレクトリへの実tgz導入・公開型を確認する。
 
 パッケージの公開ファイルを変更した場合はbuild:authの後、templates/defaultで`npm install --ignore-scripts @kumuno/auth@file:vendor/kumuno-auth-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行し、配布物・lock・一覧を揃える。root checkは公開ファイルとtgzの一致・SHA-512・lockを検査する。CLIのbundle/prepackも認証配布物を更新する。tgzが変わった状態で古いlockを公開しない。
 
@@ -197,14 +197,18 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 
 ## 権限パッケージの開発
 
-@kumuno/rbacはpackages/rbacにあり、npm未公開。`npm run build:rbac`でvendorの実tgzを作成し、`npm run test:rbac-package`で許可表・拒否条件・別アプリへの導入と公開型を検証する。公開ファイルの変更後はbuild:rbac、templates/defaultで`npm install --ignore-scripts @kumuno/rbac@file:vendor/kumuno-rbac-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLIのbundle/prepackはauthとrbacを同梱する。audit-logの手順は次節を参照。
+@kumuno/rbacはpackages/rbacにあり、npm公開済み0.1.0-rc.0。`npm run build:rbac`でvendorの実tgzを作成し、`npm run test:rbac-package`で許可表・拒否条件・別アプリへの導入と公開型を検証する。公開ファイルの変更後はbuild:rbac、templates/defaultで`npm install --ignore-scripts @kumuno/rbac@file:vendor/kumuno-rbac-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLIのbundle/prepackはauthとrbacを同梱する。audit-logの手順は次節を参照。
 
 ## 監査パッケージの開発
 
-@kumuno/audit-logはpackages/audit-logにあり、npm未公開。`npm run build:audit-log`でvendorの実tgzを作り、`npm run test:audit-log-package`で操作形状・JSON・writerの失敗伝播・別アプリへの導入と公開型を検証する。公開ファイルの変更後はbuild:audit-log、templates/defaultで`npm install --ignore-scripts @kumuno/audit-log@file:vendor/kumuno-audit-log-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLI bundle/prepackはauth・rbac・audit-logを同梱する。実DBのロールバック・追記専用制約は引き続き生成アプリのtest:dbで確認する。
+@kumuno/audit-logはpackages/audit-logにあり、npm公開済み0.1.0-rc.0。`npm run build:audit-log`でvendorの実tgzを作り、`npm run test:audit-log-package`で操作形状・JSON・writerの失敗伝播・別アプリへの導入と公開型を検証する。公開ファイルの変更後はbuild:audit-log、templates/defaultで`npm install --ignore-scripts @kumuno/audit-log@file:vendor/kumuno-audit-log-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLI bundle/prepackはauth・rbac・audit-logを同梱する。実DBのロールバック・追記専用制約は引き続き生成アプリのtest:dbで確認する。
 
 ## 承認パッケージの開発
 
-@kumuno/approvalはpackages/approvalにあり、npm未公開。`npm run build:approval`で実tgzを作成し、`npm run test:approval-package`で遷移・権限・公開型・別アプリへの導入を確認する。`npm run test:approval-package:db`は専用TEST_DATABASE_URLで[PostgreSQL保存例](../examples/approval/README.md)の競合・監査原子性を確認する。DB名の_test検査後、ランダムschemaだけを使う。CIでも実行する。
+@kumuno/approvalはpackages/approvalにあり、npm公開済み0.1.0-rc.0。`npm run build:approval`で実tgzを作成し、`npm run test:approval-package`で遷移・権限・公開型・別アプリへの導入を確認する。`npm run test:approval-package:db`は専用TEST_DATABASE_URLで[PostgreSQL保存例](../examples/approval/README.md)の競合・監査原子性を確認する。DB名の_test検査後、ランダムschemaだけを使う。CIでも実行する。
 
 公開ファイルの変更後はbuild:approval、templates/defaultで`npm install --ignore-scripts @kumuno/approval@file:vendor/kumuno-approval-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLIにはエンジンを同梱するが、承認UI・DBモデル・業務別の承認条件はまだ追加しない。
+
+## 公開版のRegistry検証
+
+`npm run test:registry-packages`は共通4パッケージをRegistryから新キャッシュで導入し、契約と公開型を確認する。`npm run test:registry:local`はRegistry取得したCLI候補を独立生成・check・開発DB・再起動まで確認する。ソースの版がまだ未公開ならこれらは失敗するため、通常checkとは分離する。[公開記録](releases/2026-10-02-rc1.md)を参照。

@@ -4,10 +4,10 @@
 
 | パッケージ | 境界 | 現在 |
 | --- | --- | --- |
-| @kumuno/auth | Better Authの設定と認証HTTP入口 | 第1段階の抽出済み、未公開 |
-| @kumuno/rbac | 組織・操作者と業務権限の判定 | 第2段階の抽出済み、未公開 |
-| @kumuno/audit-log | 同一transactionの明示的な変更履歴 | 第3段階の抽出済み、未公開 |
-| @kumuno/approval | 申請・承認・差戻し | 第4段階の状態遷移実装済み、UI/DBは未実装、未公開 |
+| @kumuno/auth | Better Authの設定と認証HTTP入口 | 第1段階の抽出済み、0.1.0-rc.0公開済み |
+| @kumuno/rbac | 組織・操作者と業務権限の判定 | 第2段階の抽出済み、0.1.0-rc.0公開済み |
+| @kumuno/audit-log | 同一transactionの明示的な変更履歴 | 第3段階の抽出済み、0.1.0-rc.0公開済み |
+| @kumuno/approval | 申請・承認・差戻し | 第4段階の状態遷移実装済み、UI/DBは未実装、0.1.0-rc.0公開済み |
 | @kumuno/print | 帳票・PDF・印刷 | 計画、未実装 |
 | @kumuno/csv | CSV/Excel入出力 | 計画、未実装 |
 | @kumuno/notifications | アプリ内通知 | 計画、未実装 |
@@ -15,7 +15,7 @@
 
 ユーザー・組織・操作者の契約、権限の照合、更新と監査のtransaction境界を揃える。パッケージごとに独自UserやOrganizationを作らない。Prisma・Next.js固有の接続は利用側が用意する。共通機能の組合せの選択UI・CLIオプションは後続で、現在のCLIは既定構成のみ。
 
-auth・rbac・audit-log・approvalは独立tgzで導入でき、ソース版CLIにも同梱する。approvalはエンジンと接続例までで、既存業務への承認条件は追加しない。npm公開は配布物と手順を整えた別の工程で行う。
+auth・rbac・audit-log・approvalは独立tgzで導入でき、ソース版CLIにも同梱する。approvalはエンジンと接続例までで、既存業務への承認条件は追加しない。2026-10-02にCLI 0.1.0-rc.1と共通4パッケージをnpmへ公開した。CLIは公開版と同じtgzを同梱し、次の版でRegistry依存への切替を検討する。
 
 RBACは基本6権限と組織境界の純粋な判定を所有する。業務固有の権限割当、セッション検証、DBからの最新操作者照合、更新transactionはアプリ側。詳しくは[RBACパッケージ](../packages/rbac/README.md)と[設計判断](decisions/0030-rbac-package.md)を参照。
 
