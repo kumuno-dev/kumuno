@@ -1,6 +1,6 @@
 {
   "source": "package-lock.json",
-  "dependencySha256": "8bff938e0c003ad075f0662245bc082d9484cd74d4bc5cfd3a60216a78d986b0",
+  "dependencySha256": "4f0672ae0a9fba78288d06a890e9530ee87dc5a01f63d7f282af644f77eb9061",
   "entries": [
     {
       "path": "node_modules/@alloc/quick-lru",
@@ -1045,6 +1045,15 @@
       "development": false,
       "optional": false,
       "tarball": "file:vendor/kumuno-auth-0.1.0-rc.0.tgz"
+    },
+    {
+      "path": "node_modules/@kumuno/print",
+      "name": "@kumuno/print",
+      "version": "0.1.0-rc.0",
+      "license": "MIT",
+      "development": false,
+      "optional": false,
+      "tarball": "file:vendor/kumuno-print-0.1.0-rc.0.tgz"
     },
     {
       "path": "node_modules/@kumuno/rbac",

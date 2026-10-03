@@ -58,3 +58,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 監査の共通形式と保存処理は@kumuno/audit-log。src/audit/log.tsが安全な属性投影と同じPrisma transactionへの接続を所有する。[監査仕様](audit-log.md)を参照。
 
 @kumuno/approvalは単段承認の状態遷移エンジンとして導入済み。承認画面・DBモデル・既存業務の承認条件は未実装。[導入手順](approval.md)を参照。
+
+@kumuno/printは文字列からA4帳票のHTMLを生成する。医療機器台帳票のRoute Handlerで認証・組織境界を確認し、明示的な属性だけを渡す。静的印刷スクリプトは/print-client.jsから配信する。[印刷](print.md)を参照。

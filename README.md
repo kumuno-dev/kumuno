@@ -86,3 +86,5 @@ KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。C
 第4段階として[@kumuno/approval](packages/approval/README.md)の最小状態遷移を追加しました。申請・理由付き差戻し・再申請・承認、自己承認禁止と版番号の確認を提供し、[実DBへの保存例](examples/approval/README.md)でRBAC・監査と組み合わせます。承認画面・業務DBモデルは未実装、npmへ0.1.0-rc.0を公開済みです。
 
 共通パッケージは `npm install @kumuno/auth@next @kumuno/rbac@next @kumuno/audit-log@next @kumuno/approval@next` で個別導入できます。authはBetter Auth 1.7.6をpeer dependencyとします。DB・UIの接続は利用アプリ側で用意します。[公開記録](docs/releases/2026-10-02-rc1.md)を参照してください。
+
+ソース版の次の候補0.1.0-rc.2には[@kumuno/print](packages/print/README.md)と医療機器の[台帳票](templates/default/docs/print.md)を追加しました。A4印刷・ブラウザーでのPDF保存に対応します。この追加分はnpm未公開です。

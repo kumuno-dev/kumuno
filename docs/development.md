@@ -212,3 +212,9 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 ## 公開版のRegistry検証
 
 `npm run test:registry-packages`は共通4パッケージをRegistryから新キャッシュで導入し、契約と公開型を確認する。`npm run test:registry:local`はRegistry取得したCLI候補を独立生成・check・開発DB・再起動まで確認する。ソースの版がまだ未公開ならこれらは失敗するため、通常checkとは分離する。[公開記録](releases/2026-10-02-rc1.md)を参照。
+
+## 印刷パッケージの開発
+
+@kumuno/printはpackages/printにあり、0.1.0-rc.0は未公開。`npm run build:print`でvendorの実tgzを作り、`npm run test:print-package`で単体・独立導入・公開型とChromiumでの3画面幅/A4 PDF/改ページを確認する。初回は前述のChromium導入が必要。
+
+公開ファイル変更後はbuild:print、templates/defaultで`npm install --ignore-scripts @kumuno/print@file:vendor/kumuno-print-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。ソースのCLI候補0.1.0-rc.2は5パッケージを同梱する。npm公開済みCLI・共通4パッケージは変更していない。[生成アプリの印刷](../templates/default/docs/print.md)を参照。
