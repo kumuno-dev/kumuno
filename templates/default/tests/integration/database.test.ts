@@ -1,3 +1,4 @@
+import { previewMedicalImport,importMedicalDevices,issueImportToken } from "../../src/medical-equipment/csv-import";
 import { parseCsv } from "@kumuno/csv";
 import { exportMedicalDevices,medicalCsvHeaders } from "../../src/medical-equipment/csv-export";
 import { medicalOverview } from "../../src/medical-equipment/overview";
@@ -1007,4 +1008,52 @@ test("医療CSVは数式の可能性がある属性を拒否し、業務デー�
   await expect(exportMedicalDevices(connection.db,f.organizationId,medicalQuery({}),false)).rejects.toMatchObject({code:"FORMULA_PREFIX",row:2,column:5});
   expect(await connection.db.medicalDevice.findUniqueOrThrow({where:{id:f.deviceId}})).toEqual(before);
   expect(await connection.db.auditLog.count()).toBe(audits);
+});
+
+const importCsv="機器管理番号,機器名,種別\nIMPORT-001,一括輸液ポンプ,輸液ポンプ\nIMPORT-002,一括シリンジポンプ,シリンジポンプ\n";
+const importSecret="test-only-medical-import-secret-32-characters";
+test("医療CSVの確認は書き込まず、全件と監査を同時登録して点検待ちにする",async()=>{
+  const f=await medicalLoanFixture();const before=await connection.db.medicalDevice.count(),audits=await connection.db.auditLog.count();
+  const preview=await previewMedicalImport(connection.db,f.userId,f.organizationId,importCsv);expect(preview.errors).toEqual([]);
+  expect(await connection.db.medicalDevice.count()).toBe(before);
+  const token=issueImportToken(importSecret,f.userId,f.organizationId,preview.digest);
+  expect(await importMedicalDevices(connection.db,f.userId,f.organizationId,importCsv,token,importSecret)).toBe(2);
+  const added=await connection.db.medicalDevice.findMany({where:{managementNumber:{startsWith:"IMPORT-"}}});
+  expect(added).toHaveLength(2);expect(added.every(d=>d.returnInspectionPending&&!d.isSample)).toBe(true);expect(await connection.db.auditLog.count()).toBe(audits+2);
+  await expect(importMedicalDevices(connection.db,f.userId,f.organizationId,importCsv,token,importSecret)).rejects.toThrow();
+  expect(await connection.db.medicalDevice.count()).toBe(before+2);
+});
+test("医療CSVはファイル内重複・既存番号・部署の不一致と曖昧な名前を確認画面に示す",async()=>{
+  const f=await medicalLoanFixture();
+  const number=(await connection.db.medicalDevice.findUniqueOrThrow({where:{id:f.deviceId}})).managementNumber;
+  const csv=`機器管理番号,機器名,種別,所属部署コード\n${number},重複,輸液ポンプ,存在しない部署\nX,機器,輸液ポンプ,\nX,重複,輸液ポンプ,\n`;
+  expect((await previewMedicalImport(connection.db,f.userId,f.organizationId,csv)).errors.length).toBeGreaterThan(1);
+  await connection.db.department.createMany({data:[{organizationId:f.organizationId,code:"AMB-A",name:"同名部署"},{organizationId:f.organizationId,code:"AMB-B",name:"同名部署"}]});
+  const ambiguous="機器管理番号,機器名,種別,所属部署\nAMB-1,機器,輸液ポンプ,同名部署";
+  expect((await previewMedicalImport(connection.db,f.userId,f.organizationId,ambiguous)).errors).toHaveLength(1);
+  const code="機器管理番号,機器名,種別,所属部署コード\nAMB-1,機器,輸液ポンプ,AMB-A";
+  expect((await previewMedicalImport(connection.db,f.userId,f.organizationId,code)).errors).toEqual([]);
+  expect(await connection.db.medicalDevice.count()).toBe(1);
+});
+test("医療CSVは確認の改ざん・期限切れ・別担当者と最新の降格を拒否する",async()=>{
+  const f=await medicalLoanFixture();const preview=await previewMedicalImport(connection.db,f.userId,f.organizationId,importCsv);
+  const token=issueImportToken(importSecret,f.userId,f.organizationId,preview.digest);
+  for(const invalid of [token+"x",issueImportToken(importSecret,f.userId,f.organizationId,preview.digest,Date.now()-700000),issueImportToken(importSecret,randomUUID(),f.organizationId,preview.digest)])await expect(importMedicalDevices(connection.db,f.userId,f.organizationId,importCsv,invalid,importSecret)).rejects.toThrow();
+  await expect(importMedicalDevices(connection.db,f.userId,f.organizationId,importCsv.replace("IMPORT-001","CHANGED"),token,importSecret)).rejects.toThrow();
+  await connection.db.user.update({where:{id:f.userId},data:{role:"USER"}});
+  await expect(importMedicalDevices(connection.db,f.userId,f.organizationId,importCsv,token,importSecret)).rejects.toMatchObject({status:403});
+  expect(await connection.db.medicalDevice.count()).toBe(1);
+});
+test("医療CSVの途中の監査失敗では先行行を含めて全体を取り消す",async()=>{
+  const f=await medicalLoanFixture();const preview=await previewMedicalImport(connection.db,f.userId,f.organizationId,importCsv),audits=await connection.db.auditLog.count();
+  await connection.pool.query(`CREATE FUNCTION "${schema}".fail_import_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF EXISTS(SELECT 1 FROM "${schema}"."MedicalDevice" WHERE "managementNumber"='IMPORT-002') THEN RAISE EXCEPTION 'test failure'; END IF; RETURN NEW; END; $$`);
+  await connection.pool.query(`CREATE TRIGGER fail_import_audit BEFORE INSERT ON "${schema}"."AuditLog" FOR EACH ROW EXECUTE FUNCTION "${schema}".fail_import_audit()`);
+  await expect(importMedicalDevices(connection.db,f.userId,f.organizationId,importCsv,issueImportToken(importSecret,f.userId,f.organizationId,preview.digest),importSecret)).rejects.toThrow();
+  expect(await connection.db.medicalDevice.count()).toBe(1);expect(await connection.db.auditLog.count()).toBe(audits);
+});
+test("同じCSVの同時登録は一方だけが全件を保存する",async()=>{
+  const f=await medicalLoanFixture(),preview=await previewMedicalImport(connection.db,f.userId,f.organizationId,importCsv);
+  const token=issueImportToken(importSecret,f.userId,f.organizationId,preview.digest);
+  const results=await Promise.allSettled([importMedicalDevices(connection.db,f.userId,f.organizationId,importCsv,token,importSecret),importMedicalDevices(connection.db,f.userId,f.organizationId,importCsv,token,importSecret)]);
+  expect(results.filter(r=>r.status==="fulfilled")).toHaveLength(1);expect(await connection.db.medicalDevice.count()).toBe(3);
 });

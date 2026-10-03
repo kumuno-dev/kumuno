@@ -89,4 +89,6 @@ KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。C
 
 ソース版の次の候補0.1.0-rc.2には[@kumuno/print](packages/print/README.md)と医療機器の[台帳票](templates/default/docs/print.md)を追加しました。A4印刷・ブラウザーでのPDF保存に対応します。この追加分はnpm未公開です。
 
-同じソース候補に[@kumuno/csv](packages/csv/README.md)と医療台帳の[CSV出力](templates/default/docs/csv.md)を追加しています。検索・テストデータ選択を反映して全ページを出力できます。CSV形式の読込検証を共通化しましたが、台帳への一括登録とxlsxは後続です。npm未公開です。
+同じソース候補に[@kumuno/csv](packages/csv/README.md)と医療台帳の[CSV出力](templates/default/docs/csv.md)を追加しています。検索・テストデータ選択を反映して全ページを出力できます。CSV形式の読込検証を共通化し、医療台帳には確認付き新規一括登録を追加しました。xlsxは後続です。npm未公開です。
+
+ソース版の医療台帳に、全行の確認付きCSV新規一括登録を追加しました（128KiB・100台まで）。既存番号は上書きせず、登録後は点検待ちです。npm未公開です。

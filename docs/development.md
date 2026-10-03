@@ -222,3 +222,5 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 ## CSVパッケージの開発
 
 @kumuno/csvはpackages/csv、0.1.0-rc.0は未公開。`npm run build:csv`でvendorのtgzを作り、`npm run test:csv-package`で形式・上限・独立導入・公開型を確認する。公開ファイル変更後はbuild:csv、templates/defaultで`npm install --ignore-scripts @kumuno/csv@file:vendor/kumuno-csv-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。医療台帳の組織境界と読取保持はtest:db、実ダウンロードはtest:authで確認する。[生成アプリの説明](../templates/default/docs/csv.md)を参照。
+
+医療CSVの新規取込はtest:dbで全件と監査の同時保存・全体取消・確認Token・最新権限・同時操作、test:authで3画面幅のアップロード→全行確認→一括登録を検証する。実運用のDBへテスト用CSVを登録しない。
