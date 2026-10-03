@@ -14,7 +14,7 @@ Domainごとに入力・データアクセス・serviceを分ける。将来、�
 
 API追加時には認証・認可・入力Schema・バージョン・エラー応答・監査・再試行時の重複対策を設計する。別DBへ分離する場合はマスタの管理主体、ID対応、同期方法、障害時の扱いも別途決める。現在、別システム間の同期や外部APIが実装済みとは扱わない。
 
-CSV / Excel / JSON / APIを将来追加する際にも、内部IDとコード・名前を分離しておく。現時点でCSV入出力、マイクロサービス、Message Broker、Event Busは提供しない。使用しないIntegration Frameworkを先行追加しない。
+CSV / Excel / JSON / APIを将来追加する際にも、内部IDとコード・名前を分離しておく。現在の[CSV](csv.md)は形式の読込検証と医療台帳の出力までで、DBへの一括登録・xlsx、マイクロサービス、Message Broker、Event Busは提供しない。使用しないIntegration Frameworkを先行追加しない。
 
 ## 設計を確認する例
 

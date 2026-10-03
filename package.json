@@ -12,7 +12,8 @@
     "packages/rbac",
     "packages/audit-log",
     "packages/approval",
-    "packages/print"
+    "packages/print",
+    "packages/csv"
   ],
   "scripts": {
     "dev": "npm --prefix templates/default run dev --",
@@ -21,7 +22,7 @@
     "lint": "npm --prefix templates/default run lint --",
     "typecheck": "npm --prefix templates/default run typecheck --",
     "test": "npm --prefix templates/default run test --",
-    "check": "npm run check:structure && npm run check:licenses && npm run check:release && npm run test:verification && npm run test:auth-package && npm run test:rbac-package && npm run test:audit-log-package && npm run test:approval-package && npm run test:print-package && npm run test:cli && npm --prefix templates/default run check",
+    "check": "npm run check:structure && npm run check:licenses && npm run check:release && npm run test:verification && npm run test:auth-package && npm run test:rbac-package && npm run test:audit-log-package && npm run test:approval-package && npm run test:print-package && npm run test:csv-package && npm run test:cli && npm --prefix templates/default run check",
     "test:unit": "npm --prefix templates/default run test:unit --",
     "test:e2e": "npm --prefix templates/default run test:e2e --",
     "test:db": "npm --prefix templates/default run test:db --",
@@ -61,6 +62,8 @@
     "test:registry-packages": "npm run test:auth-package -- --registry && npm run test:rbac-package -- --registry && npm run test:audit-log-package -- --registry && npm run test:approval-package -- --registry",
     "test:registry:local": "node scripts/test-packed-cli.mjs --registry --local",
     "build:print": "node scripts/bundle-print.mjs",
-    "test:print-package": "npm test --workspace @kumuno/print && node scripts/test-print-package-install.mjs"
+    "test:print-package": "npm test --workspace @kumuno/print && node scripts/test-print-package-install.mjs",
+    "build:csv": "node scripts/bundle-csv.mjs",
+    "test:csv-package": "npm test --workspace @kumuno/csv && node scripts/test-csv-package-install.mjs"
   }
 }

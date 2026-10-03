@@ -1,7 +1,8 @@
 import { randomUUID, randomBytes } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:net";
-import { mkdir } from "node:fs/promises";
+import { parseCsv } from "@kumuno/csv";
+import { readFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { once } from "node:events";
 import { chromium, expect } from "@playwright/test";
@@ -128,6 +129,28 @@ async function main() {
       await page.getByRole("button",{name:"保存する",exact:true}).click();
       await expect(page.getByRole("heading",{name:`試用輸液ポンプ${width}`,exact:true})).toBeVisible();
       const medicalURL = page.url();
+      stage = "medical CSV download";
+      await page.goto(`${baseURL}/dashboard/medical-equipment?q=ME-E2E-${width}`);
+      const downloadPromise=page.waitForEvent("download");
+      await page.getByRole("link",{name:"現在の条件でCSV出力",exact:true}).click();
+      const download=await downloadPromise;expect(download.suggestedFilename()).toBe("medical-devices.csv");
+      const downloadPath=await download.path();if(!downloadPath)throw new Error("CSV download unavailable");
+      const bytes=await readFile(downloadPath);expect(bytes.subarray(0,3).toString("hex")).toBe("efbbbf");
+      const csvRows=parseCsv(bytes.toString("utf8"));expect(csvRows).toHaveLength(2);expect(csvRows[1][0]).toBe(`ME-E2E-${width}`);
+      const exportResponse=await context.request.get(`${baseURL}/dashboard/medical-equipment/export?q=ME-E2E-${width}`);
+      expect(exportResponse.headers()["cache-control"]).toContain("no-store");expect(exportResponse.headers()["content-disposition"]).toContain("attachment");
+      const medicalId=medicalURL.split("/").at(-1);if(!medicalId)throw new Error("Missing fixture device id");
+      const previous=await connection.db.medicalDevice.findUniqueOrThrow({where:{id:medicalId}});
+      await connection.db.medicalDevice.update({where:{id:medicalId},data:{manufacturer:"  =1+1"}});
+      try {
+        const rejected=await context.request.get(`${baseURL}/dashboard/medical-equipment/export?q=ME-E2E-${width}`);
+        expect(rejected.status()).toBe(422);expect(rejected.headers()["content-disposition"]).toBeUndefined();
+        expect(await rejected.text()).toContain("CSV出力を中止しました");
+      } finally {await connection.db.medicalDevice.update({where:{id:medicalId},data:{manufacturer:previous.manufacturer}});}
+      const unauthedCSV=await browser.newContext();
+      const deniedCSV=await unauthedCSV.request.get(`${baseURL}/dashboard/medical-equipment/export`,{maxRedirects:0});
+      expect([302,303,307]).toContain(deniedCSV.status());await unauthedCSV.close();
+      await page.goto(medicalURL);
       stage = "medical print report";
       await page.getByRole("link", {name:"台帳票を印刷 / PDF保存", exact:true}).click();
       await expect(page.getByRole("heading", {name:"医療機器 台帳票", exact:true})).toBeVisible();
@@ -146,6 +169,8 @@ async function main() {
       const outsider=await connection.db.organization.create({data:{code:`print-other-${width}`,name:"別組織"}});
       const otherDevice=await connection.db.medicalDevice.create({data:{organizationId:outsider.id,managementNumber:`OTHER-${width}`,name:"別組織の機器",category:"輸液ポンプ"}});
       expect((await context.request.get(`${baseURL}/dashboard/medical-equipment/${otherDevice.id}/print`)).status()).toBe(404);
+      const scopedCsv=await context.request.get(`${baseURL}/dashboard/medical-equipment/export?organizationId=${outsider.id}`);
+      expect(scopedCsv.status()).toBe(200);expect((await scopedCsv.text()).includes(`OTHER-${width}`)).toBe(false);
       const unauthenticated=await browser.newContext();
       const unauthorizedResponse=await unauthenticated.request.get(`${medicalURL}/print`,{maxRedirects:0});
       expect([302,303,307]).toContain(unauthorizedResponse.status());
@@ -177,6 +202,7 @@ async function main() {
       await connection.db.user.update({where:{id:fixture.userId},data:{role:"USER"}});
       await page.getByRole("button",{name:"保存する",exact:true}).click();
       stage = "medical stale permission denial";
+      expect((await context.request.get(`${baseURL}/dashboard/medical-equipment/export?q=ME-E2E-${width}`)).status()).toBe(200);
       await expect(page.locator("form").getByRole("alert")).toContainText("権限がありません");
       await page.goto(medicalURL);
       await expect(page.getByRole("heading",{name:`試用輸液ポンプ${width}`,exact:true})).toBeVisible();

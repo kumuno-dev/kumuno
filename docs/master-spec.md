@@ -476,7 +476,7 @@ UI専用処理と将来再利用可能なBusiness Logicを不必要に密結合�
 
 将来的にCSV / Excel / JSON / API等でImport / Exportできる設計を妨げないこと。
 
-CSV / Excel機能自体はv0.1では実装しない。
+初期v0.1の受入範囲にはCSV / Excel機能自体を含めない。追加の承認済み方針による組合せ型構成の第6段階（2026-10-03）では、@kumuno/csvの形式検証と医療台帳のCSV出力を実装する。DBへの一括登録・xlsxは後続とし、既存のAcceptance Test条件は変更しない。[現在の範囲](package-architecture.md)を参照。
 
 ---
 

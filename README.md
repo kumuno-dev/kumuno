@@ -88,3 +88,5 @@ KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。C
 共通パッケージは `npm install @kumuno/auth@next @kumuno/rbac@next @kumuno/audit-log@next @kumuno/approval@next` で個別導入できます。authはBetter Auth 1.7.6をpeer dependencyとします。DB・UIの接続は利用アプリ側で用意します。[公開記録](docs/releases/2026-10-02-rc1.md)を参照してください。
 
 ソース版の次の候補0.1.0-rc.2には[@kumuno/print](packages/print/README.md)と医療機器の[台帳票](templates/default/docs/print.md)を追加しました。A4印刷・ブラウザーでのPDF保存に対応します。この追加分はnpm未公開です。
+
+同じソース候補に[@kumuno/csv](packages/csv/README.md)と医療台帳の[CSV出力](templates/default/docs/csv.md)を追加しています。検索・テストデータ選択を反映して全ページを出力できます。CSV形式の読込検証を共通化しましたが、台帳への一括登録とxlsxは後続です。npm未公開です。

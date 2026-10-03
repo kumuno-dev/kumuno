@@ -12,7 +12,7 @@
 
 当面は責務を持つservice functionとdata-access境界を使う。将来APIが必要になった場合は認証・認可・Validation・バージョン方針・エラー形式・監査を設計する。全CRUDを公開APIにすることはv0.1の要件ではない。
 
-CSV / Excel / JSON / APIによる将来のデータ移行を妨げない。ただしCSV・Excel機能はv0.1では実装しない。マイクロサービス、Message Broker、Event Bus、汎用Integration Frameworkも対象外。
+CSV / Excel / JSON / APIによる将来のデータ移行を妨げない。初期v0.1の受入範囲にはCSV・Excel機能を含めない。追加の組合せ型構成としてCSV形式の読込検証と医療台帳の[CSV出力](../templates/default/docs/csv.md)を実装した。DBへの一括登録・xlsxは後続。マイクロサービス、Message Broker、Event Bus、汎用Integration Frameworkも対象外。
 
 ## Acceptance Test F / G（未実施）
 

@@ -1,9 +1,12 @@
 import { medicalAvailabilityWhere } from "./availability";
 import type { Prisma, PrismaClient } from "../generated/prisma/client";
 import type { listQuery } from "./validation";
-export async function medicalDeviceList(db: PrismaClient, organizationId: string, query: ReturnType<typeof listQuery>,includeSamples=true) {
-  const where: Prisma.MedicalDeviceWhereInput = { organizationId, AND:query.availability ? medicalAvailabilityWhere(query.availability) : undefined, isSample:includeSamples ? undefined : false, status: query.status,
+export function medicalDeviceWhere(organizationId: string, query: ReturnType<typeof listQuery>, includeSamples: boolean): Prisma.MedicalDeviceWhereInput {
+  return { organizationId, AND:query.availability ? medicalAvailabilityWhere(query.availability) : undefined, isSample:includeSamples ? undefined : false, status: query.status,
     ...(query.q ? { OR: ["name","category","managementNumber","assetNumber","manufacturer","modelName","serialNumber","location"].map(key => ({ [key]: { contains: query.q, mode: "insensitive" } })) } : {}) };
+}
+export async function medicalDeviceList(db: PrismaClient, organizationId: string, query: ReturnType<typeof listQuery>,includeSamples=true) {
+  const where = medicalDeviceWhere(organizationId, query, includeSamples);
   return db.$transaction(async tx => {
     const total = await tx.medicalDevice.count({ where });
     const pages = Math.max(1,Math.ceil(total/query.size)), page = Math.min(query.page,pages);

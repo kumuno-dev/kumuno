@@ -60,3 +60,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 @kumuno/approvalは単段承認の状態遷移エンジンとして導入済み。承認画面・DBモデル・既存業務の承認条件は未実装。[導入手順](approval.md)を参照。
 
 @kumuno/printは文字列からA4帳票のHTMLを生成する。医療機器台帳票のRoute Handlerで認証・組織境界を確認し、明示的な属性だけを渡す。静的印刷スクリプトは/print-client.jsから配信する。[印刷](print.md)を参照。
+
+@kumuno/csvはCSV形式の文字列読込・検証と書出しを提供する。医療台帳のexportルートは一覧と共通の検索条件・参照権限・組織境界で全ページを出力する。業務データの一括登録は後続。[CSV](csv.md)を参照。

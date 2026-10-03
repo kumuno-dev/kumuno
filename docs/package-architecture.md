@@ -9,7 +9,7 @@
 | @kumuno/audit-log | 同一transactionの明示的な変更履歴 | 第3段階の抽出済み、0.1.0-rc.0公開済み |
 | @kumuno/approval | 申請・承認・差戻し | 第4段階の状態遷移実装済み、UI/DBは未実装、0.1.0-rc.0公開済み |
 | @kumuno/print | A4帳票・ブラウザー印刷/PDF保存 | 第5段階、医療機器台帳票へ接続、npm未公開 |
-| @kumuno/csv | CSV/Excel入出力 | 計画、未実装 |
+| @kumuno/csv | CSV形式の読込検証・出力 | 第6段階、医療台帳の書出し、npm未公開。xlsx/DB取込は後続 |
 | @kumuno/notifications | アプリ内通知 | 計画、未実装 |
 | @kumuno/admin | 共通管理UI | 抽出は未実装、アプリ内の管理UIあり |
 
@@ -24,3 +24,5 @@ RBACは基本6権限と組織境界の純粋な判定を所有する。業務固
 承認は[パッケージ](../packages/approval/README.md)と[実DB接続例](../examples/approval/README.md)を提供する。業務内容・保存モデル・承認者割当・画面・通知はアプリ側。[設計判断](decisions/0032-approval-package.md)を参照。
 
 印刷は[@kumuno/print](../packages/print/README.md)がテキストからA4 HTMLを生成し、アプリ側が認証・組織境界と出力属性を所有する。[設計判断](decisions/0033-print-package.md)を参照。ソースのCLI候補は0.1.0-rc.2、npm公開済みCLIは引き続き0.1.0-rc.1。
+
+CSVは[@kumuno/csv](../packages/csv/README.md)が形式の読込検証と書出しを所有し、業務属性・権限・DB保存はアプリに保つ。[設計判断](decisions/0034-csv-package.md)を参照。CLI候補0.1.0-rc.2へ6パッケージを同梱。医療台帳への一括登録は後続。

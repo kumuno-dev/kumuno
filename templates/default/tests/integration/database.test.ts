@@ -1,3 +1,5 @@
+import { parseCsv } from "@kumuno/csv";
+import { exportMedicalDevices,medicalCsvHeaders } from "../../src/medical-equipment/csv-export";
 import { medicalOverview } from "../../src/medical-equipment/overview";
 import { createMedicalSamples } from "../../src/medical-equipment/samples";
 import { saveMedicalRepair,medicalRepairList,repairQuery } from "../../src/medical-equipment/repairs";
@@ -973,4 +975,36 @@ test("点検予定は直近記録のみで判定し、予定未入力・廃棄�
   const ready=await connection.db.medicalDevice.findFirstOrThrow({where:{managementNumber:"KUMUNO-DEMO-01"}});
   await saveMedicalDevice(connection.db,f.userId,f.organizationId,managementForm({...medicalFields,id:ready.id,managementNumber:ready.managementNumber,status:"RETIRED"}));
   expect((await medicalOverview(connection.db,f.organizationId,true)).dueTotal).toBe(0);
+});
+
+test("医療CSVは全ページの検索・テスト選択を反映し、別組織と備考を含めない", async()=>{
+  const f=await medicalLoanFixture();
+  await createMedicalSamples(connection.db,f.userId,f.organizationId);
+  const org=await connection.db.organization.create({data:{code:"csv-other",name:"外部"}});
+  await connection.db.medicalDevice.create({data:{organizationId:org.id,managementNumber:"OUTSIDE",name:"外部の機器",category:"輸液ポンプ"}});
+  await connection.db.medicalDevice.update({where:{id:f.deviceId},data:{notes:"CSVに出してはいけない備考"}});
+  const auditBefore=await connection.db.auditLog.count();
+  const actual=parseCsv(await exportMedicalDevices(connection.db,f.organizationId,medicalQuery({page:"999"}),false));
+  expect(actual).toHaveLength(2);expect(actual[0]).toEqual(medicalCsvHeaders);
+  const all=parseCsv(await exportMedicalDevices(connection.db,f.organizationId,medicalQuery({}),true));
+  expect(all).toHaveLength(9);expect(all.flat()).not.toContain("OUTSIDE");expect(all.flat()).not.toContain("CSVに出してはいけない備考");
+  const query=medicalQuery({availability:"loaned"});
+  expect(parseCsv(await exportMedicalDevices(connection.db,f.organizationId,query,true)).length-1).toBe((await medicalDeviceList(connection.db,f.organizationId,query,true)).total);
+  expect(parseCsv(await exportMedicalDevices(connection.db,f.organizationId,medicalQuery({q:"存在しない機器"}),true))).toEqual([medicalCsvHeaders]);
+  expect(await connection.db.auditLog.count()).toBe(auditBefore);
+});
+test("医療CSVは1000台超を切り捨てず拒否し、条件を絞れば出力できる",async()=>{
+  const f=await medicalLoanFixture();
+  await connection.db.medicalDevice.createMany({data:Array.from({length:1000},(_,i)=>({organizationId:f.organizationId,managementNumber:`CSV-${String(i).padStart(4,"0")}`,name:"CSV上限確認",category:"輸液ポンプ"}))});
+  await expect(exportMedicalDevices(connection.db,f.organizationId,medicalQuery({}),false)).rejects.toMatchObject({code:"MAX_DEVICES"});
+  const selected=parseCsv(await exportMedicalDevices(connection.db,f.organizationId,medicalQuery({q:"CSV-0000"}),false));
+  expect(selected).toHaveLength(2);expect(selected[1][0]).toBe("CSV-0000");
+});
+test("医療CSVは数式の可能性がある属性を拒否し、業務データを変えない",async()=>{
+  const f=await medicalLoanFixture();
+  const before=await connection.db.medicalDevice.update({where:{id:f.deviceId},data:{manufacturer:"  ＝1+1"}});
+  const audits=await connection.db.auditLog.count();
+  await expect(exportMedicalDevices(connection.db,f.organizationId,medicalQuery({}),false)).rejects.toMatchObject({code:"FORMULA_PREFIX",row:2,column:5});
+  expect(await connection.db.medicalDevice.findUniqueOrThrow({where:{id:f.deviceId}})).toEqual(before);
+  expect(await connection.db.auditLog.count()).toBe(audits);
 });
