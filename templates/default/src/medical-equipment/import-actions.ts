@@ -19,7 +19,7 @@ export async function medicalImportAction(_state:ImportState,form:FormData):Prom
       if(typeof csv!=="string"||typeof token!=="string"||csv.length>180000||!/^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(csv))throw new InputError("CSVを再確認してください。");
       const decoded=new TextDecoder("utf-8",{fatal:true}).decode(Buffer.from(csv,"base64"));
       const count=await importMedicalDevices(getDatabase(),actor.id,actor.organizationId,decoded,token,config.secret);
-      revalidatePath("/dashboard/medical-equipment");revalidatePath("/dashboard/medical-overview");
+      revalidatePath("/dashboard/medical-equipment");revalidatePath("/dashboard/medical-overview");revalidatePath("/dashboard","layout");
       return {success:`${count}台を登録しました。取込後は点検待ちです。合格点検後に貸出できます。`};
     }
     const file=form.get("file");

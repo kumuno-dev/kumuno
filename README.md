@@ -92,3 +92,5 @@ KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。C
 同じソース候補に[@kumuno/csv](packages/csv/README.md)と医療台帳の[CSV出力](templates/default/docs/csv.md)を追加しています。検索・テストデータ選択を反映して全ページを出力できます。CSV形式の読込検証を共通化し、医療台帳には確認付き新規一括登録を追加しました。xlsxは後続です。npm未公開です。
 
 ソース版の医療台帳に、全行の確認付きCSV新規一括登録を追加しました（128KiB・100台まで）。既存番号は上書きせず、登録後は点検待ちです。npm未公開です。
+
+ソース版rc.2候補にアプリ内通知を追加。CSV一括登録の完了を本人へ通知し、未読・既読を確認できる。[通知仕様](templates/default/docs/notifications.md)を参照。npm公開は別工程。

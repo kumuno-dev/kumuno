@@ -62,3 +62,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 @kumuno/printは文字列からA4帳票のHTMLを生成する。医療機器台帳票のRoute Handlerで認証・組織境界を確認し、明示的な属性だけを渡す。静的印刷スクリプトは/print-client.jsから配信する。[印刷](print.md)を参照。
 
 @kumuno/csvはCSV形式の文字列読込・検証と書出しを提供する。医療台帳のexportルートは一覧と共通の検索条件・参照権限・組織境界で全ページを出力する。医療台帳の一括登録はcsv-import.tsと確認画面が新規登録専用で提供する。[CSV](csv.md)を参照。
+
+共通パッケージ@kumuno/notificationsをvendorから導入する。src/notificationsが一覧・既読・保存を所有し、医療DomainはCSV取込完了時の本人向け文面を組み立てる。[通知](notifications.md)を参照。

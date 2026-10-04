@@ -1,3 +1,4 @@
+import { saveNotification } from "../notifications/service";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { parseCsv, CsvError } from "@kumuno/csv";
 import type { Prisma, PrismaClient } from "../generated/prisma/client";
@@ -70,6 +71,7 @@ export async function importMedicalDevices(db:PrismaClient,actorId:string,organi
       const device=await tx.medicalDevice.create({data:{...item,organizationId,returnInspectionPending:true,isSample:false}});
       await appendAuditLog(tx,actor,{action:"CREATE",resourceType:"MedicalDevice",resourceId:device.id,after:device});
     }
+    await saveNotification(tx,actor,actor,{key:`medical-csv:${plan.digest}`,title:"医療機器のCSV登録が完了しました",message:`${plan.data.length}台を登録しました。取込後は点検待ちです。合格点検後に貸出できます。`,href:"/dashboard/medical-equipment?availability=pending"});
     return plan.data.length;
   },{isolationLevel:"Serializable",timeout:20000});
 }

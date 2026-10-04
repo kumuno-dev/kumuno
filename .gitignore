@@ -28,3 +28,4 @@ artifacts/
 !templates/default/vendor/kumuno-approval-0.1.0-rc.0.tgz
 !templates/default/vendor/kumuno-print-0.1.0-rc.0.tgz
 !templates/default/vendor/kumuno-csv-0.1.0-rc.0.tgz
+!templates/default/vendor/kumuno-notifications-0.1.0-rc.0.tgz

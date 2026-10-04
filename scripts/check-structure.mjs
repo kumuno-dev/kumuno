@@ -12,13 +12,13 @@ const project = await readJson('package.json');
 const template = await readJson('templates/default/package.json');
 const lock = await readJson('templates/default/package-lock.json');
 assert.equal(project.private, true);
-assert.deepEqual(project.workspaces, ['packages/create-kumuno','packages/auth','packages/rbac','packages/audit-log','packages/approval','packages/print','packages/csv']);
+assert.deepEqual(project.workspaces, ['packages/create-kumuno','packages/auth','packages/rbac','packages/audit-log','packages/approval','packages/print','packages/csv','packages/notifications']);
 assert.equal(template.workspaces, undefined);
 assert.equal(lock.packages[''].name, template.name);
 for (const group of ['dependencies', 'devDependencies']) {
   assert.deepEqual(lock.packages[''][group], template[group]);
   for (const [name,version] of Object.entries(template[group] ?? {})) {
-    assert(!/^(workspace:|file:|link:)/.test(version) || (['auth','rbac','audit-log','approval','print','csv'].some(pkg => name === '@kumuno/'+pkg && version === 'file:vendor/kumuno-'+pkg+'-0.1.0-rc.0.tgz')), 'Only self-contained first-party distributions are allowed as a local dependency');
+    assert(!/^(workspace:|file:|link:)/.test(version) || (['auth','rbac','audit-log','approval','print','csv','notifications'].some(pkg => name === '@kumuno/'+pkg && version === 'file:vendor/kumuno-'+pkg+'-0.1.0-rc.0.tgz')), 'Only self-contained first-party distributions are allowed as a local dependency');
   }
 }
 for (const path of ['README.md', 'AGENTS.md', 'CLAUDE.md', '.env.example', '.npmrc', '.nvmrc', 'docs/architecture.md', 'docs/database.md']) {
@@ -27,7 +27,7 @@ for (const path of ['README.md', 'AGENTS.md', 'CLAUDE.md', '.env.example', '.npm
 await checkApplicationDocumentation(resolve(root, 'templates/default'));
 console.log('Workspace boundaries and standalone template manifest verified. Bundled CLI is tested separately.');
 
-for (const pkg of ['auth','rbac','audit-log','approval','print','csv']) {
+for (const pkg of ['auth','rbac','audit-log','approval','print','csv','notifications']) {
   const archive=resolve(root,`templates/default/vendor/kumuno-${pkg}-0.1.0-rc.0.tgz`);
   const bytes=await readFile(archive);
   assert.equal(lock.packages['node_modules/@kumuno/'+pkg].integrity,'sha512-'+createHash('sha512').update(bytes).digest('base64'),pkg+' distribution and lock must agree');

@@ -1,0 +1,35 @@
+{
+  "name": "@kumuno/notifications",
+  "version": "0.1.0-rc.0",
+  "description": "Scoped in-app notification delivery through application-owned persistence.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.d.mts",
+      "import": "./src/index.mjs",
+      "default": "./src/index.mjs"
+    }
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kumuno-dev/kumuno.git",
+    "directory": "packages/notifications"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "next"
+  }
+}

@@ -217,10 +217,16 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 
 @kumuno/printはpackages/printにあり、0.1.0-rc.0は未公開。`npm run build:print`でvendorの実tgzを作り、`npm run test:print-package`で単体・独立導入・公開型とChromiumでの3画面幅/A4 PDF/改ページを確認する。初回は前述のChromium導入が必要。
 
-公開ファイル変更後はbuild:print、templates/defaultで`npm install --ignore-scripts @kumuno/print@file:vendor/kumuno-print-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。ソースのCLI候補0.1.0-rc.2は6パッケージを同梱する。npm公開済みCLI・共通4パッケージは変更していない。[生成アプリの印刷](../templates/default/docs/print.md)を参照。
+公開ファイル変更後はbuild:print、templates/defaultで`npm install --ignore-scripts @kumuno/print@file:vendor/kumuno-print-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。ソースのCLI候補0.1.0-rc.2は7パッケージを同梱する。npm公開済みCLI・共通4パッケージは変更していない。[生成アプリの印刷](../templates/default/docs/print.md)を参照。
 
 ## CSVパッケージの開発
 
 @kumuno/csvはpackages/csv、0.1.0-rc.0は未公開。`npm run build:csv`でvendorのtgzを作り、`npm run test:csv-package`で形式・上限・独立導入・公開型を確認する。公開ファイル変更後はbuild:csv、templates/defaultで`npm install --ignore-scripts @kumuno/csv@file:vendor/kumuno-csv-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。医療台帳の組織境界と読取保持はtest:db、実ダウンロードはtest:authで確認する。[生成アプリの説明](../templates/default/docs/csv.md)を参照。
 
 医療CSVの新規取込はtest:dbで全件と監査の同時保存・全体取消・確認Token・最新権限・同時操作、test:authで3画面幅のアップロード→全行確認→一括登録を検証する。実運用のDBへテスト用CSVを登録しない。
+
+## 通知パッケージの開発
+
+@kumuno/notificationsはpackages/notifications、0.1.0-rc.0は未公開。`npm run build:notifications`でvendorの実tgzを作り、`npm run test:notifications-package`で契約・独立導入・公開型を確認する。公開ファイル変更後はbuild:notifications、templates/defaultで`npm install --ignore-scripts @kumuno/notifications@file:vendor/kumuno-notifications-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLI候補rc.2へ7パッケージを同梱する。
+
+実DBでは本人・組織境界、既読の監査と再更新、ページ切替、通知失敗時の取込全体取消を確認する。test:authは3画面幅のCSV登録→通知→既読を確認する。実運用DBで試験用の通知を生成しない。

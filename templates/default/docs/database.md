@@ -66,3 +66,5 @@ Milestone 5の`20260928010000_auth_rate_limit`はBetter Auth標準DB試行制限
 
 
 手元の試用は[開発用自動セットアップ](local-development.md)を利用できる。既存DB・本番の設定とは別の開発専用経路。
+
+Notificationは20261004090000_notificationsで追加する。受信者の組織境界、イベントキーの一意性、受信者削除時の通知削除をDBでも保証する。[通知仕様](notifications.md)を参照。

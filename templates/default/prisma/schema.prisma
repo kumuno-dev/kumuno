@@ -22,6 +22,7 @@ model Organization {
   medicalInspections MedicalInspection[]
   medicalRepairs MedicalRepair[]
   medicalSampleDataset MedicalSampleDataset?
+  notifications Notification[]
 }
 
 model Department {
@@ -73,6 +74,7 @@ model User {
   returnedMedicalLoans MedicalLoan[] @relation("MedicalLoanReturner")
   medicalInspections MedicalInspection[]
   medicalRepairs MedicalRepair[]
+  notifications Notification[]
 
   @@unique([id, organizationId])
 
@@ -321,4 +323,20 @@ model MedicalSampleDataset {
   organizationId String @id @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+}
+
+model Notification {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  recipientId String @db.Uuid
+  key String
+  title String
+  message String
+  href String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  readAt DateTime? @db.Timestamptz(3)
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Restrict)
+  recipient User @relation(fields:[recipientId,organizationId],references:[id,organizationId],onDelete:Cascade,onUpdate:Restrict)
+  @@unique([organizationId,recipientId,key])
+  @@index([organizationId,recipientId,readAt,createdAt,id])
 }

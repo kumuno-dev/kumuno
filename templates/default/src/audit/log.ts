@@ -9,7 +9,9 @@ type MedicalDeviceSnapshot = { managementNumber: string; assetNumber: string | n
 type MedicalLoanSnapshot = { deviceId: string; departmentId: string; loanedAt: Date; loanedById: string; returnedAt: Date | null; returnedById: string | null };
 type MedicalInspectionSnapshot = {returnLoanId:string|null; deviceId:string; inspectedById:string; inspectionDate:Date; kind:string; result:string; nextInspectionDate:Date|null; recordedAt:Date; clearedPending:boolean};
 type MedicalRepairSnapshot = {deviceId:string;reportedById:string;status:string;reportedAt:Date;startedAt:Date|null;completedAt:Date|null};
+type NotificationSnapshot = {recipientId:string;readAt:Date|null};
 type Event = { action: AuditAction; resourceId: string } & (
+  { resourceType: "Notification"; before?:NotificationSnapshot;after?:NotificationSnapshot } |
   { resourceType: "User"; before?: UserSnapshot; after?: UserSnapshot } |
   { resourceType: "Department"; before?: DepartmentSnapshot; after?: DepartmentSnapshot } |
   { resourceType: "Equipment"; before?: EquipmentSnapshot; after?: EquipmentSnapshot } |
@@ -22,6 +24,10 @@ type Event = { action: AuditAction; resourceId: string } & (
 // Explicit projections prevent whole records, credentials and request bodies being logged.
 export function auditSnapshots(event: Event) {
   validateAuditEvent(event);
+  if(event.resourceType === "Notification"){
+    const pick=(v:NotificationSnapshot)=>({recipientId:v.recipientId,readAt:v.readAt?.toISOString()??null});
+    return {before:event.before?pick(event.before):undefined,after:event.after?pick(event.after):undefined};
+  }
   if (event.resourceType === "User") {
     const pick = (value: UserSnapshot) => ({ isActive: value.isActive, role: value.role, departmentId: value.departmentId });
     return { before: event.before ? pick(event.before) : undefined, after: event.after ? pick(event.after) : undefined };

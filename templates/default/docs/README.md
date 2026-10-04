@@ -12,6 +12,7 @@
 | データの所有・将来の連携 | [domain-boundaries.md](domain-boundaries.md)、[integration.md](integration.md) |
 | モデル・Migration | [database.md](database.md)、[organization.md](organization.md) |
 | 認証・権限・監査 | [authentication.md](authentication.md)、[authorization.md](authorization.md)、[audit-log.md](audit-log.md) |
+| 自分の通知・未読・既読 | [notifications.md](notifications.md) |
 | CSV出力・確認付き一括登録 | [csv.md](csv.md) |
 | A4台帳票・印刷・PDF保存 | [print.md](print.md) |
 | 申請・承認の共通基盤（UI/DBは未実装） | [approval.md](approval.md) |
