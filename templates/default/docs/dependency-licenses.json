@@ -1,6 +1,6 @@
 {
   "source": "package-lock.json",
-  "dependencySha256": "ebcdf0bea90d913a0700f157b1ee62e8fe43a77775403df7d5b103e7f4b4a9c9",
+  "dependencySha256": "9c324645dcb88d56e3fbd075e7dd5e4f33c1d4310e57a069ae4a6330f63d683c",
   "entries": [
     {
       "path": "node_modules/@alloc/quick-lru",
@@ -1018,6 +1018,15 @@
       "development": true,
       "optional": false,
       "tarball": "https://registry.npmjs.org/@keyv/serialize/-/serialize-1.1.1.tgz"
+    },
+    {
+      "path": "node_modules/@kumuno/admin",
+      "name": "@kumuno/admin",
+      "version": "0.1.0-rc.0",
+      "license": "MIT",
+      "development": false,
+      "optional": false,
+      "tarball": "file:vendor/kumuno-admin-0.1.0-rc.0.tgz"
     },
     {
       "path": "node_modules/@kumuno/approval",

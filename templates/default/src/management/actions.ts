@@ -8,7 +8,8 @@ import { ForbiddenError } from "../authorization/policy";
 import { databaseErrorCode } from "../database/errors";
 import { InputError, field } from "./validation";
 import { saveUser, saveDepartment, deleteDepartment } from "./service";
-export type FormState = { error?: string; success?: string };
+import type { AdminFormState } from "@kumuno/admin";
+export type FormState = AdminFormState;
 async function run(form: FormData, kind: "user" | "department" | "delete"): Promise<FormState> {
   const actor = await requireUser();
   if ((await headers()).get("origin") !== getAuthConfig().baseURL) return { error: "送信元を確認できません。" };

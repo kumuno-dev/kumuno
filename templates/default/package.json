@@ -27,6 +27,7 @@
     "dev:local": "tsx scripts/dev-local.ts"
   },
   "dependencies": {
+    "@kumuno/admin": "file:vendor/kumuno-admin-0.1.0-rc.0.tgz",
     "@kumuno/approval": "file:vendor/kumuno-approval-0.1.0-rc.0.tgz",
     "@kumuno/audit-log": "file:vendor/kumuno-audit-log-0.1.0-rc.0.tgz",
     "@kumuno/auth": "file:vendor/kumuno-auth-0.1.0-rc.0.tgz",

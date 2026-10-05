@@ -1,6 +1,6 @@
 # 依存ライブラリのライセンス一覧
 
-このアプリのpackage-lock.jsonにある全514パッケージ項目（推移依存・OS別optionalを含む）のライセンス宣言を記録します。[機械可読の一覧](dependency-licenses.json)には導入経路・名前・版・宣言・取得先を含め、lockfileの依存項目のSHA-256（アプリ名・ルート項目を除く）で対応を確認できます。同名パッケージの別版やOS別項目はそれぞれ数えます。
+このアプリのpackage-lock.jsonにある全515パッケージ項目（推移依存・OS別optionalを含む）のライセンス宣言を記録します。[機械可読の一覧](dependency-licenses.json)には導入経路・名前・版・宣言・取得先を含め、lockfileの依存項目のSHA-256（アプリ名・ルート項目を除く）で対応を確認できます。同名パッケージの別版やOS別項目はそれぞれ数えます。
 
 KUMUNOが作成したコードは[MIT](../LICENSE)です。依存パッケージの許諾は各パッケージ自身のLICENSE / NOTICEに従います。この一覧はnpm lockfileの宣言の棚卸しで、ネイティブバイナリ内部の全コンポーネントの許諾一覧ではありません。
 
@@ -10,6 +10,7 @@ CLI配布にはnode_modulesやネイティブバイナリを同梱せず、生�
 
 | パッケージ | 版 | 宣言 | 用途 |
 | --- | --- | --- | --- |
+| @kumuno/admin | file:vendor/kumuno-admin-0.1.0-rc.0.tgz | MIT | 実行時 |
 | @kumuno/approval | file:vendor/kumuno-approval-0.1.0-rc.0.tgz | MIT | 実行時 |
 | @kumuno/audit-log | file:vendor/kumuno-audit-log-0.1.0-rc.0.tgz | MIT | 実行時 |
 | @kumuno/auth | file:vendor/kumuno-auth-0.1.0-rc.0.tgz | MIT | 実行時 |
@@ -58,7 +59,7 @@ CLI配布にはnode_modulesやネイティブバイナリを同梱せず、生�
 | EPL-2.0 | 1 |
 | ISC | 34 |
 | LGPL-3.0-or-later | 10 |
-| MIT | 366 |
+| MIT | 367 |
 | MIT and ISC | 1 |
 | MPL-2.0 | 24 |
 | Unlicense | 2 |

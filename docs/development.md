@@ -217,7 +217,7 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 
 @kumuno/printはpackages/printにあり、0.1.0-rc.0は未公開。`npm run build:print`でvendorの実tgzを作り、`npm run test:print-package`で単体・独立導入・公開型とChromiumでの3画面幅/A4 PDF/改ページを確認する。初回は前述のChromium導入が必要。
 
-公開ファイル変更後はbuild:print、templates/defaultで`npm install --ignore-scripts @kumuno/print@file:vendor/kumuno-print-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。ソースのCLI候補0.1.0-rc.2は7パッケージを同梱する。npm公開済みCLI・共通4パッケージは変更していない。[生成アプリの印刷](../templates/default/docs/print.md)を参照。
+公開ファイル変更後はbuild:print、templates/defaultで`npm install --ignore-scripts @kumuno/print@file:vendor/kumuno-print-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。ソースのCLI候補0.1.0-rc.2は8パッケージを同梱する。npm公開済みCLI・共通4パッケージは変更していない。[生成アプリの印刷](../templates/default/docs/print.md)を参照。
 
 ## CSVパッケージの開発
 
@@ -227,6 +227,12 @@ packages/create-kumuno/templateはbuild:cli / prepackで再生成する成果物
 
 ## 通知パッケージの開発
 
-@kumuno/notificationsはpackages/notifications、0.1.0-rc.0は未公開。`npm run build:notifications`でvendorの実tgzを作り、`npm run test:notifications-package`で契約・独立導入・公開型を確認する。公開ファイル変更後はbuild:notifications、templates/defaultで`npm install --ignore-scripts @kumuno/notifications@file:vendor/kumuno-notifications-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLI候補rc.2へ7パッケージを同梱する。
+@kumuno/notificationsはpackages/notifications、0.1.0-rc.0は未公開。`npm run build:notifications`でvendorの実tgzを作り、`npm run test:notifications-package`で契約・独立導入・公開型を確認する。公開ファイル変更後はbuild:notifications、templates/defaultで`npm install --ignore-scripts @kumuno/notifications@file:vendor/kumuno-notifications-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。CLI候補rc.2へ8パッケージを同梱する。
 
 実DBでは本人・組織境界、既読の監査と再更新、ページ切替、通知失敗時の取込全体取消を確認する。test:authは3画面幅のCSV登録→通知→既読を確認する。実運用DBで試験用の通知を生成しない。
+
+## 管理UIパッケージの開発
+
+@kumuno/adminはpackages/admin、0.1.0-rc.0は未公開。`npm run build:admin`でvendorの実tgzを作り、`npm run test:admin-package`で描画・独立導入・公開型・Reactサーバー側importを検証する。公開ファイル変更後はbuild:admin、templates/defaultで`npm install --ignore-scripts @kumuno/admin@file:vendor/kumuno-admin-0.1.0-rc.0.tgz`、rootで`npm run licenses:update`を実行する。
+
+CLI候補rc.2は8パッケージを同梱する。Reactをpeer dependencyで共有し、/formのuse clientを保持する。test:authで管理・業務操作の3画面幅を確認する。

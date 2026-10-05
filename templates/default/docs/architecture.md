@@ -64,3 +64,5 @@ DB操作はサーバー側のdatabase/client経由で行う。業務機能を追
 @kumuno/csvはCSV形式の文字列読込・検証と書出しを提供する。医療台帳のexportルートは一覧と共通の検索条件・参照権限・組織境界で全ページを出力する。医療台帳の一括登録はcsv-import.tsと確認画面が新規登録専用で提供する。[CSV](csv.md)を参照。
 
 共通パッケージ@kumuno/notificationsをvendorから導入する。src/notificationsが一覧・既読・保存を所有し、医療DomainはCSV取込完了時の本人向け文面を組み立てる。[通知](notifications.md)を参照。
+
+共通管理UIは@kumuno/adminへ抽出。ユーザー/部署の入力欄とActionフォームを再利用し、取得・認可・保存・監査はアプリに保持する。[管理画面](management.md)を参照。

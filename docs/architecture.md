@@ -333,3 +333,11 @@ CSVひな形の入力例（2026-10-03）：見出しの次に架空の入力例1
 第7段階の検証（macOS arm64、Node.js 24.21.0、PostgreSQL 18.4）：root check、通知契約4件、独立tgz導入・TypeScript・import/requireが成功。165ファイルの配布CLIから独立生成し、本番ビルド・単体29件・実DB71件・基本ブラウザー4件、3画面幅のCSV登録→本人通知→既読→未読絞込みと既存業務、開発DBの自動準備・停止・再起動後の保持を確認した。実DBで他の受信者/組織・無効ユーザーの拒否、20件のページ切替、既読の同時操作と監査重複防止、通知/監査失敗時の全体取消を確認。任意schemaを使うブラウザー検証でSQL参照の問題を修正し、Prismaの条件付き更新へ統一した。Macのスリープによる時間切れの後、検証中だけスリープを抑止した再実行が成功。npm公開、今回のLinux/Windows実行、メール・プッシュ・定期配信は未実施または未実装。
 
 試用サイトへの反映（2026-10-05）：停止後の非公開バックアップを作成し、通知コード・実tgz・追加Migrationを反映して同じ55072ポートで再起動。Organization・Department・User・MedicalDevice・MedicalLoan・MedicalInspection・MedicalRepair・AuditLog・Equipment・MedicalSampleDataset・Accountの更新前後の件数/ハッシュが一致した。既存資格情報でログインし、3画面幅で本人の空の通知一覧と未読絞込みを確認。試験用CSV・通知は実サイトへ登録していない。
+
+## 共通パッケージの第8段階（2026-10-05）
+
+@kumuno/adminへユーザー・部署の入力欄とReact Actionフォームを抽出。root exportはサーバーで描画でき、/formはuse client境界を維持する。Reactはpeer dependencyで共有し、認証・組織内データ取得・最新権限・入力検証・保存・監査は既存アプリに保持。DBモデル/Migrationは変更しない。[判断0037](decisions/0037-admin-package.md)を参照。CLI候補rc.2へ未公開実tgzを同梱する。API/OpenAPI/MCP公開は将来の工程へ据え置く。
+
+第8段階の検証（macOS arm64、Node.js 24.21.0、PostgreSQL 18.4）：root check、管理UI描画3件・HTMLエスケープ・既存資格情報の非表示・親部署候補、独立tgz導入・公開型・import/require・Reactサーバー側importが成功。166ファイルの配布CLIから独立生成し、本番ビルド・単体29件・実DB71件・基本ブラウザー4件、3画面幅のユーザー/部署登録・編集・無効化・削除と権限制限、既存の医療/通知操作、開発DBの自動準備・停止・再起動後の保持を確認した。npm公開、今回のLinux/Windows実行、汎用マスタCRUDは未実施または未実装。
+
+試用サイトの第8段階反映：停止後に非公開バックアップを取り、実tgzと管理UIを追加して同じ55072ポートで再起動。既存の業務9テーブル・AuditLog・Account・Notificationの件数/ハッシュが一致。既存資格情報でログインし、3画面幅でユーザー/部署の入力欄を確認した。実サイトで登録・編集・削除の検証はせず、業務データは保持した。

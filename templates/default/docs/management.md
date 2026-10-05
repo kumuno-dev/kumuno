@@ -21,6 +21,14 @@ Server ActionsはNext.jsのOrigin検査に加え、BETTER_AUTH_URLとOriginの�
 
 ## 画面と検証
 
-オレンジを主要操作に使い、PCはサイドバー、狭い画面は横並びメニューへ切り替える。入力ラベル、キーボード操作、フォーカス表示、本文へのスキップリンク、送信中の無効化、エラー案内を提供する。新規依存はない。
+オレンジを主要操作に使い、PCはサイドバー、狭い画面は横並びメニューへ切り替える。入力ラベル、キーボード操作、フォーカス表示、本文へのスキップリンク、送信中の無効化、エラー案内を提供する。@kumuno/adminをvendorの未公開tgzから導入する。
 
 npm run checkでlint・型・単体・基本ブラウザー検証、test:template:dbで生成物の実DBとブラウザーの部署／ユーザー登録・編集・無効化／再有効化・部署削除・参照ロール制限を確認する。実運用DBのMigrationや初期管理者プロビジョニングは自動実行しない。
+
+## 共通パッケージ
+
+ユーザー・部署の入力欄は@kumuno/adminのUserFields / DepartmentFields、送信フォームは@kumuno/admin/formのManagementFormを利用する。rootはサーバーで描画でき、/formはReact 19のuse client境界を保つ。Reactはpeer dependency。Prisma・Next.jsへの依存はない。
+
+アプリは組織内のデータ取得・参照/編集可否・Server Action・Validation・最新の操作者・保存と監査を所有する。公開する入力値にAccountやセッションを含めない。パッケージにDBや認証を自動接続する機能はなく、既存の権限規則を維持する。
+
+CSSは既存のform-grid / management-form / primary-button / notice-error / notice-successを利用する。独自権限編集UI、汎用マスタCRUDは未実装。

@@ -1,0 +1,47 @@
+{
+  "name": "@kumuno/admin",
+  "version": "0.1.0-rc.0",
+  "description": "Reusable React management forms and user/department fields for KUMUNO applications.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.d.mts",
+      "import": "./src/index.mjs",
+      "default": "./src/index.mjs"
+    },
+    "./form": {
+      "types": "./src/form.d.mts",
+      "import": "./src/form.mjs",
+      "default": "./src/form.mjs"
+    }
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kumuno-dev/kumuno.git",
+    "directory": "packages/admin"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public",
+    "tag": "next"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}
