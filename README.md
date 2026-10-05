@@ -7,7 +7,7 @@ AI coding agentsのための、オープンソース業務システム開発基�
 
 KUMUNO is an open-source foundation for building business applications with AI coding agents.
 
-**公開候補版0.1.0-rc.1をnpmへ公開しました。MIT Licenseです。** Node.js 24.xで、次のコマンドから試せます。正式版v0.1の確認は継続中です。
+**公開候補版0.1.0-rc.2をnpmへ公開しました。MIT Licenseです。** Node.js 24.xで、次のコマンドから試せます。正式版v0.1の確認は継続中です。
 
 ```sh
 npx create-kumuno@next my-app
@@ -19,7 +19,7 @@ npx create-kumuno@next my-app
 
 生成時に依存導入を選び、生成後はmy-appへ移動して `npm run dev:local` を実行します。開発用PostgreSQL・認証・初期管理者を自動準備します。Node.js 24.xが必要です。
 
-[公開パッケージ](https://www.npmjs.com/package/create-kumuno)のnextは0.1.0-rc.1、latestは従来の0.1.0-rc.0です。新しい候補版を試す場合は@nextを指定します。正式版のlatestへの更新は別工程です。
+[公開パッケージ](https://www.npmjs.com/package/create-kumuno)のnextは0.1.0-rc.2、latestは従来の0.1.0-rc.0です。新しい候補版を試す場合は@nextを指定します。正式版のlatestへの更新は別工程です。
 
 ## ソースからローカルで試す
 
@@ -87,12 +87,14 @@ KUMUNO本体・CLI・生成テンプレートは[MIT License](LICENSE)です。C
 
 共通パッケージは `npm install @kumuno/auth@next @kumuno/rbac@next @kumuno/audit-log@next @kumuno/approval@next` で個別導入できます。authはBetter Auth 1.7.6をpeer dependencyとします。DB・UIの接続は利用アプリ側で用意します。[公開記録](docs/releases/2026-10-02-rc1.md)を参照してください。
 
-ソース版の次の候補0.1.0-rc.2には[@kumuno/print](packages/print/README.md)と医療機器の[台帳票](templates/default/docs/print.md)を追加しました。A4印刷・ブラウザーでのPDF保存に対応します。この追加分はnpm未公開です。
+公開候補版0.1.0-rc.2には[@kumuno/print](packages/print/README.md)と医療機器の[台帳票](templates/default/docs/print.md)を追加しました。A4印刷・ブラウザーでのPDF保存に対応します。npmの@next版にも含まれます。
 
-同じソース候補に[@kumuno/csv](packages/csv/README.md)と医療台帳の[CSV出力](templates/default/docs/csv.md)を追加しています。検索・テストデータ選択を反映して全ページを出力できます。CSV形式の読込検証を共通化し、医療台帳には確認付き新規一括登録を追加しました。xlsxは後続です。npm未公開です。
+同じ公開候補に[@kumuno/csv](packages/csv/README.md)と医療台帳の[CSV出力](templates/default/docs/csv.md)を追加しています。検索・テストデータ選択を反映して全ページを出力できます。CSV形式の読込検証を共通化し、医療台帳には確認付き新規一括登録を追加しました。xlsxは後続です。npmの@next版にも含まれます。
 
-ソース版の医療台帳に、全行の確認付きCSV新規一括登録を追加しました（128KiB・100台まで）。既存番号は上書きせず、登録後は点検待ちです。npm未公開です。
+ソース版の医療台帳に、全行の確認付きCSV新規一括登録を追加しました（128KiB・100台まで）。既存番号は上書きせず、登録後は点検待ちです。npmの@next版にも含まれます。
 
-ソース版rc.2候補にアプリ内通知を追加。CSV一括登録の完了を本人へ通知し、未読・既読を確認できる。[通知仕様](templates/default/docs/notifications.md)を参照。npm公開は別工程。
+ソース版rc.2候補にアプリ内通知を追加。CSV一括登録の完了を本人へ通知し、未読・既読を確認できる。[通知仕様](templates/default/docs/notifications.md)を参照。npm公開済みです。
 
-ソース版rc.2候補では@kumuno/adminのユーザー/部署入力欄・共通送信フォームを利用する。Reactアプリへの独立導入が可能で、認可と保存は利用アプリが所有する。npm公開は別工程。
+ソース版rc.2候補では@kumuno/adminのユーザー/部署入力欄・共通送信フォームを利用する。Reactアプリへの独立導入が可能で、認可と保存は利用アプリが所有する。npm公開済みです。
+
+CLI rc.2と印刷・CSV・通知・管理UIの公開は[2026-10-05の記録](docs/releases/2026-10-05-rc2.md)を参照してください。

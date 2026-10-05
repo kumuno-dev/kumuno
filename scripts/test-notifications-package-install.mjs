@@ -3,12 +3,13 @@ import {mkdtemp,writeFile,rm} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {fileURLToPath} from "node:url";
+const fromRegistry=process.argv.includes("--registry");
 const root=fileURLToPath(new URL("../",import.meta.url));
 const fixture=await mkdtemp(join(tmpdir(),"kumuno-notifications-consumer-"));
 const run=(command,args)=>execFileSync(command,args,{cwd:fixture,stdio:"pipe",timeout:120000,env:{...process.env,npm_config_cache:join(fixture,"npm-cache")}});
 try {
  await writeFile(join(fixture,"package.json"),JSON.stringify({name:"notifications-consumer",version:"1.0.0",private:true,type:"module"}));
- run("npm",["install","--ignore-scripts","--no-audit","--no-fund",join(root,"templates/default/vendor/kumuno-notifications-0.1.0-rc.0.tgz")]);
+ run("npm",["install","--ignore-scripts","--no-audit","--no-fund",fromRegistry ? "@kumuno/notifications@0.1.0-rc.0" : join(root,"templates/default/vendor/kumuno-notifications-0.1.0-rc.0.tgz")]);
  await writeFile(join(fixture,"verify.mjs"),`import assert from 'node:assert/strict';
 import {publishNotification} from '@kumuno/notifications';import {createRequire} from 'node:module';
 assert.equal(createRequire(import.meta.url)('@kumuno/notifications').publishNotification,publishNotification);

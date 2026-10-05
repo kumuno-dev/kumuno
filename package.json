@@ -61,7 +61,7 @@
     "build:approval": "node scripts/bundle-approval.mjs",
     "test:approval-package": "npm test --workspace @kumuno/approval && node scripts/test-approval-package-install.mjs",
     "test:approval-package:db": "node scripts/test-approval-package-install.mjs --db",
-    "test:registry-packages": "npm run test:auth-package -- --registry && npm run test:rbac-package -- --registry && npm run test:audit-log-package -- --registry && npm run test:approval-package -- --registry",
+    "test:registry-packages": "npm run test:auth-package -- --registry && npm run test:rbac-package -- --registry && npm run test:audit-log-package -- --registry && npm run test:approval-package -- --registry && npm run test:print-package -- --registry && npm run test:csv-package -- --registry && npm run test:notifications-package -- --registry && npm run test:admin-package -- --registry",
     "test:registry:local": "node scripts/test-packed-cli.mjs --registry --local",
     "build:print": "node scripts/bundle-print.mjs",
     "test:print-package": "npm test --workspace @kumuno/print && node scripts/test-print-package-install.mjs",
